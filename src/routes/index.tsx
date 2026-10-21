@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowUpRight, Check, Lock, ShieldCheck, Zap } from "lucide-react";
+import { ArrowUpRight, Check, Lock, ShieldCheck, Zap, Clock, Tag, Award } from "lucide-react";
 import { discordLink, games, services } from "@/lib/catalog";
 import { products, type Product } from "@/lib/products";
 import { getStoredProducts } from "@/lib/admin-store";
-import { getPageFromDB, type PageContent } from "@/lib/db";
+import { getPageFromDB, getProductsFromDB, type PageContent } from "@/lib/db";
 import { SiteFooter, SiteHeader } from "@/components/SiteChrome";
 import { ProductGrid } from "@/components/Products";
 import { HomeTestimonials } from "@/components/Testimonials";
@@ -60,12 +60,16 @@ const faqs = [
 ];
 
 function Index() {
-  const [productList, setProductList] = useState<Product[]>([]);
+  const [productList, setProductList] = useState<Product[]>(() => getStoredProducts());
   const [pageContent, setPageContent] = useState<PageContent | null>(null);
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   useEffect(() => {
-    setProductList(getStoredProducts());
+    getProductsFromDB().then((items) => {
+      if (items && items.length > 0) {
+        setProductList(items);
+      }
+    });
     getPageFromDB("home").then((p) => setPageContent(p));
   }, []);
 
@@ -84,6 +88,9 @@ function Index() {
           fetchPriority="high"
         />
         <div className="bm-hero-content">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-sky-950/80 border border-sky-400/40 text-sky-300 text-xs font-semibold mb-4 tracking-wide shadow-sm backdrop-blur-md">
+            TRUSTED GAMING ACCOUNT MARKETPLACE
+          </div>
           <h1 className="bm-hero-title">
             {pageContent?.heroTitle ? (
               pageContent.heroTitle
@@ -93,6 +100,30 @@ function Index() {
               </>
             )}
           </h1>
+
+          {/* Social Proof / Rating Card in Hero */}
+          <div className="flex items-center gap-3 mb-6 p-3 px-4 bg-card/90 border border-border/80 rounded-xl shadow-lg backdrop-blur-md w-fit">
+            <div className="flex text-amber-400">
+              {[...Array(5)].map((_, i) => (
+                <svg
+                  key={i}
+                  className="w-4 h-4 fill-current"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+                </svg>
+              ))}
+            </div>
+            <div className="flex items-center gap-1 font-bold text-foreground text-sm">
+              <span>4.9</span>
+              <span className="text-xs text-muted-foreground font-normal">/ 5.0</span>
+            </div>
+            <span className="text-xs text-muted-foreground border-l border-border pl-3">
+              340++ reviews
+            </span>
+          </div>
+
           <p className="bm-lead">
             {pageContent?.heroSubtitle
               ? pageContent.heroSubtitle
@@ -101,12 +132,12 @@ function Index() {
 
           <div className="bm-hero-actions">
             <Button asChild className="bm-btn bm-btn-primary">
-              <Link to="/akun" search={{}}>
+              <Link to="/accounts" search={{}}>
                 Explore Accounts <ArrowUpRight className="w-4 h-4 ml-1" />
               </Link>
             </Button>
             <Button asChild variant="outline" className="bm-btn bm-btn-outline">
-              <Link to="/layanan">
+              <Link to="/services">
                 Middleman & Services <ArrowUpRight className="w-4 h-4 ml-1" />
               </Link>
             </Button>
@@ -114,7 +145,7 @@ function Index() {
 
           <div className="bm-trust-ribbon">
             <span>
-              <ShieldCheck className="w-4 h-4 text-sky-400" /> Middleman Escrow Protection
+              <ShieldCheck className="w-4 h-4 text-sky-400" /> Middleman Service
             </span>
             <span aria-hidden="true">·</span>
             <span>
@@ -128,6 +159,49 @@ function Index() {
         </div>
       </section>
 
+      {/* Main Home Highlights Display */}
+      <section className="relative z-10 border-b border-border/40 bg-card/60 backdrop-blur-sm py-8">
+        <div className="max-w-7xl mx-auto px-4 md:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="flex items-start gap-4 p-5 rounded-xl border border-border/60 bg-card/80 hover:border-sky-500/50 transition-all duration-200 shadow-sm">
+              <div className="w-12 h-12 rounded-lg bg-sky-950/80 border border-sky-800/60 flex items-center justify-center text-sky-400 shrink-0">
+                <ShieldCheck className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="font-bold text-base text-foreground mb-1">Lifetime Warranty</h3>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  Protection and support if any issue happens with your order.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-4 p-5 rounded-xl border border-border/60 bg-card/80 hover:border-emerald-500/50 transition-all duration-200 shadow-sm">
+              <div className="w-12 h-12 rounded-lg bg-emerald-950/80 border border-emerald-800/60 flex items-center justify-center text-emerald-400 shrink-0">
+                <Tag className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="font-bold text-base text-foreground mb-1">Best Price</h3>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  Carefully reviewed listings to offer strong value and fair pricing.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-4 p-5 rounded-xl border border-border/60 bg-card/80 hover:border-amber-500/50 transition-all duration-200 shadow-sm">
+              <div className="w-12 h-12 rounded-lg bg-amber-950/80 border border-amber-800/60 flex items-center justify-center text-amber-400 shrink-0">
+                <Award className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="font-bold text-base text-foreground mb-1">4 Years Experience</h3>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  Trusted track record with 340++ satisfied gamers since 2022.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Services Section */}
       <section className="bm-section--full bm-section-services">
         <div className="bm-section-head">
@@ -137,7 +211,7 @@ function Index() {
             </span>
             <h2 className="text-2xl md:text-3xl font-bold mt-1">Middleman & Trading Services</h2>
           </div>
-          <Link to="/layanan" className="bm-text-link">
+          <Link to="/services" className="bm-text-link">
             All services <ArrowUpRight />
           </Link>
         </div>
@@ -145,7 +219,7 @@ function Index() {
       </section>
 
       {/* Featured Accounts Section */}
-      <section id="akun" className="bm-section--full">
+      <section id="accounts" className="bm-section--full">
         <div className="bm-section-head">
           <div>
             <span className="text-xs font-semibold tracking-wider text-sky-400 uppercase">
@@ -155,20 +229,20 @@ function Index() {
               Available Accounts Ready to Play
             </h2>
           </div>
-          <Link className="bm-text-link" to="/akun" search={{}}>
+          <Link className="bm-text-link" to="/accounts" search={{}}>
             View all accounts <ArrowUpRight aria-hidden="true" />
           </Link>
         </div>
         <ProductGrid items={activeCatalog.filter((p) => p.status === "tersedia").slice(0, 6)} />
         <div className="mt-8 text-center md:hidden">
-          <Link className="bm-btn bm-btn-outline w-full" to="/akun" search={{}}>
+          <Link className="bm-btn bm-btn-outline w-full" to="/accounts" search={{}}>
             See all accounts <ArrowUpRight aria-hidden="true" />
           </Link>
         </div>
       </section>
 
       {/* Game Catalog Section */}
-      <section id="game" className="bm-section--full">
+      <section id="games" className="bm-section--full">
         <div className="bm-section-head">
           <div>
             <span className="text-xs font-semibold tracking-wider text-sky-400 uppercase">
@@ -182,7 +256,7 @@ function Index() {
         </div>
         <div className="bm-cards bm-cards--4">
           {games.map((g) => (
-            <Link key={g.slug} to="/akun" search={{ game: g.slug }} className="bm-card group">
+            <Link key={g.slug} to="/accounts" search={{ game: g.slug }} className="bm-card group">
               <div className="bm-card-img">
                 <img
                   src={g.image}

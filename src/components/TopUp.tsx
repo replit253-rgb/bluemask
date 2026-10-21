@@ -1,14 +1,17 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ArrowUpRight, Check } from "lucide-react";
 import { discordLink } from "@/lib/catalog";
 import { formatRupiah } from "@/lib/products";
 import { topUpMessage, type TopUpPackage } from "@/lib/topup";
+import { getTopUpsFromDB } from "@/lib/db";
 
 function TopUpCard({ p }: { p: TopUpPackage }) {
   const [copied, setCopied] = useState(false);
-  const bgImg = p.popular
-    ? "/src/assets/images/chest_treasure_gold_1792579173076.jpg"
-    : "/src/assets/images/chest_wooden_loot_1792579173425.jpg";
+  const bgImg =
+    p.image ||
+    (p.popular
+      ? "/src/assets/images/chest_treasure_gold_1792579173076.jpg"
+      : "/src/assets/images/chest_wooden_loot_1792579173425.jpg");
   return (
     <a
       className={`bm-topup ${p.popular ? " bm-topup--pop" : ""}`}
@@ -52,12 +55,26 @@ function TopUpCard({ p }: { p: TopUpPackage }) {
 }
 
 export function TopUpGrid({ items }: { items: TopUpPackage[] }) {
-  if (items.length === 0)
+  const [activeItems, setActiveItems] = useState<TopUpPackage[]>(items);
+
+  useEffect(() => {
+    getTopUpsFromDB().then((dbItems) => {
+      if (items.length > 0 && items[0]?.game) {
+        const game = items[0].game;
+        const filtered = dbItems.filter((t) => t.game === game);
+        if (filtered.length > 0) setActiveItems(filtered);
+      } else if (dbItems.length > 0) {
+        setActiveItems(dbItems);
+      }
+    });
+  }, [items]);
+
+  if (activeItems.length === 0)
     return <p className="bm-lead">No packs for this game yet. Ask us on Discord.</p>;
   return (
     <>
       <div className="bm-topups">
-        {items.map((p) => (
+        {activeItems.map((p) => (
           <TopUpCard key={p.code} p={p} />
         ))}
       </div>

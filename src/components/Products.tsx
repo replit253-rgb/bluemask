@@ -12,7 +12,7 @@ export function ProductCard({ p }: { p: Product }) {
   const discountedPrice = Math.round(p.price * 0.8);
   return (
     <Link
-      to="/akun/$code"
+      to="/accounts/$code"
       params={{ code: p.code }}
       className={`group block overflow-hidden ${sold ? "opacity-70" : ""}`}
     >

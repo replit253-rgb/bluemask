@@ -73,7 +73,8 @@ export const games = [
 
 export type Game = (typeof games)[number];
 export type GameSlug = Game["slug"];
-export type ServiceSlug = "middleman" | "jual-beli-akun" | "top-up";
+export type ServiceSlug =
+  "middleman" | "buy-sell-accounts" | "jual-beli-akun" | "top-up" | (string & {});
 
 export type Service = {
   slug: ServiceSlug;
@@ -85,6 +86,8 @@ export type Service = {
   gameSlugs?: GameSlug[];
   /** What the customer needs to prepare. Falls back to the game's account info. */
   checklist?: string[];
+  image?: string;
+  fee?: string;
 };
 
 export const services: Service[] = [
@@ -114,7 +117,7 @@ export const services: Service[] = [
     ],
   },
   {
-    slug: "jual-beli-akun",
+    slug: "buy-sell-accounts",
     name: "Buy & Sell Accounts",
     tagline: "The account you want for your next adventure.",
     intro:
@@ -291,4 +294,7 @@ export const testimonials: Testimonial[] = [
 ];
 
 export const findGame = (slug: string) => games.find((g) => g.slug === slug);
-export const findService = (slug: string) => services.find((s) => s.slug === slug);
+export const findService = (slug: string) => {
+  const target = slug === "jual-beli-akun" ? "buy-sell-accounts" : slug;
+  return services.find((s) => s.slug === target || s.slug === slug);
+};

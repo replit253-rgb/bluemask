@@ -1,18 +1,44 @@
+import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { ArrowUpRight, ShieldCheck, ShoppingBag, Zap } from "lucide-react";
-import { gamesForService, services } from "@/lib/catalog";
+import { ArrowUpRight, ShieldCheck, ShoppingBag, Zap, type LucideIcon } from "lucide-react";
+import { gamesForService, services as initialServices, type Service } from "@/lib/catalog";
+import { getServicesFromDB } from "@/lib/db";
 
-const icons = { middleman: ShieldCheck, "jual-beli-akun": ShoppingBag, "top-up": Zap };
+const icons: Record<string, LucideIcon> = {
+  middleman: ShieldCheck,
+  "buy-sell-accounts": ShoppingBag,
+  "jual-beli-akun": ShoppingBag,
+  "top-up": Zap,
+};
+
 export function ServiceCards() {
+  const [serviceList, setServiceList] = useState<Service[]>(initialServices);
+
+  useEffect(() => {
+    getServicesFromDB().then((data) => {
+      if (data && data.length > 0) {
+        setServiceList(data);
+      }
+    });
+  }, []);
+
   return (
     <div className="bm-services">
-      {services.map((s) => {
-        const Icon = icons[s.slug];
+      {serviceList.map((s) => {
+        const Icon = icons[s.slug] || ShieldCheck;
         return (
           <article key={s.slug} className="bm-service">
             <div className="bm-service-top">
-              <div className="bm-service-icon-box">
-                <Icon className="w-5 h-5" />
+              <div className="bm-service-icon-box overflow-hidden">
+                {s.image ? (
+                  <img
+                    src={s.image}
+                    alt={s.name}
+                    className="w-full h-full object-cover rounded-md"
+                  />
+                ) : (
+                  <Icon className="w-5 h-5" />
+                )}
               </div>
             </div>
             <h3 className="font-semibold text-lg text-foreground mt-4 mb-2">{s.name}</h3>
@@ -21,7 +47,7 @@ export function ServiceCards() {
               {gamesForService(s).map((g) => (
                 <Link
                   key={g.slug}
-                  to="/layanan/$service/$game"
+                  to="/services/$service/$game"
                   params={{ service: s.slug, game: g.slug }}
                 >
                   <span>{g.name}</span>

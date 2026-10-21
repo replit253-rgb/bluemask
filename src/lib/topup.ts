@@ -8,6 +8,7 @@ export type TopUpPackage = {
   detail: string;
   price: number;
   popular?: boolean;
+  image?: string;
 };
 
 // Sample top up price list. Replace with real prices.

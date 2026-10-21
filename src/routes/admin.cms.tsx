@@ -139,7 +139,7 @@ function AdminCMSPage() {
         <div className="flex items-center gap-1.5 p-1.5 bg-secondary/30 rounded-lg border border-border/50 mb-6 overflow-x-auto">
           {[
             { id: "home", label: "Home Page (/)" },
-            { id: "accounts", label: "Accounts Catalog (/akun)" },
+            { id: "accounts", label: "Accounts Catalog (/accounts)" },
             { id: "contact", label: "Support & Contact (/contact)" },
           ].map((tab) => (
             <button

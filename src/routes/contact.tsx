@@ -90,27 +90,6 @@ function ContactPage() {
             <ul style={{ listStyle: "none", display: "grid", gap: "16px", fontSize: "15px" }}>
               <li style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                 <strong style={{ minWidth: "140px", color: "var(--bm-ink-soft)" }}>
-                  WhatsApp:
-                </strong>
-                <a
-                  href={`https://wa.me/${cleanWa}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  style={{
-                    color: "var(--bm-glow)",
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: "6px",
-                    fontWeight: 600,
-                  }}
-                >
-                  <Phone style={{ width: "16px", height: "16px" }} />
-                  {activeSettings.whatsapp}{" "}
-                  <ArrowUpRight style={{ width: "14px", height: "14px" }} />
-                </a>
-              </li>
-              <li style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                <strong style={{ minWidth: "140px", color: "var(--bm-ink-soft)" }}>
                   Discord User:
                 </strong>
                 <a
@@ -126,7 +105,7 @@ function ContactPage() {
                   }}
                 >
                   <MessageSquare style={{ width: "16px", height: "16px" }} />
-                  980636376691249152 <ArrowUpRight style={{ width: "14px", height: "14px" }} />
+                  bluemask22 <ArrowUpRight style={{ width: "14px", height: "14px" }} />
                 </a>
               </li>
               <li style={{ display: "flex", alignItems: "center", gap: "12px" }}>

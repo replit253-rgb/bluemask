@@ -1,6 +1,11 @@
 import { products as initialProducts, type Product } from "./products";
 import { topUpPackages as initialTopUpPackages, type TopUpPackage } from "./topup";
-import { discordLink as defaultDiscord, whatsappNumber as defaultWa } from "./catalog";
+import {
+  discordLink as defaultDiscord,
+  whatsappNumber as defaultWa,
+  services as initialServices,
+  type Service,
+} from "./catalog";
 
 export interface PageContent {
   slug: string;
@@ -99,6 +104,7 @@ function openDatabase(): Promise<IDBDatabase> {
 // Fallback in-memory / storage cache for SSR or when IndexedDB is warming up
 let memoryProducts: Product[] = [...initialProducts];
 let memoryTopUps: TopUpPackage[] = [...initialTopUpPackages];
+let memoryServices: Service[] = [...initialServices];
 const memoryPages: Record<string, PageContent> = { ...defaultPages };
 
 // Initialize database with initial seeds if empty
@@ -166,6 +172,13 @@ export async function getProductsFromDB(): Promise<Product[]> {
 
 export async function saveProductToDB(product: Product): Promise<void> {
   memoryProducts = [product, ...memoryProducts.filter((p) => p.code !== product.code)];
+  if (typeof window !== "undefined") {
+    try {
+      localStorage.setItem("bm_admin_products_v1", JSON.stringify(memoryProducts));
+    } catch (err) {
+      console.warn("Storage sync error:", err);
+    }
+  }
 
   if (typeof window === "undefined" || !window.indexedDB) return;
   try {
@@ -179,6 +192,13 @@ export async function saveProductToDB(product: Product): Promise<void> {
 
 export async function deleteProductFromDB(code: string): Promise<void> {
   memoryProducts = memoryProducts.filter((p) => p.code !== code);
+  if (typeof window !== "undefined") {
+    try {
+      localStorage.setItem("bm_admin_products_v1", JSON.stringify(memoryProducts));
+    } catch (err) {
+      console.warn("Storage sync error:", err);
+    }
+  }
 
   if (typeof window === "undefined" || !window.indexedDB) return;
   try {
@@ -217,6 +237,13 @@ export async function getTopUpsFromDB(): Promise<TopUpPackage[]> {
 
 export async function saveTopUpToDB(topup: TopUpPackage): Promise<void> {
   memoryTopUps = [topup, ...memoryTopUps.filter((t) => t.code !== topup.code)];
+  if (typeof window !== "undefined") {
+    try {
+      localStorage.setItem("bm_admin_topups_v1", JSON.stringify(memoryTopUps));
+    } catch (err) {
+      console.warn("Storage sync error:", err);
+    }
+  }
 
   if (typeof window === "undefined" || !window.indexedDB) return;
   try {
@@ -230,6 +257,13 @@ export async function saveTopUpToDB(topup: TopUpPackage): Promise<void> {
 
 export async function deleteTopUpFromDB(code: string): Promise<void> {
   memoryTopUps = memoryTopUps.filter((t) => t.code !== code);
+  if (typeof window !== "undefined") {
+    try {
+      localStorage.setItem("bm_admin_topups_v1", JSON.stringify(memoryTopUps));
+    } catch (err) {
+      console.warn("Storage sync error:", err);
+    }
+  }
 
   if (typeof window === "undefined" || !window.indexedDB) return;
   try {
@@ -280,34 +314,127 @@ export async function savePageToDB(page: PageContent): Promise<void> {
   }
 }
 
+// --- Services / Middleman Repository ---
+export async function getServicesFromDB(): Promise<Service[]> {
+  if (typeof window === "undefined") return memoryServices;
+
+  try {
+    const raw = localStorage.getItem("bm_admin_services_v1");
+    if (raw) {
+      memoryServices = JSON.parse(raw);
+    }
+  } catch (err) {
+    console.warn("Storage sync error:", err);
+  }
+
+  return memoryServices;
+}
+
+export async function saveServiceToDB(service: Service): Promise<void> {
+  const existingIdx = memoryServices.findIndex((s) => s.slug === service.slug);
+  if (existingIdx >= 0) {
+    memoryServices[existingIdx] = service;
+  } else {
+    memoryServices.push(service);
+  }
+
+  if (typeof window !== "undefined") {
+    try {
+      localStorage.setItem("bm_admin_services_v1", JSON.stringify(memoryServices));
+    } catch (err) {
+      console.warn("Storage sync error:", err);
+    }
+  }
+}
+
+export async function deleteServiceFromDB(slug: string): Promise<void> {
+  memoryServices = memoryServices.filter((s) => s.slug !== slug);
+
+  if (typeof window !== "undefined") {
+    try {
+      localStorage.setItem("bm_admin_services_v1", JSON.stringify(memoryServices));
+    } catch (err) {
+      console.warn("Storage sync error:", err);
+    }
+  }
+}
+
 // --- Media Upload Repository ---
 export async function uploadImageFile(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
-    reader.onload = async () => {
-      const dataUrl = reader.result as string;
-      const mediaItem: MediaItem = {
-        id: `media_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
-        name: file.name,
-        dataUrl,
-        size: file.size,
-        type: file.type,
-        uploadedAt: new Date().toISOString(),
-      };
+    reader.onload = () => {
+      const rawDataUrl = reader.result as string;
 
-      if (typeof window !== "undefined") {
+      // Optimize image via canvas to keep size under 250KB for fast storage & loading
+      const img = new Image();
+      img.onload = async () => {
+        let finalDataUrl = rawDataUrl;
         try {
-          const db = await openDatabase();
-          const tx = db.transaction("media", "readwrite");
-          tx.objectStore("media").put(mediaItem);
+          const maxDim = 1200;
+          let { width, height } = img;
+          if (width > maxDim || height > maxDim) {
+            if (width > height) {
+              height = Math.round((height * maxDim) / width);
+              width = maxDim;
+            } else {
+              width = Math.round((width * maxDim) / height);
+              height = maxDim;
+            }
+          }
+          const canvas = document.createElement("canvas");
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext("2d");
+          if (ctx) {
+            ctx.drawImage(img, 0, 0, width, height);
+            finalDataUrl = canvas.toDataURL("image/jpeg", 0.85);
+          }
         } catch (err) {
-          console.warn("Media storage error:", err);
+          console.warn("Canvas compression fallback:", err);
         }
-      }
 
-      resolve(dataUrl);
+        const mediaItem: MediaItem = {
+          id: `media_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+          name: file.name,
+          dataUrl: finalDataUrl,
+          size: file.size,
+          type: file.type,
+          uploadedAt: new Date().toISOString(),
+        };
+
+        if (typeof window !== "undefined") {
+          try {
+            const db = await openDatabase();
+            const tx = db.transaction("media", "readwrite");
+            tx.objectStore("media").put(mediaItem);
+          } catch (err) {
+            console.warn("Media storage error:", err);
+          }
+        }
+
+        resolve(finalDataUrl);
+      };
+      img.onerror = () => resolve(rawDataUrl);
+      img.src = rawDataUrl;
     };
     reader.onerror = () => reject(new Error("Failed to read image file"));
     reader.readAsDataURL(file);
   });
+}
+
+export async function uploadMultipleImages(files: FileList | File[]): Promise<string[]> {
+  const fileArray = Array.from(files);
+  const results: string[] = [];
+  for (const file of fileArray) {
+    if (file.type.startsWith("image/")) {
+      try {
+        const url = await uploadImageFile(file);
+        results.push(url);
+      } catch (err) {
+        console.warn("Failed to upload image file:", file.name, err);
+      }
+    }
+  }
+  return results;
 }

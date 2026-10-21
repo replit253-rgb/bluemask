@@ -30,7 +30,12 @@ export function TestimonialSection({
   const game = findGame(gameSlug);
   if (!game) return null;
 
-  const pool = testimonials.filter((t) => t.service === serviceSlug);
+  const pool = testimonials.filter(
+    (t) =>
+      t.service === serviceSlug ||
+      (serviceSlug === "buy-sell-accounts" && t.service === "jual-beli-akun") ||
+      (serviceSlug === "jual-beli-akun" && t.service === "buy-sell-accounts"),
+  );
   const ordered = [
     ...pool.filter((t) => t.game === gameSlug),
     ...pool.filter((t) => t.game === "all"),

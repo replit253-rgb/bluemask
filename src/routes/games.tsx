@@ -41,7 +41,7 @@ export function GameCards() {
                 .map((s) => (
                   <Link
                     key={s.slug}
-                    to="/layanan/$service/$game"
+                    to="/services/$service/$game"
                     params={{ service: s.slug, game: g.slug }}
                   >
                     {s.name}

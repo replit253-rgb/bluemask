@@ -26,10 +26,10 @@ export function SiteHeader() {
         <Link to="/games" className="hover:text-white transition-colors py-2">
           Games
         </Link>
-        <Link to="/akun" className="hover:text-white transition-colors py-2">
+        <Link to="/accounts" className="hover:text-white transition-colors py-2">
           Accounts
         </Link>
-        <Link to="/layanan" className="hover:text-white transition-colors py-2">
+        <Link to="/services" className="hover:text-white transition-colors py-2">
           Services
         </Link>
         <Link to="/contact" className="hover:text-white transition-colors py-2">
@@ -47,10 +47,10 @@ export function SiteHeader() {
           <ArrowUpRight className="w-4 h-4" />
         </a>
         <Link
-          to="/akun"
+          to="/accounts"
           search={{}}
           className="text-slate-300 hover:text-white p-2 rounded-lg hover:bg-white/5 transition-colors"
-          aria-label="Keranjang"
+          aria-label="Cart"
         >
           <ShoppingCart className="w-5 h-5 md:w-6 md:h-6" />
         </Link>
@@ -83,14 +83,14 @@ export function SiteHeader() {
             Games
           </Link>
           <Link
-            to="/akun"
+            to="/accounts"
             onClick={() => setOpen(false)}
             className="text-base font-medium text-slate-200 hover:text-white py-2 border-b border-white/5"
           >
             Accounts
           </Link>
           <Link
-            to="/layanan"
+            to="/services"
             onClick={() => setOpen(false)}
             className="text-base font-medium text-slate-200 hover:text-white py-2 border-b border-white/5"
           >
@@ -149,10 +149,10 @@ export function SiteFooter() {
         <span>© BlueMask Gaming Store</span>
         <div className="bm-footer-links">
           <Link to="/games">Games</Link>
-          <Link to="/akun" search={{}}>
+          <Link to="/accounts" search={{}}>
             Accounts
           </Link>
-          <Link to="/layanan">Services</Link>
+          <Link to="/services">Services</Link>
           <Link to="/contact">Contact</Link>
           <Link to="/admin" style={{ opacity: 0.6 }}>
             Admin

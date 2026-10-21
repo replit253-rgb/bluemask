@@ -8,6 +8,9 @@ export type Product = {
   price: number;
   status: "tersedia" | "terjual";
   image?: string;
+  screenshots?: string[];
+  description?: string;
+  server?: string;
   stats: { label: string; value: string }[];
   highlights: string[];
 };

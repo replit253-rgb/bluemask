@@ -21,11 +21,17 @@ function AdminLoginPage() {
 
   const handleLogin = (e: FormEvent) => {
     e.preventDefault();
-    if (username === "admin" && password === "bluemask") {
+    const normalizedUser = username.trim().toLowerCase();
+    const trimmedPass = password.trim();
+
+    const isValidUser = normalizedUser === "admin" || normalizedUser === "admin@gmail.com";
+    const isValidPass = trimmedPass === "bluemask" || trimmedPass === "123admin123";
+
+    if (isValidUser && isValidPass) {
       localStorage.setItem("bm_is_admin", "true");
       navigate({ to: "/admin" });
     } else {
-      setError("Invalid username or password.");
+      setError("Invalid username or password. Check your credentials.");
     }
   };
 
