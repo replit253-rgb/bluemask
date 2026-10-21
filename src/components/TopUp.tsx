@@ -6,14 +6,25 @@ import { topUpMessage, type TopUpPackage } from "@/lib/topup";
 
 function TopUpCard({ p }: { p: TopUpPackage }) {
   const [copied, setCopied] = useState(false);
+  const bgImg = p.popular
+    ? "/src/assets/images/chest_treasure_gold_1792579173076.jpg"
+    : "/src/assets/images/chest_wooden_loot_1792579173425.jpg";
   return (
     <a
-      className={`bm-topup${p.popular ? " bm-topup--pop" : ""}`}
+      className={`bm-topup ${p.popular ? " bm-topup--pop" : ""}`}
       href={discordLink}
       target="_blank"
       rel="noreferrer"
+      style={{
+        backgroundImage: `linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url(${bgImg})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+      }}
       onClick={() => {
-        navigator.clipboard?.writeText(topUpMessage(p)).then(() => setCopied(true)).catch(() => {});
+        navigator.clipboard
+          ?.writeText(topUpMessage(p))
+          .then(() => setCopied(true))
+          .catch(() => {});
       }}
     >
       <span className="bm-mono bm-topup-meta">
@@ -25,7 +36,15 @@ function TopUpCard({ p }: { p: TopUpPackage }) {
       <div className="bm-topup-foot">
         <strong>{formatRupiah(p.price)}</strong>
         <span className="bm-mono">
-          {copied ? <>Copied <Check aria-hidden="true" /></> : <>Order <ArrowUpRight aria-hidden="true" /></>}
+          {copied ? (
+            <>
+              Copied <Check aria-hidden="true" />
+            </>
+          ) : (
+            <>
+              Order <ArrowUpRight aria-hidden="true" />
+            </>
+          )}
         </span>
       </div>
     </a>
@@ -33,13 +52,18 @@ function TopUpCard({ p }: { p: TopUpPackage }) {
 }
 
 export function TopUpGrid({ items }: { items: TopUpPackage[] }) {
-  if (items.length === 0) return <p className="bm-lead">No packs for this game yet. Ask us on Discord.</p>;
+  if (items.length === 0)
+    return <p className="bm-lead">No packs for this game yet. Ask us on Discord.</p>;
   return (
     <>
       <div className="bm-topups">
-        {items.map((p) => <TopUpCard key={p.code} p={p} />)}
+        {items.map((p) => (
+          <TopUpCard key={p.code} p={p} />
+        ))}
       </div>
-      <p className="bm-mono bm-topup-note">Sample prices only. Confirm the current price on Discord before ordering.</p>
+      <p className="bm-mono bm-topup-note">
+        Sample prices only. Confirm the current price on Discord before ordering.
+      </p>
     </>
   );
 }

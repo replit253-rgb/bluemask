@@ -1,0 +1,5 @@
+{
+  "name": "BlueMask Storefront",
+  "description": "Game top-ups, accounts, and services storefront built with TanStack Start and React",
+  "capabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

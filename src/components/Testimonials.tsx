@@ -4,10 +4,14 @@ function TestimonialCard({ t, featured = false }: { t: Testimonial; featured?: b
   const game = t.game === "all" ? null : findGame(t.game);
   return (
     <figure className={`bm-testi-card${featured ? " bm-testi-card--feat" : ""}`}>
-      <span className="bm-testi-rating" aria-label="Rated 5 out of 5 stars">★★★★★</span>
+      <span className="bm-testi-rating" aria-label="Rated 5 out of 5 stars">
+        ★★★★★
+      </span>
       <blockquote>{t.quote}</blockquote>
       <figcaption className="bm-testi-meta bm-mono">
-        <span className="bm-testi-name">{t.name} · {t.role}</span>
+        <span className="bm-testi-name">
+          {t.name} · {t.role}
+        </span>
         {game && <span>{game.name}</span>}
         <span>{t.date}</span>
       </figcaption>
@@ -16,14 +20,22 @@ function TestimonialCard({ t, featured = false }: { t: Testimonial; featured?: b
 }
 
 /** Testimonials for one service on its detail page, ordered by game. */
-export function TestimonialSection({ serviceSlug, gameSlug }: { serviceSlug: string; gameSlug: string }) {
+export function TestimonialSection({
+  serviceSlug,
+  gameSlug,
+}: {
+  serviceSlug: string;
+  gameSlug: string;
+}) {
   const game = findGame(gameSlug);
   if (!game) return null;
 
   const pool = testimonials.filter((t) => t.service === serviceSlug);
-  const ordered = [...pool.filter((t) => t.game === gameSlug), ...pool.filter((t) => t.game === "all")];
+  const ordered = [
+    ...pool.filter((t) => t.game === gameSlug),
+    ...pool.filter((t) => t.game === "all"),
+  ];
   if (ordered.length === 0) return null;
-
 
   return (
     <section className="bm-section">
@@ -49,7 +61,9 @@ function TestiCarousel({ items }: { items: Testimonial[] }) {
       <div className="bm-testi-track" style={{ animationDuration: `${dur}s` }}>
         {[0, 1].map((copy) => (
           <div className="bm-testi-set" key={copy} aria-hidden={copy === 1 || undefined}>
-            {items.map((t) => <TestimonialCard key={`${copy}-${t.name}-${t.game}-${t.service}`} t={t} />)}
+            {items.map((t) => (
+              <TestimonialCard key={`${copy}-${t.name}-${t.game}-${t.service}`} t={t} />
+            ))}
           </div>
         ))}
       </div>

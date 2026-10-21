@@ -79,10 +79,16 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "BlueMask Gaming Store" },
-      { name: "description", content: "Game accounts, middleman support, and top-ups from BlueMask Gaming Store." },
+      {
+        name: "description",
+        content: "Game accounts, middleman support, and top-ups from BlueMask Gaming Store.",
+      },
       { name: "author", content: "BlueMask Gaming Store" },
       { property: "og:title", content: "BlueMask Gaming Store" },
-      { property: "og:description", content: "Game accounts, middleman support, and top-ups from BlueMask Gaming Store." },
+      {
+        property: "og:description",
+        content: "Game accounts, middleman support, and top-ups from BlueMask Gaming Store.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:site", content: "@Lovable" },

@@ -1,6 +1,13 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { ArrowUpRight } from "lucide-react";
-import { discordLink, findGame, findService, gamesForService, isServiceAvailable, services } from "@/lib/catalog";
+import {
+  discordLink,
+  findGame,
+  findService,
+  gamesForService,
+  isServiceAvailable,
+  services,
+} from "@/lib/catalog";
 import { Marquee, SiteFooter, SiteHeader } from "@/components/SiteChrome";
 import { ProductGrid } from "@/components/Products";
 import { TopUpGrid } from "@/components/TopUp";
@@ -17,19 +24,23 @@ export const Route = createFileRoute("/layanan/$service/$game")({
   head: ({ loaderData, params }) => {
     const s = loaderData && findService(loaderData.serviceSlug);
     const g = loaderData && findGame(loaderData.gameSlug);
-    if (!s || !g) return { meta: [
-      { title: "Page unavailable — BlueMask" },
-      { name: "description", content: "This BlueMask service page is unavailable." },
-      { property: "og:title", content: "Page unavailable — BlueMask" },
-      { property: "og:description", content: "This BlueMask service page is unavailable." },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary" },
-      { name: "robots", content: "noindex" },
-    ] };
+    if (!s || !g)
+      return {
+        meta: [
+          { title: "Page unavailable — BlueMask" },
+          { name: "description", content: "This BlueMask service page is unavailable." },
+          { property: "og:title", content: "Page unavailable — BlueMask" },
+          { property: "og:description", content: "This BlueMask service page is unavailable." },
+          { property: "og:type", content: "website" },
+          { name: "twitter:card", content: "summary" },
+          { name: "robots", content: "noindex" },
+        ],
+      };
     const title = `${s.name} ${g.name} — BlueMask Gaming Store`;
-    const desc = s.slug === "top-up"
-      ? `Affordable, safe ${g.name} top ups with BlueMask. Pick a pack, send your player ID, and it lands in your account.`
-      : `${s.intro} For ${g.name} accounts.`;
+    const desc =
+      s.slug === "top-up"
+        ? `Affordable, safe ${g.name} top ups with BlueMask. Pick a pack, send your player ID, and it lands in your account.`
+        : `${s.intro} For ${g.name} accounts.`;
     const url = `/layanan/${params.service}/${params.game}`;
     return {
       meta: [
@@ -60,7 +71,9 @@ function ServicePage() {
   const gameIndex = serviceGames.findIndex((g) => g.slug === game.slug) + 1;
 
   const related = [
-    ...services.filter((s) => s.slug !== service.slug && isServiceAvailable(s.slug, game.slug)).map((s) => ({ s, g: game })),
+    ...services
+      .filter((s) => s.slug !== service.slug && isServiceAvailable(s.slug, game.slug))
+      .map((s) => ({ s, g: game })),
     ...serviceGames.filter((g) => g.slug !== game.slug).map((g) => ({ s: service, g })),
   ];
 
@@ -72,21 +85,27 @@ function ServicePage() {
         <div className="bm-hero-meta bm-mono">
           <Link to="/">← Index</Link>
           <span>{service.name}</span>
-          <span>{String(gameIndex).padStart(2, "0")} / {String(serviceGames.length).padStart(2, "0")}</span>
+          <span>
+            {String(gameIndex).padStart(2, "0")} / {String(serviceGames.length).padStart(2, "0")}
+          </span>
         </div>
         <h1 className="bm-detail-title">
           {service.name}
           <span>{game.name}</span>
         </h1>
         <div className="bm-detail-grid">
-          <p className="bm-lead">{service.tagline} {service.intro}</p>
+          <p className="bm-lead">
+            {service.tagline} {service.intro}
+          </p>
           <a className="bm-pill" href={discordLink} target="_blank" rel="noreferrer">
             Start on Discord <ArrowUpRight aria-hidden="true" />
           </a>
         </div>
         <figure className="bm-detail-figure">
           <img src={game.image} alt={game.imageAlt} width={928} height={720} fetchPriority="high" />
-          <figcaption className="bm-mono">Fig. {game.number} — {game.genre}</figcaption>
+          <figcaption className="bm-mono">
+            Fig. {game.number} — {game.genre}
+          </figcaption>
         </figure>
       </section>
 
@@ -123,7 +142,10 @@ function ServicePage() {
         </div>
         <ul className="bm-checklist">
           {checklist.map((p, i) => (
-            <li key={p}><span className="bm-mono">0{i + 1}</span>{p}</li>
+            <li key={p}>
+              <span className="bm-mono">0{i + 1}</span>
+              {p}
+            </li>
           ))}
         </ul>
       </section>
@@ -148,12 +170,25 @@ function ServicePage() {
         <ul className="bm-index">
           {related.map(({ s, g }) => (
             <li key={s.slug + g.slug} className="bm-index-row bm-index-row--link">
-              <Link to="/layanan/$service/$game" params={{ service: s.slug, game: g.slug }} className="bm-row-link">
+              <Link
+                to="/layanan/$service/$game"
+                params={{ service: s.slug, game: g.slug }}
+                className="bm-row-link"
+              >
                 <span className="bm-mono bm-index-no">{g.number}</span>
-                <h3>{s.name} — {g.name}</h3>
+                <h3>
+                  {s.name} — {g.name}
+                </h3>
                 <ArrowUpRight aria-hidden="true" className="bm-row-arrow" />
               </Link>
-              <img className="bm-index-peek" src={g.image} alt="" width={928} height={720} loading="lazy" />
+              <img
+                className="bm-index-peek"
+                src={g.image}
+                alt=""
+                width={928}
+                height={720}
+                loading="lazy"
+              />
             </li>
           ))}
         </ul>

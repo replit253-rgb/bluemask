@@ -15,7 +15,9 @@ export const Route = createFileRoute("/akun/$code")({
     const p = loaderData && findProduct(loaderData.code);
     const g = p && findGame(p.game);
     const title = p && g ? `${g.name} ${p.title} — BlueMask` : "Account not found — BlueMask";
-    const desc = p ? `${p.title}. ${formatRupiah(p.price)}. Order safely through the BlueMask Discord.` : "This account is unavailable.";
+    const desc = p
+      ? `${p.title}. ${formatRupiah(p.price)}. Order safely through the BlueMask Discord.`
+      : "This account is unavailable.";
     return {
       meta: [
         { title },
@@ -32,21 +34,36 @@ export const Route = createFileRoute("/akun/$code")({
 
 const flow = [
   { title: "Click order", text: "Your order message is copied automatically and Discord opens." },
-  { title: "Open a ticket", text: "Paste the message in the ticket channel. The team sends account screenshots." },
-  { title: "Pay safely", text: "The middleman holds your payment until the account is transferred." },
-  { title: "Get your account", text: "Log in, change the binding, done. The guarantee still applies." },
+  {
+    title: "Open a ticket",
+    text: "Paste the message in the ticket channel. The team sends account screenshots.",
+  },
+  {
+    title: "Pay safely",
+    text: "The middleman holds your payment until the account is transferred.",
+  },
+  {
+    title: "Get your account",
+    text: "Log in, change the binding, done. The guarantee still applies.",
+  },
 ];
 
 const included = [
   { title: "Verified Listing", text: "Reviewed by the BlueMask team before publication." },
-  { title: "Secure Checkout", text: "Payment runs only through the official channels the team gives you." },
+  {
+    title: "Secure Checkout",
+    text: "Payment runs only through the official channels the team gives you.",
+  },
   { title: "Guided Transfer", text: "Support during the account handover, step by step." },
   { title: "Account Guarantee", text: "Help if the account doesn't match the listing." },
   { title: "Dedicated Support", text: "Assistance before and after the purchase." },
 ];
 
 /** Overview copy built only from the product's own static data. */
-const overviewFor = (p: NonNullable<ReturnType<typeof findProduct>>, game: NonNullable<ReturnType<typeof findGame>>) => {
+const overviewFor = (
+  p: NonNullable<ReturnType<typeof findProduct>>,
+  game: NonNullable<ReturnType<typeof findGame>>,
+) => {
   const specs = p.stats.map((s) => `${s.label.toLowerCase()} ${s.value}`).join(", ");
   const extras = p.highlights.join(". ").replace(/\.$/, "");
   return `This ${game.name} account includes ${specs}. ${extras}. Review the full account details and screenshots on Discord before purchasing — the team walks you through every transfer step.`;
@@ -69,14 +86,22 @@ function ProductPage() {
           <span aria-hidden="true">›</span>
           <Link to="/akun">Accounts</Link>
           <span aria-hidden="true">›</span>
-          <Link to="/akun" search={{ game: game.slug }}>{game.name} accounts</Link>
+          <Link to="/akun" search={{ game: game.slug }}>
+            {game.name} accounts
+          </Link>
           <span aria-hidden="true">›</span>
           <span>{p.code}</span>
         </nav>
         <div className="bm-product">
           <div className="bm-gallery">
             <figure className="bm-product-img">
-              <img src={game.image} alt={game.imageAlt} width={1024} height={768} fetchPriority="high" />
+              <img
+                src={game.image}
+                alt={game.imageAlt}
+                width={1024}
+                height={768}
+                fetchPriority="high"
+              />
               <span className="bm-card-badge bm-mono">{p.badge}</span>
               {sold && <span className="bm-card-sold bm-mono">Sold</span>}
             </figure>
@@ -89,17 +114,28 @@ function ProductPage() {
             </a>
           </div>
           <div className="bm-product-info">
-            <span className="bm-mono bm-card-meta">{game.name} · {p.code}</span>
-            <h1>{p.title}</h1>
-            <div className="bm-rating">
-              <strong>4.9</strong>
-              <i aria-hidden="true">★★★★★</i>
-              <span>Based on 340+ completed orders</span>
+            <span className="bm-mono bm-card-meta">
+              {game.name} · {p.code}
+            </span>
+            <h1 className="text-2xl md:text-3xl font-bold text-foreground mt-2">{p.title}</h1>
+            <div
+              className="bm-price-wrap"
+              style={{ margin: "20px 0 24px", gap: "12px", alignItems: "baseline" }}
+            >
+              <strong className="text-3xl font-extrabold text-foreground tabular-nums">
+                {formatRupiah(Math.round(p.price * 0.8))}
+              </strong>
+              <span className="text-base text-muted-foreground line-through tabular-nums">
+                {formatRupiah(p.price)}
+              </span>
+              <span className="text-xs font-semibold text-sky-400 bg-sky-950/60 border border-sky-800/50 px-2 py-0.5 rounded">
+                20% OFF
+              </span>
             </div>
-            <p className="bm-price">{formatRupiah(p.price)}</p>
             <OrderButton p={p} />
             <p className="bm-mono bm-note">
-              <ShieldCheck aria-hidden="true" /> Deals happen only through the official BlueMask Discord. Never transfer to a personal bank account.
+              <ShieldCheck aria-hidden="true" /> Deals happen only through the official BlueMask
+              Discord. Never transfer to a personal bank account.
             </p>
             <div className="bm-included">
               <h2>What's included?</h2>
@@ -107,7 +143,10 @@ function ProductPage() {
                 {included.map((item) => (
                   <li key={item.title}>
                     <Check aria-hidden="true" />
-                    <span><strong>{item.title}</strong><p>{item.text}</p></span>
+                    <span>
+                      <strong>{item.title}</strong>
+                      <p>{item.text}</p>
+                    </span>
                   </li>
                 ))}
               </ul>
@@ -131,7 +170,8 @@ function ProductPage() {
           ))}
         </dl>
         <p className="bm-listing-note">
-          <BadgeCheck aria-hidden="true" /> Sample listing. Review the product details, screenshots, and transfer requirements in a Discord ticket before purchasing.
+          <BadgeCheck aria-hidden="true" /> Sample listing. Review the product details, screenshots,
+          and transfer requirements in a Discord ticket before purchasing.
         </p>
       </section>
 
@@ -142,7 +182,11 @@ function ProductPage() {
         </div>
         <ol className="bm-steps bm-steps--inv">
           {flow.map((s, i) => (
-            <li key={s.title}><span className="bm-step-no">{i + 1}</span><h3>{s.title}</h3><p>{s.text}</p></li>
+            <li key={s.title}>
+              <span className="bm-step-no">{i + 1}</span>
+              <h3>{s.title}</h3>
+              <p>{s.text}</p>
+            </li>
           ))}
         </ol>
       </section>
@@ -150,8 +194,12 @@ function ProductPage() {
       {more.length > 0 && (
         <section className="bm-section">
           <div className="bm-section-head">
-            <span className="bm-mono">(03) Similar products</span>
-            <h2>More {game.name} accounts.</h2>
+            <div>
+              <span className="text-xs font-semibold tracking-wider text-sky-400 uppercase">
+                Similar Listings
+              </span>
+              <h2 className="text-2xl font-bold mt-1">More {game.name} accounts</h2>
+            </div>
           </div>
           <ProductGrid items={more} />
         </section>
