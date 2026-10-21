@@ -1,0 +1,3 @@
+- [x] Import BlueMask storefront pages, shared sections, catalog, and original artwork.
+- [x] Run tests and verify storefront routes, artwork, and mobile navigation in the preview.
+- [ ] Replace demo account inventory/top-up prices and generic Discord destination when the real business details are available.
