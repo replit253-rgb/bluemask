@@ -1,5 +1,5 @@
 import { findGame, type GameSlug } from "@/lib/catalog";
-import { formatRupiah } from "@/lib/products";
+import { formatCurrency } from "@/lib/products";
 
 export type TopUpPackage = {
   code: string;
@@ -19,7 +19,7 @@ export const topUpPackages: TopUpPackage[] = [
     game: "whiteout-survival",
     name: "Frost Star Pack S1",
     detail: "Daily / mini pack",
-    price: 16_000,
+    price: 1,
     category: "Frost Star Pack",
   },
   {
@@ -27,7 +27,7 @@ export const topUpPackages: TopUpPackage[] = [
     game: "whiteout-survival",
     name: "Frost Star Pack S2",
     detail: "Event pack & gems",
-    price: 79_000,
+    price: 5,
     category: "Frost Star Pack",
   },
   {
@@ -35,7 +35,7 @@ export const topUpPackages: TopUpPackage[] = [
     game: "whiteout-survival",
     name: "Frost Star Pack Deluxe",
     detail: "Biggest pack",
-    price: 1_520_000,
+    price: 100,
     popular: true,
     category: "Frost Star Pack",
   },
@@ -46,7 +46,7 @@ export const topUpPackages: TopUpPackage[] = [
     game: "whiteout-survival",
     name: "Pack $0.99",
     detail: "Daily / mini pack",
-    price: 16_000,
+    price: 1,
     category: "Standard Packs",
   },
   {
@@ -54,7 +54,7 @@ export const topUpPackages: TopUpPackage[] = [
     game: "whiteout-survival",
     name: "Pack $4.99",
     detail: "Event pack & gems",
-    price: 79_000,
+    price: 5,
     category: "Standard Packs",
   },
   {
@@ -62,7 +62,7 @@ export const topUpPackages: TopUpPackage[] = [
     game: "whiteout-survival",
     name: "Pack $9.99",
     detail: "Event pack & gems",
-    price: 155_000,
+    price: 10,
     popular: true,
     category: "Standard Packs",
   },
@@ -73,7 +73,7 @@ export const topUpPackages: TopUpPackage[] = [
     game: "kingshot",
     name: "Pack ID $0.99",
     detail: "Mini starter pack",
-    price: 16_000,
+    price: 1,
     category: "Pack ID Top Up",
   },
   {
@@ -81,7 +81,7 @@ export const topUpPackages: TopUpPackage[] = [
     game: "kingshot",
     name: "Pack ID $4.99",
     detail: "Standard pack ID",
-    price: 79_000,
+    price: 5,
     category: "Pack ID Top Up",
   },
   {
@@ -89,7 +89,7 @@ export const topUpPackages: TopUpPackage[] = [
     game: "kingshot",
     name: "Pack ID $9.99",
     detail: "Popular event pack ID",
-    price: 155_000,
+    price: 10,
     popular: true,
     category: "Pack ID Top Up",
   },
@@ -100,7 +100,7 @@ export const topUpPackages: TopUpPackage[] = [
     game: "kingshot",
     name: "Kingdom Star Pack S1",
     detail: "Exclusive kingdom star boost",
-    price: 155_000,
+    price: 10,
     category: "Kingdom Star Pack",
     popular: true,
   },
@@ -109,7 +109,7 @@ export const topUpPackages: TopUpPackage[] = [
     game: "kingshot",
     name: "Kingdom Star Pack S2",
     detail: "Advanced kingdom star bundle",
-    price: 309_000,
+    price: 20,
     category: "Kingdom Star Pack",
   },
   {
@@ -117,7 +117,7 @@ export const topUpPackages: TopUpPackage[] = [
     game: "kingshot",
     name: "Kingdom Star Pack Deluxe",
     detail: "Max tier kingdom star perks",
-    price: 765_000,
+    price: 50,
     category: "Kingdom Star Pack",
   },
 ];
@@ -140,5 +140,5 @@ export const topUpForGame = (game: string) => {
 /** Message copied to the clipboard before opening Discord. */
 export const topUpMessage = (p: TopUpPackage) => {
   const gameName = findGame(p.game)?.name ?? p.game;
-  return `Hi BlueMask, I'd like to top up ${gameName} [${p.category || "Top-Up"}] ${p.name} (${formatRupiah(p.price)}). Player ID: `;
+  return `Hi BlueMask, I'd like to top up ${gameName} [${p.category || "Top-Up"}] ${p.name} (${formatCurrency(p.price)}). Player ID: `;
 };

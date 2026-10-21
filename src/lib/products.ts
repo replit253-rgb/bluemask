@@ -22,7 +22,7 @@ export const products: Product[] = [
     game: "whiteout-survival",
     title: "FC 5 · 92M Power · 6 Mythic Heroes",
     badge: "FC 5",
-    price: 4_500_000,
+    price: 300,
     status: "tersedia",
     stats: [
       { label: "Furnace", value: "FC 5" },
@@ -41,7 +41,7 @@ export const products: Product[] = [
     game: "whiteout-survival",
     title: "FC 3 · 58M Power · Clean Farm Account",
     badge: "FC 3",
-    price: 2_150_000,
+    price: 140,
     status: "tersedia",
     stats: [
       { label: "Furnace", value: "FC 3" },
@@ -60,7 +60,7 @@ export const products: Product[] = [
     game: "kingshot",
     title: "TC 30 · 74M Power · 4 Gen 3 Heroes",
     badge: "TC 30",
-    price: 3_200_000,
+    price: 200,
     status: "tersedia",
     stats: [
       { label: "Town Center", value: "30" },
@@ -75,7 +75,7 @@ export const products: Product[] = [
     game: "kingshot",
     title: "TC 25 · 41M Power · Strong Starter",
     badge: "TC 25",
-    price: 1_250_000,
+    price: 80,
     status: "terjual",
     stats: [
       { label: "Town Center", value: "25" },
@@ -90,7 +90,7 @@ export const products: Product[] = [
     game: "rise-of-kingdoms",
     title: "103M · VIP 18 · 48 Legendary Gear",
     badge: "VIP 17–18",
-    price: 29_000_000,
+    price: 1900,
     status: "tersedia",
     stats: [
       { label: "Power", value: "103M" },
@@ -105,7 +105,7 @@ export const products: Product[] = [
     game: "rise-of-kingdoms",
     title: "105M · VIP 19 · 45 Maxed Legendaries",
     badge: "VIP 19 / SVIP",
-    price: 25_500_000,
+    price: 1600,
     status: "tersedia",
     stats: [
       { label: "Power", value: "105M" },
@@ -120,7 +120,7 @@ export const products: Product[] = [
     game: "call-of-dragons",
     title: "SH 25 · 88M Power · 3 Behemoth",
     badge: "SH 25",
-    price: 5_800_000,
+    price: 380,
     status: "tersedia",
     stats: [
       { label: "Stronghold", value: "25" },
@@ -139,7 +139,7 @@ export const products: Product[] = [
     game: "call-of-dragons",
     title: "SH 22 · 47M Power · Full Hero Roster",
     badge: "SH 22",
-    price: 2_400_000,
+    price: 160,
     status: "tersedia",
     stats: [
       { label: "Stronghold", value: "22" },
@@ -182,16 +182,16 @@ export const productsForGame = (game: string) => {
   return list.filter((p) => p.game === game);
 };
 
-export const formatRupiah = (n: number) =>
-  new Intl.NumberFormat("id-ID", {
+export const formatCurrency = (n: number) =>
+  new Intl.NumberFormat("en-US", {
     style: "currency",
-    currency: "IDR",
+    currency: "USD",
     maximumFractionDigits: 0,
   }).format(n);
 
 /** Message copied to the clipboard before opening Discord. */
 export const orderMessage = (p: Product) =>
-  `Hi BlueMask, I'd like to order account ${p.code} — ${p.title} (${formatRupiah(p.price)}).`;
+  `Hi BlueMask, I'd like to order account ${p.code} — ${p.title} (${formatCurrency(p.price)}).`;
 
 export const stats = [
   { value: "4.9", label: "Buyer rating" },

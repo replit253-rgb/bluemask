@@ -42,7 +42,9 @@ import {
   initDatabase,
 } from "@/lib/db";
 import { getStoreSettings, saveStoreSettings } from "@/lib/admin-store";
-import { formatRupiah, type Product } from "@/lib/products";
+import { formatCurrency, type Product } from "@/lib/products";
+// ... (I need to find where to replace all instances)
+
 import {
   findGame,
   games,
@@ -80,7 +82,7 @@ export function AdminDashboardPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [topups, setTopups] = useState<TopUpPackage[]>([]);
   const [servicesList, setServicesList] = useState<Service[]>(defaultServices);
-  const [settings, setSettings] = useState({ discordLink: "", whatsapp: "" });
+  const [settings, setSettings] = useState({ discordLink: "" });
 
   // Filters & Search
   const [accountSearch, setAccountSearch] = useState("");
@@ -140,7 +142,7 @@ export function AdminDashboardPage() {
     name: "",
     tagline: "",
     intro: "",
-    fee: "5% min Rp 25.000",
+    fee: "5% min $2",
     image: "",
     checklist: ["Player ID", "Account credentials agreement", "Confirmation screenshot"],
     steps: [
@@ -659,7 +661,7 @@ export function AdminDashboardPage() {
       name: newService.name.trim(),
       tagline: newService.tagline?.trim() || "Safe gaming services.",
       intro: newService.intro?.trim() || "Protected with verified escrow and fast handover.",
-      fee: newService.fee?.trim() || "5% min Rp 25.000",
+      fee: newService.fee?.trim() || "5% min $2",
       image: newService.image || undefined,
       checklist: newService.checklist || ["Player ID", "Deal confirmation"],
       steps: newService.steps || [
@@ -681,7 +683,7 @@ export function AdminDashboardPage() {
       name: "",
       tagline: "",
       intro: "",
-      fee: "5% min Rp 25.000",
+      fee: "5% min $2",
       image: "",
       checklist: ["Player ID", "Deal details"],
       steps: [{ title: "Contact", text: "Open a ticket on Discord." }],
@@ -1040,7 +1042,7 @@ export function AdminDashboardPage() {
                                 {game?.name || p.game}
                               </td>
                               <td className="p-3.5 text-xs font-semibold tabular-nums text-foreground whitespace-nowrap">
-                                {formatRupiah(Math.round(p.price * 0.8))}
+                                {formatCurrency(Math.round(p.price * 0.8))}
                               </td>
                               <td className="p-3.5 whitespace-nowrap">
                                 <span
@@ -1219,7 +1221,7 @@ export function AdminDashboardPage() {
 
                       <div>
                         <label className="text-[11px] font-semibold text-muted-foreground uppercase block mb-1.5">
-                          Original Price (IDR) *
+                          Original Price (USD) *
                         </label>
                         <input
                           type="number"
@@ -1232,7 +1234,7 @@ export function AdminDashboardPage() {
                         />
                         <span className="text-[11px] text-sky-400 mt-1 block">
                           Discounted (20% off):{" "}
-                          {formatRupiah(Math.round((Number(newProduct.price) || 0) * 0.8))}
+                          {formatCurrency(Math.round((Number(newProduct.price) || 0) * 0.8))}
                         </span>
                       </div>
                     </div>
@@ -1585,7 +1587,7 @@ export function AdminDashboardPage() {
 
                       <div>
                         <label className="text-[11px] font-semibold text-muted-foreground uppercase block mb-1.5">
-                          Original Price (IDR)
+                          Original Price (USD)
                         </label>
                         <input
                           type="number"
@@ -1601,7 +1603,7 @@ export function AdminDashboardPage() {
                         />
                         <span className="text-[11px] text-sky-400 mt-1 block">
                           Discounted (20% off):{" "}
-                          {formatRupiah(Math.round(editingProduct.price * 0.8))}
+                          {formatCurrency(Math.round(editingProduct.price * 0.8))}
                         </span>
                       </div>
 
@@ -1942,10 +1944,10 @@ export function AdminDashboardPage() {
                             <td className="p-3.5 whitespace-nowrap">
                               <div className="text-xs">
                                 <strong className="text-foreground font-semibold tabular-nums">
-                                  {formatRupiah(Math.round(p.price * 0.8))}
+                                  {formatCurrency(Math.round(p.price * 0.8))}
                                 </strong>
                                 <span className="line-through text-muted-foreground ml-1.5 text-[11px] tabular-nums">
-                                  {formatRupiah(p.price)}
+                                  {formatCurrency(p.price)}
                                 </span>
                               </div>
                             </td>
@@ -2143,7 +2145,7 @@ export function AdminDashboardPage() {
 
                       <div>
                         <label className="text-[11px] font-semibold text-muted-foreground uppercase block mb-1.5">
-                          Price (IDR) *
+                          Price (USD) *
                         </label>
                         <input
                           type="number"
@@ -2301,7 +2303,7 @@ export function AdminDashboardPage() {
 
                       <div>
                         <label className="text-[11px] font-semibold text-muted-foreground uppercase block mb-1.5">
-                          Price (IDR)
+                          Price (USD)
                         </label>
                         <input
                           type="number"
@@ -2451,7 +2453,7 @@ export function AdminDashboardPage() {
                               {game?.name || t.game}
                             </td>
                             <td className="p-3.5 text-xs font-semibold tabular-nums text-foreground whitespace-nowrap">
-                              {formatRupiah(t.price)}
+                              {formatCurrency(t.price)}
                             </td>
                             <td className="p-3.5 whitespace-nowrap">
                               {t.popular && (
@@ -2597,7 +2599,7 @@ export function AdminDashboardPage() {
                           type="text"
                           value={newService.fee}
                           onChange={(e) => setNewService({ ...newService, fee: e.target.value })}
-                          placeholder="5% min. Rp 25.000"
+                          placeholder="5% min. $2"
                           className="w-full bg-secondary/30 border border-border rounded-lg px-3 py-2 text-xs"
                         />
                       </div>

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { ArrowUpRight, Check } from "lucide-react";
 import { discordLink } from "@/lib/catalog";
-import { formatRupiah } from "@/lib/products";
+import { formatCurrency } from "@/lib/products";
 import { topUpMessage, type TopUpPackage } from "@/lib/topup";
 import { getTopUpsFromDB } from "@/lib/db";
 import { Pagination } from "./Pagination";
@@ -38,7 +38,7 @@ function TopUpCard({ p }: { p: TopUpPackage }) {
       <h3>{p.name}</h3>
       <p>{p.detail}</p>
       <div className="bm-topup-foot">
-        <strong>{formatRupiah(p.price)}</strong>
+        <strong>{formatCurrency(p.price)}</strong>
         <span className="bm-mono">
           {copied ? (
             <>

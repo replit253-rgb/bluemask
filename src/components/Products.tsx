@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { ArrowUpRight, Check } from "lucide-react";
 import { discordLink, findGame } from "@/lib/catalog";
-import { formatRupiah, orderMessage, type Product } from "@/lib/products";
+import { formatCurrency, orderMessage, type Product } from "@/lib/products";
 import { Pagination } from "./Pagination";
 
 export function ProductCard({ p }: { p: Product }) {
@@ -42,10 +42,10 @@ export function ProductCard({ p }: { p: Product }) {
         </h3>
         <div className="flex items-baseline gap-2.5 mt-3">
           <strong className="text-xl font-bold tabular-nums text-foreground">
-            {formatRupiah(discountedPrice)}
+            {formatCurrency(discountedPrice)}
           </strong>
           <span className="text-sm text-muted-foreground line-through tabular-nums">
-            {formatRupiah(p.price)}
+            {formatCurrency(p.price)}
           </span>
         </div>
       </div>

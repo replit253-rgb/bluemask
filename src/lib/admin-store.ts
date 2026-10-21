@@ -39,17 +39,17 @@ export function saveTopUps(items: TopUpPackage[]) {
 }
 
 export function getStoreSettings() {
-  if (typeof window === "undefined") return { discordLink: defaultDiscord, whatsapp: defaultWa };
+  if (typeof window === "undefined") return { discordLink: defaultDiscord };
   try {
     const raw = localStorage.getItem(SETTINGS_KEY);
     if (raw) return JSON.parse(raw);
   } catch (err) {
     console.warn("Failed to load store settings", err);
   }
-  return { discordLink: defaultDiscord, whatsapp: defaultWa };
+  return { discordLink: defaultDiscord };
 }
 
-export function saveStoreSettings(settings: { discordLink: string; whatsapp: string }) {
+export function saveStoreSettings(settings: { discordLink: string }) {
   if (typeof window === "undefined") return;
   localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
 }

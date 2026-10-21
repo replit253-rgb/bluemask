@@ -96,6 +96,10 @@ function openDatabase(): Promise<IDBDatabase> {
       if (!db.objectStoreNames.contains("media")) {
         db.createObjectStore("media", { keyPath: "id" });
       }
+
+      if (!db.objectStoreNames.contains("faqs")) {
+        db.createObjectStore("faqs", { keyPath: "id" });
+      }
     };
 
     request.onsuccess = () => resolve(request.result);
@@ -491,3 +495,50 @@ export async function uploadMultipleImages(files: FileList | File[]): Promise<st
   }
   return results;
 }
+
+// --- FAQ Repository ---
+export interface FAQ {
+  id: string;
+  question: string;
+  answer: string;
+}
+
+export async function getFaqsFromDB(): Promise<FAQ[]> {
+  if (typeof window === "undefined" || !window.indexedDB) return [];
+
+  try {
+    const db = await openDatabase();
+    return new Promise((resolve) => {
+      const tx = db.transaction("faqs", "readonly");
+      const store = tx.objectStore("faqs");
+      const req = store.getAll();
+      req.onsuccess = () => resolve(req.result || []);
+      req.onerror = () => resolve([]);
+    });
+  } catch {
+    return [];
+  }
+}
+
+export async function saveFaqToDB(faq: FAQ): Promise<void> {
+  if (typeof window === "undefined" || !window.indexedDB) return;
+  try {
+    const db = await openDatabase();
+    const tx = db.transaction("faqs", "readwrite");
+    tx.objectStore("faqs").put(faq);
+  } catch (err) {
+    console.warn("Save FAQ DB error:", err);
+  }
+}
+
+export async function deleteFaqFromDB(id: string): Promise<void> {
+  if (typeof window === "undefined" || !window.indexedDB) return;
+  try {
+    const db = await openDatabase();
+    const tx = db.transaction("faqs", "readwrite");
+    tx.objectStore("faqs").delete(id);
+  } catch (err) {
+    console.warn("Delete FAQ DB error:", err);
+  }
+}
+

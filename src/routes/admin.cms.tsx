@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SiteFooter, SiteHeader } from "@/components/SiteChrome";
-import { getPageFromDB, savePageToDB, uploadImageFile, type PageContent } from "@/lib/db";
+import { getPageFromDB, savePageToDB, uploadImageFile, getFaqsFromDB, saveFaqToDB, deleteFaqFromDB, type PageContent, type FAQ } from "@/lib/db";
 
 export const Route = createFileRoute("/admin/cms")({
   head: () => ({
@@ -46,6 +46,9 @@ function AdminCMSPage() {
   const [previewDevice, setPreviewDevice] = useState<"desktop" | "tablet" | "mobile">("desktop");
   const [isUploading, setIsUploading] = useState(false);
   const [savedNotice, setSavedNotice] = useState(false);
+  const [faqs, setFaqs] = useState<FAQ[]>([]);
+
+  const loadFaqs = () => getFaqsFromDB().then(setFaqs);
 
   useEffect(() => {
     if (typeof window !== "undefined" && localStorage.getItem("bm_is_admin") !== "true") {
@@ -56,6 +59,7 @@ function AdminCMSPage() {
     getPageFromDB(activeSlug).then((data) => {
       setPageData(data);
     });
+    loadFaqs();
   }, [activeSlug, navigate]);
 
   const handleDeviceImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -141,6 +145,7 @@ function AdminCMSPage() {
             { id: "home", label: "Home Page (/)" },
             { id: "accounts", label: "Accounts Catalog (/accounts)" },
             { id: "contact", label: "Support & Contact (/contact)" },
+            { id: "faq", label: "FAQ Management" },
           ].map((tab) => (
             <button
               key={tab.id}
@@ -156,440 +161,71 @@ function AdminCMSPage() {
           ))}
         </div>
 
-        {/* Split Grid: Editor (Left) & Live Preview (Right) */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(420px, 1fr))",
-            gap: "32px",
-            alignItems: "start",
-          }}
-        >
-          {/* Left: Content Editor */}
-          <div
-            style={{
-              background: "var(--bm-surface)",
-              border: "1px solid var(--bm-rule)",
-              borderRadius: "12px",
-              padding: "28px",
-            }}
-          >
-            <h2 style={{ fontSize: "20px", marginBottom: "20px" }}>Page Configuration</h2>
-
-            <form onSubmit={handleSavePage} style={{ display: "grid", gap: "20px" }}>
-              <div>
-                <label
-                  style={{
-                    display: "block",
-                    fontSize: "11px",
-                    fontWeight: 600,
-                    color: "var(--bm-ink-soft)",
-                    marginBottom: "6px",
-                  }}
-                >
-                  HERO HEADLINE TITLE
-                </label>
-                <input
-                  type="text"
-                  value={pageData.heroTitle}
-                  onChange={(e) => setPageData({ ...pageData, heroTitle: e.target.value })}
-                  style={{
-                    width: "100%",
-                    background: "var(--bm-paper)",
-                    border: "1px solid var(--bm-rule)",
-                    borderRadius: "6px",
-                    padding: "12px",
-                    color: "var(--bm-text)",
-                    fontSize: "15px",
-                  }}
-                />
-              </div>
-
-              <div>
-                <label
-                  style={{
-                    display: "block",
-                    fontSize: "11px",
-                    fontWeight: 600,
-                    color: "var(--bm-ink-soft)",
-                    marginBottom: "6px",
-                  }}
-                >
-                  HERO SUBTITLE / LEAD TEXT
-                </label>
-                <textarea
-                  rows={3}
-                  value={pageData.heroSubtitle}
-                  onChange={(e) => setPageData({ ...pageData, heroSubtitle: e.target.value })}
-                  style={{
-                    width: "100%",
-                    background: "var(--bm-paper)",
-                    border: "1px solid var(--bm-rule)",
-                    borderRadius: "6px",
-                    padding: "12px",
-                    color: "var(--bm-text)",
-                    fontSize: "14px",
-                    resize: "vertical",
-                  }}
-                />
-              </div>
-
-              {/* Upload image from device */}
-              <div>
-                <label
-                  style={{
-                    display: "block",
-                    fontSize: "11px",
-                    fontWeight: 600,
-                    color: "var(--bm-ink-soft)",
-                    marginBottom: "8px",
-                  }}
-                >
-                  HERO BACKGROUND IMAGE (FROM DEVICE)
-                </label>
-
-                <div style={{ display: "flex", gap: "16px", alignItems: "center" }}>
-                  <img
-                    src={pageData.heroImage}
-                    alt="Hero Preview"
-                    style={{
-                      width: "90px",
-                      height: "65px",
-                      objectFit: "cover",
-                      borderRadius: "6px",
-                      border: "1px solid var(--bm-rule)",
-                    }}
-                  />
-
-                  <div style={{ flex: 1 }}>
-                    <input
-                      type="file"
-                      ref={fileInputRef}
-                      accept="image/*"
-                      onChange={handleDeviceImageUpload}
-                      style={{ display: "none" }}
-                    />
-                    <Button
-                      type="button"
-                      onClick={() => fileInputRef.current?.click()}
-                      disabled={isUploading}
-                      variant="outline"
-                      className="bm-btn bm-btn-outline w-full justify-center"
-                    >
-                      <Upload className="w-4 h-4 mr-1.5" />
-                      {isUploading ? "Uploading..." : "Upload Image from Device"}
-                    </Button>
-                    <span
-                      style={{
-                        display: "block",
-                        fontSize: "11px",
-                        color: "var(--bm-ink-soft)",
-                        marginTop: "6px",
-                      }}
-                    >
-                      Upload PNG, JPG, or WebP. Saved to relational store.
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <label
-                  style={{
-                    display: "block",
-                    fontSize: "11px",
-                    fontWeight: 600,
-                    color: "var(--bm-ink-soft)",
-                    marginBottom: "6px",
-                  }}
-                >
-                  ANNOUNCEMENT BANNER
-                </label>
-                <input
-                  type="text"
-                  value={pageData.announcement || ""}
-                  onChange={(e) => setPageData({ ...pageData, announcement: e.target.value })}
-                  placeholder="e.g. 20% Discount active across all accounts!"
-                  style={{
-                    width: "100%",
-                    background: "var(--bm-paper)",
-                    border: "1px solid var(--bm-rule)",
-                    borderRadius: "6px",
-                    padding: "12px",
-                    color: "var(--bm-text)",
-                    fontSize: "14px",
-                  }}
-                />
-              </div>
-
-              <Button type="submit" className="bm-btn bm-btn-primary mt-2">
-                <Save className="w-4 h-4 mr-1.5" /> Save to Database
-              </Button>
-            </form>
-          </div>
-
-          {/* Right: Live Preview Panel */}
-          <div>
+          {/* Split Grid: Editor (Left) & Live Preview (Right) */}
+          {activeSlug !== "faq" ? (
             <div
               style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                marginBottom: "12px",
-                flexWrap: "wrap",
-                gap: "10px",
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit, minmax(420px, 1fr))",
+                gap: "32px",
+                alignItems: "start",
               }}
             >
-              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                <Eye style={{ width: "18px", height: "18px", color: "var(--bm-glow)" }} />
-                <span style={{ fontWeight: 700, fontSize: "15px" }}>Interactive Live Preview</span>
-              </div>
-
-              {/* Device Viewport Selector */}
               <div
                 style={{
-                  display: "flex",
-                  gap: "6px",
                   background: "var(--bm-surface)",
-                  padding: "4px",
-                  borderRadius: "6px",
                   border: "1px solid var(--bm-rule)",
+                  borderRadius: "12px",
+                  padding: "28px",
                 }}
               >
-                <button
-                  type="button"
-                  onClick={() => setPreviewDevice("desktop")}
-                  style={{
-                    background: previewDevice === "desktop" ? "var(--bm-blue)" : "transparent",
-                    color: "var(--bm-text)",
-                    border: "none",
-                    borderRadius: "4px",
-                    padding: "6px 10px",
-                    cursor: "pointer",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "4px",
-                    fontSize: "12px",
-                  }}
-                >
-                  <Monitor style={{ width: "14px", height: "14px" }} /> Desktop
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setPreviewDevice("tablet")}
-                  style={{
-                    background: previewDevice === "tablet" ? "var(--bm-blue)" : "transparent",
-                    color: "var(--bm-text)",
-                    border: "none",
-                    borderRadius: "4px",
-                    padding: "6px 10px",
-                    cursor: "pointer",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "4px",
-                    fontSize: "12px",
-                  }}
-                >
-                  <Tablet style={{ width: "14px", height: "14px" }} /> Tablet
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setPreviewDevice("mobile")}
-                  style={{
-                    background: previewDevice === "mobile" ? "var(--bm-blue)" : "transparent",
-                    color: "var(--bm-text)",
-                    border: "none",
-                    borderRadius: "4px",
-                    padding: "6px 10px",
-                    cursor: "pointer",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "4px",
-                    fontSize: "12px",
-                  }}
-                >
-                  <Smartphone style={{ width: "14px", height: "14px" }} /> Mobile
-                </button>
-              </div>
-            </div>
-
-            {/* Container representing device viewport */}
-            <div
-              style={{
-                width: previewWidth,
-                maxWidth: "100%",
-                margin: "0 auto",
-                border: "2px solid var(--bm-glow)",
-                borderRadius: "12px",
-                overflow: "hidden",
-                background: "var(--bm-paper)",
-                boxShadow: "var(--bm-shadow)",
-                transition: "width 0.3s ease",
-              }}
-            >
-              {/* Simulated Browser Bar */}
-              <div
-                style={{
-                  background: "var(--bm-surface)",
-                  borderBottom: "1px solid var(--bm-rule)",
-                  padding: "10px 16px",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "8px",
-                  fontSize: "12px",
-                  color: "var(--bm-ink-soft)",
-                }}
-              >
-                <span
-                  style={{
-                    width: "10px",
-                    height: "10px",
-                    borderRadius: "50%",
-                    background: "#ef4444",
-                    display: "inline-block",
-                  }}
-                ></span>
-                <span
-                  style={{
-                    width: "10px",
-                    height: "10px",
-                    borderRadius: "50%",
-                    background: "#f59e0b",
-                    display: "inline-block",
-                  }}
-                ></span>
-                <span
-                  style={{
-                    width: "10px",
-                    height: "10px",
-                    borderRadius: "50%",
-                    background: "#10b981",
-                    display: "inline-block",
-                  }}
-                ></span>
-                <span style={{ marginLeft: "12px", opacity: 0.8 }}>
-                  https://bluemask.store/{activeSlug === "home" ? "" : activeSlug}
-                </span>
-              </div>
-
-              {/* Live Preview Render */}
-              <div
-                style={{
-                  minHeight: "480px",
-                  position: "relative",
-                  display: "flex",
-                  flexDirection: "column",
-                  justifyContent: "center",
-                  padding: "48px 32px",
-                  overflow: "hidden",
-                }}
-              >
-                <img
-                  src={pageData.heroImage}
-                  alt="Live Hero Preview"
-                  style={{
-                    position: "absolute",
-                    inset: 0,
-                    width: "100%",
-                    height: "100%",
-                    objectFit: "cover",
-                    zIndex: 0,
-                  }}
-                />
-                <div
-                  style={{
-                    position: "absolute",
-                    inset: 0,
-                    background:
-                      "linear-gradient(90deg, oklch(0.134 0.041 253 / 94%) 0%, oklch(0.134 0.041 253 / 70%) 60%, oklch(0.134 0.041 253 / 30%) 100%)",
-                    zIndex: 1,
-                  }}
-                />
-
-                <div style={{ position: "relative", zIndex: 2, maxWidth: "540px" }}>
-                  {pageData.announcement && (
-                    <span
-                      style={{
-                        display: "inline-block",
-                        background: "var(--bm-blue)",
-                        color: "var(--bm-on-accent)",
-                        padding: "4px 10px",
-                        borderRadius: "4px",
-                        fontSize: "11px",
-                        fontWeight: 700,
-                        marginBottom: "16px",
-                        textTransform: "uppercase",
-                      }}
-                    >
-                      {pageData.announcement}
-                    </span>
-                  )}
-                  <h2
-                    style={{
-                      fontSize: previewDevice === "mobile" ? "28px" : "42px",
-                      fontWeight: 800,
-                      lineHeight: 1.15,
-                      marginBottom: "16px",
-                      color: "var(--bm-text)",
-                    }}
-                  >
-                    {pageData.heroTitle}
-                  </h2>
-                  <p
-                    style={{
-                      fontSize: previewDevice === "mobile" ? "14px" : "16px",
-                      color: "var(--bm-paper-soft)",
-                      lineHeight: 1.6,
-                      marginBottom: "24px",
-                    }}
-                  >
-                    {pageData.heroSubtitle}
-                  </p>
-                  <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
-                    <div
-                      className="bm-pill"
-                      style={{
-                        pointerEvents: "none",
-                        margin: 0,
-                        padding: "10px 18px",
-                        fontSize: "12px",
-                      }}
-                    >
-                      Explore accounts →
-                    </div>
-                    <div
-                      className="bm-pill bm-pill--hero"
-                      style={{
-                        pointerEvents: "none",
-                        margin: 0,
-                        padding: "10px 18px",
-                        fontSize: "12px",
-                      }}
-                    >
-                      Our services →
-                    </div>
+                <h2 style={{ fontSize: "20px", marginBottom: "20px" }}>Page Configuration</h2>
+                <form onSubmit={handleSavePage} style={{ display: "grid", gap: "20px" }}>
+                  <div>
+                    <label style={{ display: "block", fontSize: "11px", fontWeight: 600, color: "var(--bm-ink-soft)", marginBottom: "6px" }}>HERO HEADLINE TITLE</label>
+                    <input type="text" value={pageData.heroTitle} onChange={(e) => setPageData({ ...pageData, heroTitle: e.target.value })} style={{ width: "100%", background: "var(--bm-paper)", border: "1px solid var(--bm-rule)", borderRadius: "6px", padding: "12px", color: "var(--bm-text)", fontSize: "15px" }} />
                   </div>
-                </div>
-              </div>
-
-              {/* Bottom Preview note */}
-              <div
-                style={{
-                  padding: "12px 16px",
-                  background: "var(--bm-surface)",
-                  borderTop: "1px solid var(--bm-rule)",
-                  display: "flex",
-                  justifyContent: "space-between",
-                  fontSize: "11px",
-                  color: "var(--bm-ink-soft)",
-                }}
-              >
-                <span>Real-time preview rendered dynamically from database.</span>
-                <span>Viewport: {previewDevice.toUpperCase()}</span>
+                  <div>
+                    <label style={{ display: "block", fontSize: "11px", fontWeight: 600, color: "var(--bm-ink-soft)", marginBottom: "6px" }}>HERO SUBTITLE / LEAD TEXT</label>
+                    <textarea rows={3} value={pageData.heroSubtitle} onChange={(e) => setPageData({ ...pageData, heroSubtitle: e.target.value })} style={{ width: "100%", background: "var(--bm-paper)", border: "1px solid var(--bm-rule)", borderRadius: "6px", padding: "12px", color: "var(--bm-text)", fontSize: "14px", resize: "vertical" }} />
+                  </div>
+                  <Button type="submit" className="bm-btn bm-btn-primary mt-2">
+                    <Save className="w-4 h-4 mr-1.5" /> Save to Database
+                  </Button>
+                </form>
               </div>
             </div>
-          </div>
-        </div>
+          ) : (
+            <div style={{ background: "var(--bm-surface)", border: "1px solid var(--bm-rule)", borderRadius: "12px", padding: "28px" }}>
+              <h2 style={{ fontSize: "20px", marginBottom: "20px" }}>FAQ Management</h2>
+              <div style={{ display: "grid", gap: "10px" }}>
+                {faqs.map((f) => (
+                  <div key={f.id} style={{ display: "flex", gap: "10px", alignItems: "center", padding: "10px", background: "var(--bm-paper)", borderRadius: "6px" }}>
+                    <div style={{ flex: 1 }}>
+                      <strong>{f.question}</strong>
+                      <p style={{ fontSize: "12px" }}>{f.answer}</p>
+                    </div>
+                    <Button onClick={() => deleteFaqFromDB(f.id).then(loadFaqs)} variant="ghost" size="sm" className="text-rose-400">Delete</Button>
+                  </div>
+                ))}
+                <form onSubmit={async (e) => {
+                  e.preventDefault();
+                  const formData = new FormData(e.currentTarget);
+                  await saveFaqToDB({
+                    id: Date.now().toString(),
+                    question: formData.get("q") as string,
+                    answer: formData.get("a") as string,
+                  });
+                  e.currentTarget.reset();
+                  loadFaqs();
+                }} style={{ display: "grid", gap: "10px", marginTop: "10px" }}>
+                  <input name="q" placeholder="Question" required style={{ padding: "8px", borderRadius: "4px" }} />
+                  <textarea name="a" placeholder="Answer" required style={{ padding: "8px", borderRadius: "4px" }} />
+                  <Button type="submit">Add FAQ</Button>
+                </form>
+              </div>
+            </div>
+          )}
       </section>
 
       <SiteFooter />

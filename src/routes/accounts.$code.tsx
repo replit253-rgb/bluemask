@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { ArrowUpRight, BadgeCheck, Check, ShieldCheck } from "lucide-react";
 import { discordLink, findGame } from "@/lib/catalog";
-import { findProduct, formatRupiah, productsForGame, type Product } from "@/lib/products";
+import { findProduct, formatCurrency, productsForGame, type Product } from "@/lib/products";
 import { getProductsFromDB } from "@/lib/db";
 import { SiteFooter, SiteHeader } from "@/components/SiteChrome";
 import { OrderButton, ProductGrid } from "@/components/Products";
@@ -17,7 +17,7 @@ export const Route = createFileRoute("/accounts/$code")({
     const g = p && findGame(p.game);
     const title = p && g ? `${g.name} ${p.title} — BlueMask` : `Account ${code} — BlueMask`;
     const desc = p
-      ? `${p.title}. ${formatRupiah(p.price)}. Order safely through the BlueMask Discord.`
+      ? `${p.title}. ${formatCurrency(p.price)}. Order safely through the BlueMask Discord.`
       : "Gaming account details and verified middleman transfer at BlueMask.";
     return {
       meta: [
@@ -207,10 +207,10 @@ function ProductPage() {
               style={{ margin: "20px 0 24px", gap: "12px", alignItems: "baseline" }}
             >
               <strong className="text-3xl font-extrabold text-foreground tabular-nums">
-                {formatRupiah(Math.round(p.price * 0.8))}
+                {formatCurrency(Math.round(p.price * 0.8))}
               </strong>
               <span className="text-base text-muted-foreground line-through tabular-nums">
-                {formatRupiah(p.price)}
+                {formatCurrency(p.price)}
               </span>
               <span className="text-xs font-semibold text-sky-400 bg-sky-950/60 border border-sky-800/50 px-2 py-0.5 rounded">
                 20% OFF
