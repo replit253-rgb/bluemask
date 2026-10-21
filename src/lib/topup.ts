@@ -9,89 +9,116 @@ export type TopUpPackage = {
   price: number;
   popular?: boolean;
   image?: string;
+  category?: string; // e.g. "Pack ID Top Up", "Kingdom Star Pack", "Standard Packs", "Weekly & Monthly Cards"
 };
 
-// Sample top up price list. Replace with real prices.
 export const topUpPackages: TopUpPackage[] = [
+  // Whiteout Survival - Frost Star Packs
   {
-    code: "WOS-TU-1",
+    code: "WOS-FSP-1",
+    game: "whiteout-survival",
+    name: "Frost Star Pack S1",
+    detail: "Daily / mini pack",
+    price: 16_000,
+    category: "Frost Star Pack",
+  },
+  {
+    code: "WOS-FSP-2",
+    game: "whiteout-survival",
+    name: "Frost Star Pack S2",
+    detail: "Event pack & gems",
+    price: 79_000,
+    category: "Frost Star Pack",
+  },
+  {
+    code: "WOS-FSP-3",
+    game: "whiteout-survival",
+    name: "Frost Star Pack Deluxe",
+    detail: "Biggest pack",
+    price: 1_520_000,
+    popular: true,
+    category: "Frost Star Pack",
+  },
+
+  // Whiteout Survival - Standard Packs
+  {
+    code: "WOS-STD-1",
     game: "whiteout-survival",
     name: "Pack $0.99",
     detail: "Daily / mini pack",
     price: 16_000,
+    category: "Standard Packs",
   },
   {
-    code: "WOS-TU-5",
+    code: "WOS-STD-5",
     game: "whiteout-survival",
     name: "Pack $4.99",
     detail: "Event pack & gems",
     price: 79_000,
+    category: "Standard Packs",
   },
   {
-    code: "WOS-TU-10",
+    code: "WOS-STD-10",
     game: "whiteout-survival",
     name: "Pack $9.99",
     detail: "Event pack & gems",
     price: 155_000,
     popular: true,
+    category: "Standard Packs",
+  },
+
+  // Kingshot - Pack ID Top Up
+  {
+    code: "KS-PID-1",
+    game: "kingshot",
+    name: "Pack ID $0.99",
+    detail: "Mini starter pack",
+    price: 16_000,
+    category: "Pack ID Top Up",
   },
   {
-    code: "WOS-TU-20",
-    game: "whiteout-survival",
-    name: "Pack $19.99",
-    detail: "Event pack & gems",
+    code: "KS-PID-5",
+    game: "kingshot",
+    name: "Pack ID $4.99",
+    detail: "Standard pack ID",
+    price: 79_000,
+    category: "Pack ID Top Up",
+  },
+  {
+    code: "KS-PID-10",
+    game: "kingshot",
+    name: "Pack ID $9.99",
+    detail: "Popular event pack ID",
+    price: 155_000,
+    popular: true,
+    category: "Pack ID Top Up",
+  },
+
+  // Kingshot - Kingdom Star Pack
+  {
+    code: "KS-KSP-1",
+    game: "kingshot",
+    name: "Kingdom Star Pack S1",
+    detail: "Exclusive kingdom star boost",
+    price: 155_000,
+    category: "Kingdom Star Pack",
+    popular: true,
+  },
+  {
+    code: "KS-KSP-2",
+    game: "kingshot",
+    name: "Kingdom Star Pack S2",
+    detail: "Advanced kingdom star bundle",
     price: 309_000,
+    category: "Kingdom Star Pack",
   },
   {
-    code: "WOS-TU-50",
-    game: "whiteout-survival",
-    name: "Pack $49.99",
-    detail: "Large pack",
+    code: "KS-KSP-3",
+    game: "kingshot",
+    name: "Kingdom Star Pack Deluxe",
+    detail: "Max tier kingdom star perks",
     price: 765_000,
-  },
-  {
-    code: "WOS-TU-100",
-    game: "whiteout-survival",
-    name: "Pack $99.99",
-    detail: "Biggest pack",
-    price: 1_520_000,
-  },
-  {
-    code: "KS-TU-1",
-    game: "kingshot",
-    name: "Pack $0.99",
-    detail: "Daily / mini pack",
-    price: 16_000,
-  },
-  {
-    code: "KS-TU-5",
-    game: "kingshot",
-    name: "Pack $4.99",
-    detail: "Event pack & gems",
-    price: 79_000,
-  },
-  {
-    code: "KS-TU-10",
-    game: "kingshot",
-    name: "Pack $9.99",
-    detail: "Event pack & gems",
-    price: 155_000,
-    popular: true,
-  },
-  {
-    code: "KS-TU-20",
-    game: "kingshot",
-    name: "Pack $19.99",
-    detail: "Event pack & gems",
-    price: 309_000,
-  },
-  { code: "KS-TU-50", game: "kingshot", name: "Pack $49.99", detail: "Large pack", price: 765_000 },
-  {
-    code: "KS-TU-100",
-    game: "kingshot",
-    name: "Pack $99.99",
-    detail: "Biggest pack",
-    price: 1_520_000,
+    category: "Kingdom Star Pack",
   },
 ];
 
@@ -113,5 +140,5 @@ export const topUpForGame = (game: string) => {
 /** Message copied to the clipboard before opening Discord. */
 export const topUpMessage = (p: TopUpPackage) => {
   const gameName = findGame(p.game)?.name ?? p.game;
-  return `Hi BlueMask, I'd like to top up ${gameName} ${p.name} (${formatRupiah(p.price)}). Player ID: `;
+  return `Hi BlueMask, I'd like to top up ${gameName} [${p.category || "Top-Up"}] ${p.name} (${formatRupiah(p.price)}). Player ID: `;
 };

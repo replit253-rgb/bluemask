@@ -172,12 +172,14 @@ export const isServiceAvailable = (serviceSlug: string, gameSlug: string) => {
 };
 
 export type Testimonial = {
+  id?: string;
   service: Service["slug"];
   game: Game["slug"] | "all";
   name: string;
   role: "Buyer" | "Seller";
   quote: string;
   date: string;
+  image?: string;
 };
 
 export const testimonials: Testimonial[] = [

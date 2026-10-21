@@ -4,7 +4,9 @@ import {
   discordLink as defaultDiscord,
   whatsappNumber as defaultWa,
   services as initialServices,
+  testimonials as initialTestimonials,
   type Service,
+  type Testimonial,
 } from "./catalog";
 
 export interface PageContent {
@@ -353,6 +355,57 @@ export async function deleteServiceFromDB(slug: string): Promise<void> {
   if (typeof window !== "undefined") {
     try {
       localStorage.setItem("bm_admin_services_v1", JSON.stringify(memoryServices));
+    } catch (err) {
+      console.warn("Storage sync error:", err);
+    }
+  }
+}
+
+// --- Testimonials Repository ---
+let memoryTestimonials: Testimonial[] = initialTestimonials.map((t, idx) => ({
+  ...t,
+  id: t.id || `testi_${idx}_${Math.random().toString(36).slice(2, 6)}`,
+}));
+
+export async function getTestimonialsFromDB(): Promise<Testimonial[]> {
+  if (typeof window === "undefined") return memoryTestimonials;
+  try {
+    const raw = localStorage.getItem("bm_admin_testimonials_v1");
+    if (raw) {
+      memoryTestimonials = JSON.parse(raw);
+    }
+  } catch (err) {
+    console.warn("Storage sync error for testimonials:", err);
+  }
+  return memoryTestimonials;
+}
+
+export async function saveTestimonialToDB(testimonial: Testimonial): Promise<void> {
+  if (!testimonial.id) {
+    testimonial.id = `testi_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+  }
+  const existingIdx = memoryTestimonials.findIndex((t) => t.id === testimonial.id);
+  if (existingIdx >= 0) {
+    memoryTestimonials[existingIdx] = testimonial;
+  } else {
+    memoryTestimonials = [testimonial, ...memoryTestimonials];
+  }
+
+  if (typeof window !== "undefined") {
+    try {
+      localStorage.setItem("bm_admin_testimonials_v1", JSON.stringify(memoryTestimonials));
+    } catch (err) {
+      console.warn("Storage sync error:", err);
+    }
+  }
+}
+
+export async function deleteTestimonialFromDB(id: string): Promise<void> {
+  memoryTestimonials = memoryTestimonials.filter((t) => t.id !== id);
+
+  if (typeof window !== "undefined") {
+    try {
+      localStorage.setItem("bm_admin_testimonials_v1", JSON.stringify(memoryTestimonials));
     } catch (err) {
       console.warn("Storage sync error:", err);
     }

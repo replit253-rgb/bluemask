@@ -4,6 +4,7 @@ import { discordLink } from "@/lib/catalog";
 import { formatRupiah } from "@/lib/products";
 import { topUpMessage, type TopUpPackage } from "@/lib/topup";
 import { getTopUpsFromDB } from "@/lib/db";
+import { Pagination } from "./Pagination";
 
 function TopUpCard({ p }: { p: TopUpPackage }) {
   const [copied, setCopied] = useState(false);
@@ -31,7 +32,7 @@ function TopUpCard({ p }: { p: TopUpPackage }) {
       }}
     >
       <span className="bm-mono bm-topup-meta">
-        {p.code}
+        {p.code} {p.category ? `· ${p.category}` : ""}
         {p.popular && <em>Best seller</em>}
       </span>
       <h3>{p.name}</h3>
@@ -56,6 +57,9 @@ function TopUpCard({ p }: { p: TopUpPackage }) {
 
 export function TopUpGrid({ items }: { items: TopUpPackage[] }) {
   const [activeItems, setActiveItems] = useState<TopUpPackage[]>(items);
+  const [activeCategory, setActiveCategory] = useState<string>("all");
+  const [page, setPage] = useState(1);
+  const perPage = 8;
 
   useEffect(() => {
     getTopUpsFromDB().then((dbItems) => {
@@ -65,22 +69,74 @@ export function TopUpGrid({ items }: { items: TopUpPackage[] }) {
         if (filtered.length > 0) setActiveItems(filtered);
       } else if (dbItems.length > 0) {
         setActiveItems(dbItems);
+      } else {
+        setActiveItems(items);
       }
     });
   }, [items]);
 
+  // Extract unique categories for this game
+  const categories = Array.from(new Set(activeItems.map((i) => i.category || "General")));
+
+  const filteredByCategory =
+    activeCategory === "all"
+      ? activeItems
+      : activeItems.filter((i) => (i.category || "General") === activeCategory);
+
+  const total = filteredByCategory.length;
+  const paginatedItems = filteredByCategory.slice((page - 1) * perPage, page * perPage);
+
   if (activeItems.length === 0)
     return <p className="bm-lead">No packs for this game yet. Ask us on Discord.</p>;
+
   return (
-    <>
+    <div>
+      {/* Category Tabs if multiple categories exist */}
+      {categories.length > 1 && (
+        <div className="flex items-center gap-2 mb-8 p-1.5 bg-secondary/30 rounded-xl border border-border/50 overflow-x-auto">
+          <button
+            onClick={() => {
+              setActiveCategory("all");
+              setPage(1);
+            }}
+            className={`px-4 py-2.5 text-xs font-semibold rounded-lg transition-all whitespace-nowrap ${
+              activeCategory === "all"
+                ? "bg-primary text-primary-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            All Packages ({activeItems.length})
+          </button>
+          {categories.map((cat) => (
+            <button
+              key={cat}
+              onClick={() => {
+                setActiveCategory(cat);
+                setPage(1);
+              }}
+              className={`px-4 py-2.5 text-xs font-semibold rounded-lg transition-all whitespace-nowrap ${
+                activeCategory === cat
+                  ? "bg-primary text-primary-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {cat} ({activeItems.filter((i) => (i.category || "General") === cat).length})
+            </button>
+          ))}
+        </div>
+      )}
+
       <div className="bm-topups">
-        {activeItems.map((p) => (
+        {paginatedItems.map((p) => (
           <TopUpCard key={p.code} p={p} />
         ))}
       </div>
-      <p className="bm-mono bm-topup-note">
+
+      <Pagination total={total} perPage={perPage} page={page} onChange={setPage} />
+
+      <p className="bm-mono bm-topup-note mt-6">
         Sample prices only. Confirm the current price on Discord before ordering.
       </p>
-    </>
+    </div>
   );
 }
