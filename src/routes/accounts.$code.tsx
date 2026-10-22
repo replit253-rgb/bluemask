@@ -2,7 +2,13 @@ import { useEffect, useState } from "react";
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { ArrowUpRight, BadgeCheck, Check, ShieldCheck } from "lucide-react";
 import { discordLink, findGame } from "@/lib/catalog";
-import { findProduct, formatCurrency, productsForGame, type Product } from "@/lib/products";
+import {
+  findProduct,
+  formatCurrency,
+  getEffectivePrice,
+  productsForGame,
+  type Product,
+} from "@/lib/products";
 import { getProductsFromDB } from "@/lib/db";
 import { SiteFooter, SiteHeader } from "@/components/SiteChrome";
 import { OrderButton, ProductGrid } from "@/components/Products";
@@ -202,20 +208,30 @@ function ProductPage() {
               )}
             </div>
             <h1 className="text-2xl md:text-3xl font-bold text-foreground mt-2">{p.title}</h1>
-            <div
-              className="bm-price-wrap"
-              style={{ margin: "20px 0 24px", gap: "12px", alignItems: "baseline" }}
-            >
-              <strong className="text-3xl font-extrabold text-foreground tabular-nums">
-                {formatCurrency(Math.round(p.price * 0.8))}
-              </strong>
-              <span className="text-base text-muted-foreground line-through tabular-nums">
-                {formatCurrency(p.price)}
-              </span>
-              <span className="text-xs font-semibold text-sky-400 bg-sky-950/60 border border-sky-800/50 px-2 py-0.5 rounded">
-                20% OFF
-              </span>
-            </div>
+            {(() => {
+              const hasDiscount = p.hasDiscount && p.discountPercent && p.discountPercent > 0;
+              const effectivePrice = getEffectivePrice(p);
+              return (
+                <div
+                  className="bm-price-wrap"
+                  style={{ margin: "20px 0 24px", gap: "12px", alignItems: "baseline" }}
+                >
+                  <strong className="text-3xl font-extrabold text-foreground tabular-nums">
+                    {formatCurrency(effectivePrice)}
+                  </strong>
+                  {hasDiscount && (
+                    <>
+                      <span className="text-base text-muted-foreground line-through tabular-nums">
+                        {formatCurrency(p.price)}
+                      </span>
+                      <span className="text-xs font-semibold text-sky-400 bg-sky-950/60 border border-sky-800/50 px-2 py-0.5 rounded">
+                        {p.discountPercent}% OFF
+                      </span>
+                    </>
+                  )}
+                </div>
+              );
+            })()}
             <OrderButton p={p} />
             <p className="bm-mono bm-note">
               <ShieldCheck aria-hidden="true" /> Deals happen only through the official BlueMask

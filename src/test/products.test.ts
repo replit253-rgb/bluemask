@@ -9,6 +9,6 @@ describe("Discord order message", () => {
 
     const message = orderMessage(product);
     expect(message).toContain("BM-WOS-01");
-    expect(message).toMatch(/Rp\s?4\.500\.000/);
+    expect(message).toContain("$300");
   });
 });

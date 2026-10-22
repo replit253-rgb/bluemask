@@ -21,13 +21,13 @@ describe("top up service", () => {
     expect(topUpForGame("rise-of-kingdoms")).toHaveLength(0);
   });
 
-  it("top up message includes game, pack, and price", () => {
-    const pkg = topUpPackages.find((p) => p.code === "KS-TU-10");
+  it("top up message includes game, pack, and USD price", () => {
+    const pkg = topUpPackages.find((p) => p.code === "KS-PID-10");
     expect(pkg).toBeDefined();
     if (!pkg) return;
     const message = topUpMessage(pkg);
     expect(message).toContain("Kingshot");
-    expect(message).toContain("Pack $9.99");
-    expect(message).toMatch(/Rp\s?155\.000/);
+    expect(message).toContain("9.99 Pack ID Top Up");
+    expect(message).toContain("$10");
   });
 });

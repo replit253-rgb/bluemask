@@ -37,14 +37,25 @@ const helpTopics = [
 ];
 
 function ContactPage() {
-  const [activeSettings, setActiveSettings] = useState({ discordLink, whatsapp: whatsappNumber });
+  const [activeSettings, setActiveSettings] = useState({
+    discordLink: discordLink || "",
+    whatsapp: whatsappNumber || "",
+  });
 
   useEffect(() => {
     const s = getStoreSettings();
-    if (s) setActiveSettings(s);
+    if (s) {
+      setActiveSettings({
+        discordLink: s.discordLink || discordLink || "",
+        whatsapp: s.whatsapp || whatsappNumber || "",
+      });
+    }
   }, []);
 
-  const cleanWa = activeSettings.whatsapp.replace(/\D/g, "");
+  const rawWa = activeSettings.whatsapp || whatsappNumber || whatsappClean || "";
+  const cleanWa = rawWa.replace(/\D/g, "");
+  const rawDiscord = activeSettings.discordLink || discordLink || "";
+  const displayDiscord = rawDiscord.replace("https://", "");
 
   return (
     <main className="bm">
@@ -113,7 +124,7 @@ function ContactPage() {
                   Discord Server:
                 </strong>
                 <a
-                  href={activeSettings.discordLink}
+                  href={rawDiscord}
                   target="_blank"
                   rel="noreferrer"
                   style={{
@@ -125,10 +136,31 @@ function ContactPage() {
                   }}
                 >
                   <MessageSquare style={{ width: "16px", height: "16px" }} />
-                  {activeSettings.discordLink.replace("https://", "")}{" "}
-                  <ArrowUpRight style={{ width: "14px", height: "14px" }} />
+                  {displayDiscord} <ArrowUpRight style={{ width: "14px", height: "14px" }} />
                 </a>
               </li>
+              {rawWa && (
+                <li style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                  <strong style={{ minWidth: "140px", color: "var(--bm-ink-soft)" }}>
+                    WhatsApp:
+                  </strong>
+                  <a
+                    href={`https://wa.me/${cleanWa}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    style={{
+                      color: "var(--bm-glow)",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "6px",
+                      fontWeight: 600,
+                    }}
+                  >
+                    <Phone style={{ width: "16px", height: "16px" }} />
+                    {rawWa} <ArrowUpRight style={{ width: "14px", height: "14px" }} />
+                  </a>
+                </li>
+              )}
               <li style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                 <strong style={{ minWidth: "140px", color: "var(--bm-ink-soft)" }}>
                   Response Time:

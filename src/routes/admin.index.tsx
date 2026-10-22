@@ -21,6 +21,7 @@ import {
   Layers,
   RotateCcw,
   MessageSquare,
+  Eye,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SiteHeader } from "@/components/SiteChrome";
@@ -53,7 +54,8 @@ import {
   type Service,
   type Testimonial,
 } from "@/lib/catalog";
-import { type TopUpPackage } from "@/lib/topup";
+import { type TopUpPackage, normalizeCategory, GAME_TOPUP_CATEGORIES } from "@/lib/topup";
+import { TopUpProductDetailModal } from "@/components/TopUp";
 
 export const Route = createFileRoute("/admin/")({
   head: () => ({
@@ -82,7 +84,7 @@ export function AdminDashboardPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [topups, setTopups] = useState<TopUpPackage[]>([]);
   const [servicesList, setServicesList] = useState<Service[]>(defaultServices);
-  const [settings, setSettings] = useState({ discordLink: "" });
+  const [settings, setSettings] = useState({ discordLink: "", whatsapp: "" });
 
   // Filters & Search
   const [accountSearch, setAccountSearch] = useState("");
@@ -91,6 +93,7 @@ export function AdminDashboardPage() {
 
   const [topupSearch, setTopupSearch] = useState("");
   const [topupGameFilter, setTopupGameFilter] = useState<string>("all");
+  const [topupCategoryFilter, setTopupCategoryFilter] = useState<string>("all");
 
   // Account Modals State
   const [isAddingProduct, setIsAddingProduct] = useState(false);
@@ -102,7 +105,7 @@ export function AdminDashboardPage() {
     game: "whiteout-survival",
     title: "",
     badge: "Ready",
-    price: 1_500_000,
+    price: 100,
     status: "tersedia",
     server: "",
     description: "",
@@ -121,15 +124,25 @@ export function AdminDashboardPage() {
   const [isAddingTopUp, setIsAddingTopUp] = useState(false);
   const [editingTopUp, setEditingTopUp] = useState<TopUpPackage | null>(null);
   const [confirmDeleteTopUp, setConfirmDeleteTopUp] = useState<string | null>(null);
+  const [previewTopUp, setPreviewTopUp] = useState<TopUpPackage | null>(null);
 
   const [newTopUp, setNewTopUp] = useState<Partial<TopUpPackage>>({
     code: "",
     game: "whiteout-survival",
     name: "",
     detail: "Event pack & gems",
-    price: 50_000,
+    price: 10,
     popular: false,
     image: "",
+    category: "Pack ID Top Up",
+    description: "",
+    features: [
+      "Direct account top up via Player ID",
+      "No account password required",
+      "Instant Discord ticket delivery (5-15 mins)",
+    ],
+    instructions: "Provide your Player ID and State / Kingdom number in your Discord ticket.",
+    deliveryTime: "5 - 15 Minutes",
   });
 
   // Services / Middleware Modals State
@@ -441,7 +454,9 @@ export function AdminDashboardPage() {
       game: (newProduct.game as GameSlug) || "whiteout-survival",
       title: newProduct.title.trim(),
       badge: newProduct.badge?.trim() || "Ready",
-      price: Number(newProduct.price) || 500_000,
+      price: Number(newProduct.price) || 100,
+      hasDiscount: newProduct.hasDiscount ?? true,
+      discountPercent: Number(newProduct.discountPercent) || 20,
       status: (newProduct.status as Product["status"]) || "tersedia",
       image: newProduct.image || undefined,
       screenshots: newProduct.screenshots || [],
@@ -601,6 +616,52 @@ export function AdminDashboardPage() {
     }
   };
 
+  // Helper to add/remove features in edit/add topup
+  const addTopUpFeatureField = (isEdit: boolean) => {
+    if (isEdit) {
+      if (!editingTopUp) return;
+      setEditingTopUp({
+        ...editingTopUp,
+        features: [...(editingTopUp.features || []), "New package item/benefit"],
+      });
+    } else {
+      setNewTopUp((prev) => ({
+        ...prev,
+        features: [...(prev.features || []), "New package item/benefit"],
+      }));
+    }
+  };
+
+  const removeTopUpFeatureField = (isEdit: boolean, index: number) => {
+    if (isEdit) {
+      if (!editingTopUp) return;
+      setEditingTopUp({
+        ...editingTopUp,
+        features: (editingTopUp.features || []).filter((_, i) => i !== index),
+      });
+    } else {
+      setNewTopUp((prev) => ({
+        ...prev,
+        features: (prev.features || []).filter((_, i) => i !== index),
+      }));
+    }
+  };
+
+  const updateTopUpFeatureField = (isEdit: boolean, index: number, val: string) => {
+    if (isEdit) {
+      if (!editingTopUp) return;
+      const updated = [...(editingTopUp.features || [])];
+      updated[index] = val;
+      setEditingTopUp({ ...editingTopUp, features: updated });
+    } else {
+      setNewTopUp((prev) => {
+        const features = [...(prev.features || [])];
+        features[index] = val;
+        return { ...prev, features };
+      });
+    }
+  };
+
   // -------------------------------------------------------------
   // TOP-UP CRUD
   // -------------------------------------------------------------
@@ -608,14 +669,22 @@ export function AdminDashboardPage() {
     e.preventDefault();
     if (!newTopUp.code || !newTopUp.name) return;
 
+    const game = (newTopUp.game as GameSlug) || "whiteout-survival";
+    const defaultCat = game === "whiteout-survival" ? "Pack ID Top Up" : "Pack ID Top Up";
+
     const item: TopUpPackage = {
       code: newTopUp.code.trim().toUpperCase(),
-      game: (newTopUp.game as GameSlug) || "whiteout-survival",
+      game,
       name: newTopUp.name.trim(),
       detail: newTopUp.detail?.trim() || "Packs & Gems",
-      price: Number(newTopUp.price) || 50_000,
+      price: Number(newTopUp.price) || 10,
       popular: Boolean(newTopUp.popular),
       image: newTopUp.image || undefined,
+      category: newTopUp.category || defaultCat,
+      description: newTopUp.description?.trim() || undefined,
+      features: (newTopUp.features || []).filter((f) => f.trim().length > 0),
+      instructions: newTopUp.instructions?.trim() || undefined,
+      deliveryTime: newTopUp.deliveryTime?.trim() || "5 - 15 Minutes",
     };
 
     await saveTopUpToDB(item);
@@ -626,9 +695,18 @@ export function AdminDashboardPage() {
       game: "whiteout-survival",
       name: "",
       detail: "",
-      price: 50_000,
+      price: 10,
       popular: false,
       image: "",
+      category: "Pack ID Top Up",
+      description: "",
+      features: [
+        "Direct account top up via Player ID",
+        "No account password required",
+        "Instant Discord ticket delivery (5-15 mins)",
+      ],
+      instructions: "Provide your Player ID and State / Kingdom number in your Discord ticket.",
+      deliveryTime: "5 - 15 Minutes",
     });
     showNotification(`Top-up pack ${item.code} created and saved.`);
   };
@@ -636,10 +714,14 @@ export function AdminDashboardPage() {
   const handleUpdateTopUp = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingTopUp) return;
-    await saveTopUpToDB(editingTopUp);
-    setTopups(topups.map((t) => (t.code === editingTopUp.code ? editingTopUp : t)));
+    const sanitized: TopUpPackage = {
+      ...editingTopUp,
+      features: (editingTopUp.features || []).filter((f) => f.trim().length > 0),
+    };
+    await saveTopUpToDB(sanitized);
+    setTopups(topups.map((t) => (t.code === sanitized.code ? sanitized : t)));
     setEditingTopUp(null);
-    showNotification(`Top-up pack ${editingTopUp.code} updated in database.`);
+    showNotification(`Top-up pack ${sanitized.code} updated in database.`);
   };
 
   const executeDeleteTopUp = async (code: string) => {
@@ -738,14 +820,15 @@ export function AdminDashboardPage() {
     return matchSearch && matchGame && matchStatus;
   });
 
-  const filteredTopUps = topups.filter((t) => {
+  const filteredTopUps = topups.map(normalizeCategory).filter((t) => {
     const matchSearch =
       !topupSearch ||
       t.code.toLowerCase().includes(topupSearch.toLowerCase()) ||
       t.name.toLowerCase().includes(topupSearch.toLowerCase()) ||
       t.detail.toLowerCase().includes(topupSearch.toLowerCase());
     const matchGame = topupGameFilter === "all" || t.game === topupGameFilter;
-    return matchSearch && matchGame;
+    const matchCategory = topupCategoryFilter === "all" || t.category === topupCategoryFilter;
+    return matchSearch && matchGame && matchCategory;
   });
 
   const availableCount = products.filter((p) => p.status === "tersedia").length;
@@ -1219,23 +1302,72 @@ export function AdminDashboardPage() {
                         />
                       </div>
 
-                      <div>
-                        <label className="text-[11px] font-semibold text-muted-foreground uppercase block mb-1.5">
-                          Original Price (USD) *
-                        </label>
-                        <input
-                          type="number"
-                          value={newProduct.price}
-                          onChange={(e) =>
-                            setNewProduct({ ...newProduct, price: Number(e.target.value) })
-                          }
-                          required
-                          className="w-full bg-secondary/30 border border-border rounded-lg px-3 py-2 text-xs tabular-nums"
-                        />
-                        <span className="text-[11px] text-sky-400 mt-1 block">
-                          Discounted (20% off):{" "}
-                          {formatCurrency(Math.round((Number(newProduct.price) || 0) * 0.8))}
-                        </span>
+                      <div className="sm:col-span-2 grid grid-cols-1 sm:grid-cols-3 gap-3 p-3 rounded-xl border border-border/60 bg-secondary/10">
+                        <div>
+                          <label className="text-[11px] font-semibold text-muted-foreground uppercase block mb-1.5">
+                            Original Price (USD) *
+                          </label>
+                          <input
+                            type="number"
+                            value={newProduct.price}
+                            onChange={(e) =>
+                              setNewProduct({ ...newProduct, price: Number(e.target.value) })
+                            }
+                            required
+                            className="w-full bg-secondary/30 border border-border rounded-lg px-3 py-2 text-xs tabular-nums"
+                          />
+                        </div>
+
+                        <div className="flex flex-col justify-center">
+                          <div className="flex items-center gap-2 pt-1">
+                            <input
+                              type="checkbox"
+                              id="newHasDiscAdmin"
+                              checked={newProduct.hasDiscount ?? true}
+                              onChange={(e) =>
+                                setNewProduct({ ...newProduct, hasDiscount: e.target.checked })
+                              }
+                              className="w-4 h-4 rounded border-border"
+                            />
+                            <label
+                              htmlFor="newHasDiscAdmin"
+                              className="text-xs font-semibold text-foreground cursor-pointer"
+                            >
+                              Gunakan Diskon
+                            </label>
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className="text-[11px] font-semibold text-muted-foreground uppercase block mb-1.5">
+                            Diskon (%)
+                          </label>
+                          <input
+                            type="number"
+                            min="0"
+                            max="100"
+                            value={newProduct.discountPercent ?? 20}
+                            onChange={(e) =>
+                              setNewProduct({
+                                ...newProduct,
+                                discountPercent: Number(e.target.value),
+                              })
+                            }
+                            disabled={!(newProduct.hasDiscount ?? true)}
+                            className="w-full bg-secondary/30 border border-border rounded-lg px-3 py-2 text-xs tabular-nums disabled:opacity-50"
+                          />
+                          <span className="text-[10px] text-sky-400 mt-1 block">
+                            Jual:{" "}
+                            {formatCurrency(
+                              (newProduct.hasDiscount ?? true)
+                                ? Math.round(
+                                    (Number(newProduct.price) || 0) *
+                                      (1 - (Number(newProduct.discountPercent) || 20) / 100),
+                                  )
+                                : Number(newProduct.price) || 0,
+                            )}
+                          </span>
+                        </div>
                       </div>
                     </div>
 
@@ -1585,26 +1717,78 @@ export function AdminDashboardPage() {
                         />
                       </div>
 
-                      <div>
-                        <label className="text-[11px] font-semibold text-muted-foreground uppercase block mb-1.5">
-                          Original Price (USD)
-                        </label>
-                        <input
-                          type="number"
-                          value={editingProduct.price}
-                          onChange={(e) =>
-                            setEditingProduct({
-                              ...editingProduct,
-                              price: Number(e.target.value),
-                            })
-                          }
-                          required
-                          className="w-full bg-secondary/30 border border-border rounded-lg px-3 py-2 text-xs tabular-nums"
-                        />
-                        <span className="text-[11px] text-sky-400 mt-1 block">
-                          Discounted (20% off):{" "}
-                          {formatCurrency(Math.round(editingProduct.price * 0.8))}
-                        </span>
+                      <div className="sm:col-span-2 grid grid-cols-1 sm:grid-cols-3 gap-3 p-3 rounded-xl border border-border/60 bg-secondary/10">
+                        <div>
+                          <label className="text-[11px] font-semibold text-muted-foreground uppercase block mb-1.5">
+                            Original Price (USD)
+                          </label>
+                          <input
+                            type="number"
+                            value={editingProduct.price}
+                            onChange={(e) =>
+                              setEditingProduct({
+                                ...editingProduct,
+                                price: Number(e.target.value),
+                              })
+                            }
+                            required
+                            className="w-full bg-secondary/30 border border-border rounded-lg px-3 py-2 text-xs tabular-nums"
+                          />
+                        </div>
+
+                        <div className="flex flex-col justify-center">
+                          <div className="flex items-center gap-2 pt-1">
+                            <input
+                              type="checkbox"
+                              id="editHasDiscAdmin"
+                              checked={editingProduct.hasDiscount ?? true}
+                              onChange={(e) =>
+                                setEditingProduct({
+                                  ...editingProduct,
+                                  hasDiscount: e.target.checked,
+                                })
+                              }
+                              className="w-4 h-4 rounded border-border"
+                            />
+                            <label
+                              htmlFor="editHasDiscAdmin"
+                              className="text-xs font-semibold text-foreground cursor-pointer"
+                            >
+                              Gunakan Diskon
+                            </label>
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className="text-[11px] font-semibold text-muted-foreground uppercase block mb-1.5">
+                            Diskon (%)
+                          </label>
+                          <input
+                            type="number"
+                            min="0"
+                            max="100"
+                            value={editingProduct.discountPercent ?? 20}
+                            onChange={(e) =>
+                              setEditingProduct({
+                                ...editingProduct,
+                                discountPercent: Number(e.target.value),
+                              })
+                            }
+                            disabled={!(editingProduct.hasDiscount ?? true)}
+                            className="w-full bg-secondary/30 border border-border rounded-lg px-3 py-2 text-xs tabular-nums disabled:opacity-50"
+                          />
+                          <span className="text-[10px] text-sky-400 mt-1 block">
+                            Jual:{" "}
+                            {formatCurrency(
+                              (editingProduct.hasDiscount ?? true)
+                                ? Math.round(
+                                    editingProduct.price *
+                                      (1 - (editingProduct.discountPercent ?? 20) / 100),
+                                  )
+                                : editingProduct.price,
+                            )}
+                          </span>
+                        </div>
                       </div>
 
                       <div>
@@ -2079,6 +2263,17 @@ export function AdminDashboardPage() {
                     </option>
                   ))}
                 </select>
+
+                <select
+                  value={topupCategoryFilter}
+                  onChange={(e) => setTopupCategoryFilter(e.target.value)}
+                  className="bg-secondary/40 border border-border/50 rounded-lg px-3 py-1.5 text-xs text-foreground focus:outline-none"
+                >
+                  <option value="all">All Menus / Categories</option>
+                  <option value="Pack ID Top Up">Pack ID Top Up</option>
+                  <option value="Frost Star Pack">Frost Star Pack (Whiteout)</option>
+                  <option value="Kingdom Star Pack">Kingdom Star Pack (Kingshot)</option>
+                </select>
               </div>
 
               {/* ADD TOP-UP MODAL */}
@@ -2160,7 +2355,33 @@ export function AdminDashboardPage() {
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                      <div className="sm:col-span-2">
+                      <div>
+                        <label className="text-[11px] font-semibold text-muted-foreground uppercase block mb-1.5">
+                          Menu / Category *
+                        </label>
+                        <select
+                          value={newTopUp.category || "Pack ID Top Up"}
+                          onChange={(e) => setNewTopUp({ ...newTopUp, category: e.target.value })}
+                          className="w-full bg-secondary/30 border border-border rounded-lg px-3 py-2 text-xs font-semibold"
+                        >
+                          <option value="Pack ID Top Up">Pack ID Top Up</option>
+                          {newTopUp.game === "whiteout-survival" && (
+                            <option value="Frost Star Pack">Frost Star Pack</option>
+                          )}
+                          {newTopUp.game === "kingshot" && (
+                            <option value="Kingdom Star Pack">Kingdom Star Pack</option>
+                          )}
+                          {newTopUp.game !== "whiteout-survival" &&
+                            newTopUp.game !== "kingshot" && (
+                              <>
+                                <option value="Frost Star Pack">Frost Star Pack</option>
+                                <option value="Kingdom Star Pack">Kingdom Star Pack</option>
+                              </>
+                            )}
+                        </select>
+                      </div>
+
+                      <div>
                         <label className="text-[11px] font-semibold text-muted-foreground uppercase block mb-1.5">
                           Detail / Items Included
                         </label>
@@ -2226,6 +2447,103 @@ export function AdminDashboardPage() {
                           >
                             <Upload className="w-3.5 h-3.5 mr-1.5" /> Select Icon from Device
                           </Button>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Detailed Product Specs & Features */}
+                    <div className="p-4 rounded-xl border border-border/60 bg-secondary/10 space-y-4">
+                      <h4 className="text-xs font-bold text-foreground uppercase tracking-wider">
+                        Detail Produk & Poin Keunggulan (Product Detail)
+                      </h4>
+
+                      <div>
+                        <label className="text-[11px] font-semibold text-muted-foreground uppercase block mb-1.5">
+                          Deskripsi Lengkap Produk (Detailed Description)
+                        </label>
+                        <textarea
+                          rows={2}
+                          value={newTopUp.description || ""}
+                          onChange={(e) =>
+                            setNewTopUp({ ...newTopUp, description: e.target.value })
+                          }
+                          placeholder="Penjelasan detail paket, bonus gems, garansi, dsb..."
+                          className="w-full bg-secondary/30 border border-border rounded-lg p-2.5 text-xs leading-relaxed"
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                          <label className="text-[11px] font-semibold text-muted-foreground uppercase block mb-1.5">
+                            Estimasi Waktu Pengiriman (Delivery Time)
+                          </label>
+                          <input
+                            type="text"
+                            value={newTopUp.deliveryTime || ""}
+                            onChange={(e) =>
+                              setNewTopUp({ ...newTopUp, deliveryTime: e.target.value })
+                            }
+                            placeholder="5 - 15 Minutes"
+                            className="w-full bg-secondary/30 border border-border rounded-lg px-3 py-2 text-xs"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="text-[11px] font-semibold text-muted-foreground uppercase block mb-1.5">
+                            Petunjuk / Syarat Top Up (Order Instructions)
+                          </label>
+                          <input
+                            type="text"
+                            value={newTopUp.instructions || ""}
+                            onChange={(e) =>
+                              setNewTopUp({ ...newTopUp, instructions: e.target.value })
+                            }
+                            placeholder="Kirim Player ID & Server di tiket Discord"
+                            className="w-full bg-secondary/30 border border-border rounded-lg px-3 py-2 text-xs"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Dynamic Features List */}
+                      <div className="space-y-2 pt-1">
+                        <div className="flex justify-between items-center">
+                          <label className="text-[11px] font-semibold text-muted-foreground uppercase">
+                            Poin Detail Produk / Included Items (Bullet Points)
+                          </label>
+                          <Button
+                            type="button"
+                            onClick={() => addTopUpFeatureField(false)}
+                            variant="ghost"
+                            size="sm"
+                            className="text-xs text-sky-400 h-6"
+                          >
+                            + Tambah Poin
+                          </Button>
+                        </div>
+
+                        <div className="space-y-2">
+                          {(newTopUp.features || []).map((feat, idx) => (
+                            <div key={idx} className="flex items-center gap-2">
+                              <span className="text-sky-400 text-xs">•</span>
+                              <input
+                                type="text"
+                                value={feat}
+                                onChange={(e) =>
+                                  updateTopUpFeatureField(false, idx, e.target.value)
+                                }
+                                placeholder="e.g. 500 Frost Stars loaded directly"
+                                className="flex-1 bg-secondary/40 border border-border rounded px-2.5 py-1 text-xs"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => removeTopUpFeatureField(false, idx)}
+                                className="text-rose-400 hover:text-rose-300 px-1 text-xs"
+                                title="Remove item"
+                              >
+                                ×
+                              </button>
+                            </div>
+                          ))}
                         </div>
                       </div>
                     </div>
@@ -2338,18 +2656,48 @@ export function AdminDashboardPage() {
                       </div>
                     </div>
 
-                    <div>
-                      <label className="text-[11px] font-semibold text-muted-foreground uppercase block mb-1.5">
-                        Detail Description
-                      </label>
-                      <input
-                        type="text"
-                        value={editingTopUp.detail}
-                        onChange={(e) =>
-                          setEditingTopUp({ ...editingTopUp, detail: e.target.value })
-                        }
-                        className="w-full bg-secondary/30 border border-border rounded-lg px-3 py-2 text-xs"
-                      />
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="text-[11px] font-semibold text-muted-foreground uppercase block mb-1.5">
+                          Menu / Category *
+                        </label>
+                        <select
+                          value={editingTopUp.category || "Pack ID Top Up"}
+                          onChange={(e) =>
+                            setEditingTopUp({ ...editingTopUp, category: e.target.value })
+                          }
+                          className="w-full bg-secondary/30 border border-border rounded-lg px-3 py-2 text-xs font-semibold"
+                        >
+                          <option value="Pack ID Top Up">Pack ID Top Up</option>
+                          {editingTopUp.game === "whiteout-survival" && (
+                            <option value="Frost Star Pack">Frost Star Pack</option>
+                          )}
+                          {editingTopUp.game === "kingshot" && (
+                            <option value="Kingdom Star Pack">Kingdom Star Pack</option>
+                          )}
+                          {editingTopUp.game !== "whiteout-survival" &&
+                            editingTopUp.game !== "kingshot" && (
+                              <>
+                                <option value="Frost Star Pack">Frost Star Pack</option>
+                                <option value="Kingdom Star Pack">Kingdom Star Pack</option>
+                              </>
+                            )}
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="text-[11px] font-semibold text-muted-foreground uppercase block mb-1.5">
+                          Detail Description
+                        </label>
+                        <input
+                          type="text"
+                          value={editingTopUp.detail}
+                          onChange={(e) =>
+                            setEditingTopUp({ ...editingTopUp, detail: e.target.value })
+                          }
+                          className="w-full bg-secondary/30 border border-border rounded-lg px-3 py-2 text-xs"
+                        />
+                      </div>
                     </div>
 
                     {/* Device Image for Edit Top-Up */}
@@ -2391,6 +2739,101 @@ export function AdminDashboardPage() {
                       </div>
                     </div>
 
+                    {/* Detailed Product Specs & Features for Edit */}
+                    <div className="p-4 rounded-xl border border-border/60 bg-secondary/10 space-y-4">
+                      <h4 className="text-xs font-bold text-foreground uppercase tracking-wider">
+                        Detail Produk & Poin Keunggulan (Product Detail)
+                      </h4>
+
+                      <div>
+                        <label className="text-[11px] font-semibold text-muted-foreground uppercase block mb-1.5">
+                          Deskripsi Lengkap Produk (Detailed Description)
+                        </label>
+                        <textarea
+                          rows={2}
+                          value={editingTopUp.description || ""}
+                          onChange={(e) =>
+                            setEditingTopUp({ ...editingTopUp, description: e.target.value })
+                          }
+                          placeholder="Penjelasan detail paket, bonus gems, garansi, dsb..."
+                          className="w-full bg-secondary/30 border border-border rounded-lg p-2.5 text-xs leading-relaxed"
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                          <label className="text-[11px] font-semibold text-muted-foreground uppercase block mb-1.5">
+                            Estimasi Waktu Pengiriman (Delivery Time)
+                          </label>
+                          <input
+                            type="text"
+                            value={editingTopUp.deliveryTime || ""}
+                            onChange={(e) =>
+                              setEditingTopUp({ ...editingTopUp, deliveryTime: e.target.value })
+                            }
+                            placeholder="5 - 15 Minutes"
+                            className="w-full bg-secondary/30 border border-border rounded-lg px-3 py-2 text-xs"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="text-[11px] font-semibold text-muted-foreground uppercase block mb-1.5">
+                            Petunjuk / Syarat Top Up (Order Instructions)
+                          </label>
+                          <input
+                            type="text"
+                            value={editingTopUp.instructions || ""}
+                            onChange={(e) =>
+                              setEditingTopUp({ ...editingTopUp, instructions: e.target.value })
+                            }
+                            placeholder="Kirim Player ID & Server di tiket Discord"
+                            className="w-full bg-secondary/30 border border-border rounded-lg px-3 py-2 text-xs"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Dynamic Features List */}
+                      <div className="space-y-2 pt-1">
+                        <div className="flex justify-between items-center">
+                          <label className="text-[11px] font-semibold text-muted-foreground uppercase">
+                            Poin Detail Produk / Included Items (Bullet Points)
+                          </label>
+                          <Button
+                            type="button"
+                            onClick={() => addTopUpFeatureField(true)}
+                            variant="ghost"
+                            size="sm"
+                            className="text-xs text-sky-400 h-6"
+                          >
+                            + Tambah Poin
+                          </Button>
+                        </div>
+
+                        <div className="space-y-2">
+                          {(editingTopUp.features || []).map((feat, idx) => (
+                            <div key={idx} className="flex items-center gap-2">
+                              <span className="text-sky-400 text-xs">•</span>
+                              <input
+                                type="text"
+                                value={feat}
+                                onChange={(e) => updateTopUpFeatureField(true, idx, e.target.value)}
+                                placeholder="e.g. 500 Frost Stars loaded directly"
+                                className="flex-1 bg-secondary/40 border border-border rounded px-2.5 py-1 text-xs"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => removeTopUpFeatureField(true, idx)}
+                                className="text-rose-400 hover:text-rose-300 px-1 text-xs"
+                                title="Remove item"
+                              >
+                                ×
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
                     <div className="flex items-center gap-3 pt-3 border-t border-border/40">
                       <Button type="submit" className="bm-btn bm-btn-primary">
                         Save Changes
@@ -2416,6 +2859,7 @@ export function AdminDashboardPage() {
                       <tr>
                         <th className="p-3.5">Code & Pack</th>
                         <th className="p-3.5">Game</th>
+                        <th className="p-3.5">Menu / Category</th>
                         <th className="p-3.5">Price</th>
                         <th className="p-3.5">Popular</th>
                         <th className="p-3.5 text-right">Actions</th>
@@ -2452,6 +2896,19 @@ export function AdminDashboardPage() {
                             <td className="p-3.5 text-xs text-muted-foreground whitespace-nowrap">
                               {game?.name || t.game}
                             </td>
+                            <td className="p-3.5 whitespace-nowrap">
+                              <span
+                                className={`px-2.5 py-0.5 rounded-full text-[10px] font-semibold border ${
+                                  t.category === "Frost Star Pack"
+                                    ? "bg-cyan-950/70 text-cyan-300 border-cyan-500/30"
+                                    : t.category === "Kingdom Star Pack"
+                                      ? "bg-amber-950/70 text-amber-300 border-amber-500/30"
+                                      : "bg-blue-950/70 text-blue-300 border-blue-500/30"
+                                }`}
+                              >
+                                {t.category || "Pack ID Top Up"}
+                              </span>
+                            </td>
                             <td className="p-3.5 text-xs font-semibold tabular-nums text-foreground whitespace-nowrap">
                               {formatCurrency(t.price)}
                             </td>
@@ -2464,6 +2921,23 @@ export function AdminDashboardPage() {
                             </td>
                             <td className="p-3.5 text-right whitespace-nowrap">
                               <div className="flex items-center justify-end gap-1.5">
+                                <Button
+                                  onClick={() => setPreviewTopUp(t)}
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-8 px-2 text-xs text-sky-400 hover:text-sky-300 hover:bg-sky-950/40"
+                                >
+                                  <Eye className="w-3.5 h-3.5 mr-1" /> Detail
+                                </Button>
+                                <Link
+                                  to="/services/$service/$game/$code"
+                                  params={{ service: "top-up", game: t.game, code: t.code }}
+                                  target="_blank"
+                                  className="h-8 px-1.5 text-xs text-muted-foreground hover:text-sky-400 inline-flex items-center gap-1"
+                                  title="View live page"
+                                >
+                                  <ExternalLink className="w-3.5 h-3.5" />
+                                </Link>
                                 <Button
                                   onClick={() => setEditingTopUp(t)}
                                   variant="outline"
@@ -2511,6 +2985,14 @@ export function AdminDashboardPage() {
                   </table>
                 </div>
               </div>
+
+              {/* LIVE PRODUCT DETAIL MODAL PREVIEW FOR ADMIN */}
+              {previewTopUp && (
+                <TopUpProductDetailModal
+                  pack={previewTopUp}
+                  onClose={() => setPreviewTopUp(null)}
+                />
+              )}
             </div>
           )}
 
@@ -3376,6 +3858,19 @@ export function AdminDashboardPage() {
                     onChange={(e) => setSettings({ ...settings, discordLink: e.target.value })}
                     placeholder="https://discord.gg/WHRzebh8pz"
                     required
+                    className="w-full bg-secondary/40 border border-border rounded-lg p-2.5 text-xs"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs font-semibold text-muted-foreground uppercase block mb-1.5">
+                    Official WhatsApp Support Number
+                  </label>
+                  <input
+                    type="text"
+                    value={settings.whatsapp || ""}
+                    onChange={(e) => setSettings({ ...settings, whatsapp: e.target.value })}
+                    placeholder="+62 821-2780-6072"
                     className="w-full bg-secondary/40 border border-border rounded-lg p-2.5 text-xs"
                   />
                 </div>

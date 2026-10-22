@@ -2,14 +2,16 @@ import { useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { ArrowUpRight, Check } from "lucide-react";
 import { discordLink, findGame } from "@/lib/catalog";
-import { formatCurrency, orderMessage, type Product } from "@/lib/products";
+import { formatCurrency, getEffectivePrice, orderMessage, type Product } from "@/lib/products";
 import { Pagination } from "./Pagination";
 
 export function ProductCard({ p }: { p: Product }) {
   const game = findGame(p.game);
   if (!game) return null;
   const sold = p.status === "terjual";
-  const discountedPrice = Math.round(p.price * 0.8);
+  const hasDiscount = p.hasDiscount && p.discountPercent && p.discountPercent > 0;
+  const effectivePrice = getEffectivePrice(p);
+
   return (
     <Link
       to="/accounts/$code"
@@ -25,28 +27,35 @@ export function ProductCard({ p }: { p: Product }) {
           loading="lazy"
           className="w-full h-full object-cover transition-opacity duration-300 group-hover:opacity-90"
         />
+        {hasDiscount && !sold && (
+          <div className="absolute top-3 left-3 px-2.5 py-1 rounded-md bg-rose-600 text-white font-black text-xs uppercase tracking-wider shadow">
+            -{p.discountPercent}% OFF
+          </div>
+        )}
         {sold && (
           <div className="absolute inset-0 bg-background/80 flex items-center justify-center font-bold text-foreground uppercase tracking-wider text-xs">
             Sold Out
           </div>
         )}
       </div>
-      <div className="mt-4">
-        <div className="flex items-center gap-2 text-[11px] font-medium text-muted-foreground uppercase tracking-widest">
+      <div className="mt-3">
+        <div className="flex items-center gap-1.5 text-[10px] font-medium text-muted-foreground uppercase tracking-widest">
           <span>{game.name}</span>
           <span aria-hidden="true">/</span>
           <span>{p.badge}</span>
         </div>
-        <h3 className="font-bold text-lg text-foreground mt-1.5 leading-tight group-hover:text-primary transition-colors">
+        <h3 className="font-bold text-xs sm:text-sm text-foreground mt-1 leading-tight group-hover:text-primary transition-colors line-clamp-1">
           {p.title}
         </h3>
-        <div className="flex items-baseline gap-2.5 mt-3">
-          <strong className="text-xl font-bold tabular-nums text-foreground">
-            {formatCurrency(discountedPrice)}
+        <div className="flex items-baseline gap-2 mt-2">
+          <strong className="text-sm sm:text-base font-bold tabular-nums text-foreground">
+            {formatCurrency(effectivePrice)}
           </strong>
-          <span className="text-sm text-muted-foreground line-through tabular-nums">
-            {formatCurrency(p.price)}
-          </span>
+          {hasDiscount && (
+            <span className="text-xs text-muted-foreground line-through tabular-nums">
+              {formatCurrency(p.price)}
+            </span>
+          )}
         </div>
       </div>
     </Link>
@@ -66,7 +75,7 @@ export function ProductGrid({ items }: { items: Product[] }) {
 
   return (
     <>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
         {paginatedItems.map((p) => (
           <ProductCard key={p.code} p={p} />
         ))}

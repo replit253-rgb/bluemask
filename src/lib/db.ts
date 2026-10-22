@@ -1,5 +1,9 @@
 import { products as initialProducts, type Product } from "./products";
-import { topUpPackages as initialTopUpPackages, type TopUpPackage } from "./topup";
+import {
+  topUpPackages as initialTopUpPackages,
+  type TopUpPackage,
+  normalizeCategory,
+} from "./topup";
 import {
   discordLink as defaultDiscord,
   whatsappNumber as defaultWa,
@@ -268,7 +272,7 @@ export async function deleteProductFromDB(code: string): Promise<void> {
 
 // --- Top-Up Repository ---
 export async function getTopUpsFromDB(): Promise<TopUpPackage[]> {
-  if (typeof window === "undefined") return memoryTopUps;
+  if (typeof window === "undefined") return memoryTopUps.map(normalizeCategory);
 
   try {
     const db = await openDatabase();
@@ -278,16 +282,16 @@ export async function getTopUpsFromDB(): Promise<TopUpPackage[]> {
       const req = store.getAll();
       req.onsuccess = () => {
         if (req.result && req.result.length > 0) {
-          memoryTopUps = req.result;
-          resolve(req.result);
-        } else {
+          memoryTopUps = req.result.map(normalizeCategory);
           resolve(memoryTopUps);
+        } else {
+          resolve(memoryTopUps.map(normalizeCategory));
         }
       };
-      req.onerror = () => resolve(memoryTopUps);
+      req.onerror = () => resolve(memoryTopUps.map(normalizeCategory));
     });
   } catch {
-    return memoryTopUps;
+    return memoryTopUps.map(normalizeCategory);
   }
 }
 

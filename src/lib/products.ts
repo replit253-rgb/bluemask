@@ -13,6 +13,15 @@ export type Product = {
   server?: string;
   stats: { label: string; value: string }[];
   highlights: string[];
+  discountPercent?: number; // e.g. 20
+  hasDiscount?: boolean; // whether discount is enabled
+};
+
+export const getEffectivePrice = (p: Product) => {
+  if (p.hasDiscount && p.discountPercent && p.discountPercent > 0) {
+    return Math.round(p.price * (1 - p.discountPercent / 100));
+  }
+  return p.price;
 };
 
 // Sample account list. Replace with real stock.
@@ -23,6 +32,8 @@ export const products: Product[] = [
     title: "FC 5 · 92M Power · 6 Mythic Heroes",
     badge: "FC 5",
     price: 300,
+    hasDiscount: true,
+    discountPercent: 20,
     status: "tersedia",
     stats: [
       { label: "Furnace", value: "FC 5" },
@@ -42,6 +53,8 @@ export const products: Product[] = [
     title: "FC 3 · 58M Power · Clean Farm Account",
     badge: "FC 3",
     price: 140,
+    hasDiscount: true,
+    discountPercent: 20,
     status: "tersedia",
     stats: [
       { label: "Furnace", value: "FC 3" },
@@ -61,6 +74,8 @@ export const products: Product[] = [
     title: "TC 30 · 74M Power · 4 Gen 3 Heroes",
     badge: "TC 30",
     price: 200,
+    hasDiscount: true,
+    discountPercent: 20,
     status: "tersedia",
     stats: [
       { label: "Town Center", value: "30" },
@@ -76,6 +91,8 @@ export const products: Product[] = [
     title: "TC 25 · 41M Power · Strong Starter",
     badge: "TC 25",
     price: 80,
+    hasDiscount: true,
+    discountPercent: 20,
     status: "terjual",
     stats: [
       { label: "Town Center", value: "25" },
@@ -91,6 +108,8 @@ export const products: Product[] = [
     title: "103M · VIP 18 · 48 Legendary Gear",
     badge: "VIP 17–18",
     price: 1900,
+    hasDiscount: true,
+    discountPercent: 20,
     status: "tersedia",
     stats: [
       { label: "Power", value: "103M" },
@@ -106,6 +125,8 @@ export const products: Product[] = [
     title: "105M · VIP 19 · 45 Maxed Legendaries",
     badge: "VIP 19 / SVIP",
     price: 1600,
+    hasDiscount: true,
+    discountPercent: 20,
     status: "tersedia",
     stats: [
       { label: "Power", value: "105M" },
@@ -121,6 +142,8 @@ export const products: Product[] = [
     title: "SH 25 · 88M Power · 3 Behemoth",
     badge: "SH 25",
     price: 380,
+    hasDiscount: true,
+    discountPercent: 20,
     status: "tersedia",
     stats: [
       { label: "Stronghold", value: "25" },
@@ -140,6 +163,8 @@ export const products: Product[] = [
     title: "SH 22 · 47M Power · Full Hero Roster",
     badge: "SH 22",
     price: 160,
+    hasDiscount: true,
+    discountPercent: 20,
     status: "tersedia",
     stats: [
       { label: "Stronghold", value: "22" },

@@ -1,141 +1,505 @@
-import { useEffect, useState } from "react";
-import { ArrowUpRight, Check } from "lucide-react";
-import { discordLink } from "@/lib/catalog";
+import { useEffect, useState, useMemo } from "react";
+import { Link } from "@tanstack/react-router";
+import {
+  ArrowUpRight,
+  Check,
+  Package,
+  Sparkles,
+  Crown,
+  X,
+  Clock,
+  ShieldCheck,
+  Info,
+  Copy,
+} from "lucide-react";
+import { discordLink, findGame } from "@/lib/catalog";
 import { formatCurrency } from "@/lib/products";
-import { topUpMessage, type TopUpPackage } from "@/lib/topup";
+import {
+  topUpMessage,
+  type TopUpPackage,
+  GAME_TOPUP_CATEGORIES,
+  enrichTopUpDetails,
+} from "@/lib/topup";
 import { getTopUpsFromDB } from "@/lib/db";
 import { Pagination } from "./Pagination";
 
-function TopUpCard({ p }: { p: TopUpPackage }) {
+export function TopUpCard({
+  p,
+  onOpenDetail,
+}: {
+  p: TopUpPackage;
+  onOpenDetail?: (pack: TopUpPackage) => void;
+}) {
   const [copied, setCopied] = useState(false);
   const bgImg =
     p.image ||
     (p.popular
       ? "/src/assets/images/chest_treasure_gold_1792579173076.jpg"
-      : "/src/assets/images/chest_wooden_loot_1792579173425.jpg");
+      : "/src/assets/images/chest_magic_crystal_1792579173404.jpg");
+
   return (
-    <a
-      className={`bm-topup ${p.popular ? " bm-topup--pop" : ""}`}
-      href={discordLink}
-      target="_blank"
-      rel="noreferrer"
-      style={{
-        backgroundImage: `linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url(${bgImg})`,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-      }}
-      onClick={() => {
-        navigator.clipboard
-          ?.writeText(topUpMessage(p))
-          .then(() => setCopied(true))
-          .catch(() => {});
-      }}
+    <div
+      className={`group relative flex flex-col justify-between rounded-xl p-3 sm:p-4 transition-all duration-300 border text-foreground ${
+        p.popular
+          ? "bg-[#111c3d] border-blue-500/50 shadow-lg shadow-blue-950/40 hover:border-blue-400 hover:shadow-blue-500/20"
+          : "bg-[#0c152e] border-slate-800/80 hover:border-blue-500/40 hover:bg-[#101b3a]"
+      }`}
     >
-      <span className="bm-mono bm-topup-meta">
-        {p.code} {p.category ? `· ${p.category}` : ""}
-        {p.popular && <em>Best seller</em>}
-      </span>
-      <h3>{p.name}</h3>
-      <p>{p.detail}</p>
-      <div className="bm-topup-foot">
-        <strong>{formatCurrency(p.price)}</strong>
-        <span className="bm-mono">
+      {/* Popular Badge */}
+      {p.popular && (
+        <div className="absolute -top-2 right-2.5 px-2 py-0.5 rounded-full bg-gradient-to-r from-amber-500 to-amber-600 text-amber-950 text-[9px] font-extrabold uppercase tracking-wider shadow">
+          Best Seller
+        </div>
+      )}
+
+      {/* Center Image / Pack Visual */}
+      <Link
+        to="/services/$service/$game/$code"
+        params={{ service: "top-up", game: p.game, code: p.code }}
+        onClick={(e) => {
+          if (onOpenDetail) {
+            e.preventDefault();
+            onOpenDetail(p);
+          }
+        }}
+        className="flex flex-col items-center justify-center pt-1 pb-2 cursor-pointer w-full group/img"
+        title={`View ${p.name} details`}
+      >
+        <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center p-1 transition-transform duration-300 group-hover/img:scale-105">
+          <img
+            src={bgImg}
+            alt={p.name}
+            className="w-full h-full object-contain rounded-lg drop-shadow-[0_4px_12px_rgba(59,130,246,0.35)]"
+          />
+        </div>
+      </Link>
+
+      {/* Pack Info */}
+      <div className="text-center space-y-1 mb-2">
+        <Link
+          to="/services/$service/$game/$code"
+          params={{ service: "top-up", game: p.game, code: p.code }}
+          onClick={(e) => {
+            if (onOpenDetail) {
+              e.preventDefault();
+              onOpenDetail(p);
+            }
+          }}
+          className="font-bold text-xs sm:text-sm text-white tracking-tight line-clamp-1 hover:text-sky-300 transition-colors block w-full text-center cursor-pointer"
+        >
+          {p.name}
+        </Link>
+        <p className="text-[10px] sm:text-[11px] text-slate-400 line-clamp-2 min-h-[26px] leading-relaxed">
+          {p.detail}
+        </p>
+      </div>
+
+      {/* Quick Action row: View Detail link */}
+      <div className="text-center pb-2">
+        <Link
+          to="/services/$service/$game/$code"
+          params={{ service: "top-up", game: p.game, code: p.code }}
+          onClick={(e) => {
+            if (onOpenDetail) {
+              e.preventDefault();
+              onOpenDetail(p);
+            }
+          }}
+          className="text-[10px] sm:text-[11px] font-semibold text-sky-400 hover:text-sky-300 hover:underline inline-flex items-center gap-1 cursor-pointer"
+        >
+          <Info className="w-3 h-3" /> View Detail
+        </Link>
+      </div>
+
+      {/* Footer / Price & Order Button */}
+      <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between gap-2">
+        <div>
+          <span className="text-[9px] uppercase font-mono text-slate-400 block -mb-0.5">Price</span>
+          <strong className="text-sm sm:text-base font-black text-white tabular-nums tracking-tight">
+            {formatCurrency(p.price)}
+          </strong>
+        </div>
+
+        <a
+          href={discordLink}
+          target="_blank"
+          rel="noreferrer"
+          onClick={() => {
+            navigator.clipboard
+              ?.writeText(topUpMessage(p))
+              .then(() => {
+                setCopied(true);
+                setTimeout(() => setCopied(false), 2500);
+              })
+              .catch(() => {});
+          }}
+          className={`px-2.5 py-1 rounded-lg text-[11px] font-bold inline-flex items-center gap-1 transition-all ${
+            copied
+              ? "bg-emerald-500 text-white shadow-md shadow-emerald-500/30"
+              : "bg-blue-600 text-white hover:bg-blue-500 shadow-md shadow-blue-600/30 group-hover:translate-x-0.5"
+          }`}
+        >
           {copied ? (
             <>
-              Copied <Check aria-hidden="true" />
+              Copied <Check className="w-3 h-3" />
             </>
           ) : (
             <>
-              Order <ArrowUpRight aria-hidden="true" />
+              Order <ArrowUpRight className="w-3 h-3" />
             </>
           )}
-        </span>
+        </a>
       </div>
-    </a>
+    </div>
   );
 }
 
-export function TopUpGrid({ items }: { items: TopUpPackage[] }) {
-  const [activeItems, setActiveItems] = useState<TopUpPackage[]>(items);
-  const [activeCategory, setActiveCategory] = useState<string>("all");
+// Product Detail Modal Component
+export function TopUpProductDetailModal({
+  pack,
+  onClose,
+}: {
+  pack: TopUpPackage;
+  onClose: () => void;
+}) {
+  const [copied, setCopied] = useState(false);
+  const game = findGame(pack.game);
+  const bgImg =
+    pack.image ||
+    (pack.popular
+      ? "/src/assets/images/chest_treasure_gold_1792579173076.jpg"
+      : "/src/assets/images/chest_magic_crystal_1792579173404.jpg");
+
+  const handleOrder = () => {
+    navigator.clipboard
+      ?.writeText(topUpMessage(pack))
+      .then(() => {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 3000);
+      })
+      .catch(() => {});
+  };
+
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200"
+      onClick={onClose}
+    >
+      <div
+        className="relative w-full max-w-2xl bg-[#0c152e] border border-blue-500/40 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Modal Header */}
+        <div className="flex items-center justify-between p-4 sm:p-5 border-b border-slate-800/80 bg-[#101b3a]">
+          <div className="flex items-center gap-2.5">
+            <span className="px-2.5 py-1 rounded-md bg-blue-950 text-sky-400 font-mono text-xs font-bold border border-blue-500/30">
+              {pack.code}
+            </span>
+            <span className="text-xs font-semibold text-slate-300">
+              {game?.name || pack.game} · {pack.category || "Top-Up"}
+            </span>
+            {pack.popular && (
+              <span className="px-2 py-0.5 rounded-full bg-amber-500 text-amber-950 text-[10px] font-black uppercase tracking-wider">
+                Best Seller
+              </span>
+            )}
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Modal Content - Scrollable */}
+        <div className="overflow-y-auto p-5 sm:p-6 space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
+            {/* Left Column: Image & Quick Specs */}
+            <div className="md:col-span-5 flex flex-col items-center space-y-4">
+              <div className="w-full aspect-square max-w-[220px] rounded-xl bg-[#142144] border border-slate-700/60 p-4 flex items-center justify-center shadow-inner">
+                <img
+                  src={bgImg}
+                  alt={pack.name}
+                  className="w-full h-full object-contain drop-shadow-[0_8px_20px_rgba(59,130,246,0.35)]"
+                />
+              </div>
+
+              {/* Quick Spec Tags */}
+              <div className="w-full space-y-2">
+                <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#111c38] border border-slate-800 text-xs text-slate-300">
+                  <Clock className="w-4 h-4 text-sky-400 shrink-0" />
+                  <span>Delivery: </span>
+                  <strong className="text-white ml-auto">
+                    {pack.deliveryTime || "5 - 15 Minutes"}
+                  </strong>
+                </div>
+
+                <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#111c38] border border-slate-800 text-xs text-slate-300">
+                  <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
+                  <span>Security: </span>
+                  <strong className="text-emerald-300 ml-auto">Player ID Only</strong>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Column: Title, Price, Description, Features, Instructions */}
+            <div className="md:col-span-7 space-y-4">
+              <div>
+                <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight">
+                  {pack.name}
+                </h2>
+                <p className="text-xs text-slate-400 mt-1">{pack.detail}</p>
+              </div>
+
+              {/* Price Banner */}
+              <div className="p-3.5 rounded-xl bg-[#131f42] border border-blue-500/30 flex items-center justify-between">
+                <div>
+                  <span className="text-[10px] uppercase font-mono text-slate-400 block">
+                    Fixed Price (USD)
+                  </span>
+                  <span className="text-2xl font-black text-white tabular-nums">
+                    {formatCurrency(pack.price)}
+                  </span>
+                </div>
+                <span className="px-2.5 py-1 rounded text-xs font-semibold bg-emerald-950 text-emerald-400 border border-emerald-500/30">
+                  Verified In Stock
+                </span>
+              </div>
+
+              {/* Detailed Description */}
+              <div>
+                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">
+                  Product Description
+                </h4>
+                <p className="text-xs sm:text-sm text-slate-300 leading-relaxed bg-[#0e1935] p-3 rounded-lg border border-slate-800">
+                  {pack.description ||
+                    `Official top up for ${game?.name || pack.game}. Fast transfer to your in-game player ID with 100% receipt assurance and zero risk to your account.`}
+                </p>
+              </div>
+
+              {/* Included Items / Features */}
+              {pack.features && pack.features.length > 0 && (
+                <div>
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
+                    Package Benefits & Included Items
+                  </h4>
+                  <ul className="space-y-1.5">
+                    {pack.features.map((f, i) => (
+                      <li
+                        key={i}
+                        className="flex items-start gap-2 text-xs text-slate-300 leading-relaxed"
+                      >
+                        <Check className="w-4 h-4 text-sky-400 shrink-0 mt-0.5" />
+                        <span>{f}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* Instructions */}
+              {pack.instructions && (
+                <div className="p-3 rounded-lg bg-secondary/20 border border-slate-800 text-xs text-slate-300 space-y-1">
+                  <strong className="text-sky-300 block font-semibold">How to Order:</strong>
+                  <p className="text-slate-400 leading-relaxed">{pack.instructions}</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Modal Footer CTA */}
+        <div className="p-4 sm:p-5 border-t border-slate-800/80 bg-[#101b3a] flex flex-wrap items-center justify-between gap-3">
+          <div className="text-xs text-slate-400">
+            Clicking Order copies your player ticket message to clipboard.
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={handleOrder}
+              className="px-3 py-2 rounded-lg bg-secondary text-slate-200 hover:text-white text-xs font-semibold border border-slate-700 flex items-center gap-1.5 cursor-pointer"
+            >
+              {copied ? (
+                <>
+                  <Check className="w-4 h-4 text-emerald-400" /> Copied!
+                </>
+              ) : (
+                <>
+                  <Copy className="w-4 h-4" /> Copy Order Info
+                </>
+              )}
+            </button>
+
+            <a
+              href={discordLink}
+              target="_blank"
+              rel="noreferrer"
+              onClick={handleOrder}
+              className="px-5 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs shadow-lg shadow-blue-600/30 flex items-center gap-1.5 cursor-pointer"
+            >
+              Order on Discord <ArrowUpRight className="w-4 h-4" />
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function TopUpGrid({ items, gameSlug }: { items: TopUpPackage[]; gameSlug?: string }) {
+  const [activeItems, setActiveItems] = useState<TopUpPackage[]>(items.map(enrichTopUpDetails));
+
+  const detectedGame = gameSlug || items[0]?.game || "whiteout-survival";
+
+  // Pre-configured menus for the game
+  const defaultCategories = useMemo(
+    () =>
+      GAME_TOPUP_CATEGORIES[detectedGame] || [
+        "Pack ID Top Up",
+        detectedGame === "whiteout-survival" ? "Frost Star Pack" : "Kingdom Star Pack",
+      ],
+    [detectedGame],
+  );
+
+  const [activeCategory, setActiveCategory] = useState<string>(defaultCategories[0]);
   const [page, setPage] = useState(1);
-  const perPage = 8;
+  const perPage = 12;
 
   useEffect(() => {
     getTopUpsFromDB().then((dbItems) => {
-      if (items.length > 0 && items[0]?.game) {
-        const game = items[0].game;
-        const filtered = dbItems.filter((t) => t.game === game);
-        if (filtered.length > 0) setActiveItems(filtered);
-      } else if (dbItems.length > 0) {
-        setActiveItems(dbItems);
+      const enriched = dbItems.map(enrichTopUpDetails);
+      if (detectedGame) {
+        const filtered = enriched.filter((t) => t.game === detectedGame);
+        if (filtered.length > 0) {
+          setActiveItems(filtered);
+        } else {
+          setActiveItems(items.map(enrichTopUpDetails));
+        }
+      } else if (enriched.length > 0) {
+        setActiveItems(enriched);
       } else {
-        setActiveItems(items);
+        setActiveItems(items.map(enrichTopUpDetails));
       }
     });
-  }, [items]);
+  }, [items, detectedGame]);
 
-  // Extract unique categories for this game
-  const categories = Array.from(new Set(activeItems.map((i) => i.category || "General")));
+  // Ensure current category is valid
+  useEffect(() => {
+    if (
+      defaultCategories.length > 0 &&
+      !defaultCategories.includes(activeCategory) &&
+      activeCategory !== "all"
+    ) {
+      setActiveCategory(defaultCategories[0]);
+    }
+  }, [detectedGame, defaultCategories, activeCategory]);
 
   const filteredByCategory =
     activeCategory === "all"
       ? activeItems
-      : activeItems.filter((i) => (i.category || "General") === activeCategory);
+      : activeItems.filter((i) => (i.category || defaultCategories[0]) === activeCategory);
 
   const total = filteredByCategory.length;
   const paginatedItems = filteredByCategory.slice((page - 1) * perPage, page * perPage);
 
-  if (activeItems.length === 0)
-    return <p className="bm-lead">No packs for this game yet. Ask us on Discord.</p>;
-
   return (
-    <div>
-      {/* Category Tabs if multiple categories exist */}
-      {categories.length > 1 && (
-        <div className="flex items-center gap-2 mb-8 p-1.5 bg-secondary/30 rounded-xl border border-border/50 overflow-x-auto">
-          <button
-            onClick={() => {
-              setActiveCategory("all");
-              setPage(1);
-            }}
-            className={`px-4 py-2.5 text-xs font-semibold rounded-lg transition-all whitespace-nowrap ${
-              activeCategory === "all"
-                ? "bg-primary text-primary-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            All Packages ({activeItems.length})
-          </button>
-          {categories.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => {
-                setActiveCategory(cat);
-                setPage(1);
-              }}
-              className={`px-4 py-2.5 text-xs font-semibold rounded-lg transition-all whitespace-nowrap ${
-                activeCategory === cat
-                  ? "bg-primary text-primary-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              {cat} ({activeItems.filter((i) => (i.category || "General") === cat).length})
-            </button>
+    <div className="space-y-6">
+      {/* 2 Top Up Menu Buttons */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
+        <div className="grid grid-cols-2 gap-3 max-w-lg w-full">
+          {defaultCategories.map((cat) => {
+            const isActive = activeCategory === cat;
+            return (
+              <button
+                key={cat}
+                type="button"
+                onClick={() => {
+                  setActiveCategory(cat);
+                  setPage(1);
+                }}
+                className={`py-3.5 px-4 rounded-xl font-bold text-xs sm:text-sm transition-all duration-200 flex items-center justify-center gap-2 shadow-md cursor-pointer ${
+                  isActive
+                    ? "bg-blue-600 text-white shadow-blue-600/30 ring-2 ring-blue-400"
+                    : "bg-[#142042] text-slate-300 hover:bg-[#1a2b58] hover:text-white border border-slate-700/60"
+                }`}
+              >
+                {cat === "Pack ID Top Up" && <Package className="w-4 h-4 text-blue-300" />}
+                {cat === "Frost Star Pack" && <Sparkles className="w-4 h-4 text-cyan-300" />}
+                {cat === "Kingdom Star Pack" && <Crown className="w-4 h-4 text-amber-300" />}
+                <span className="truncate">{cat}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        <button
+          type="button"
+          onClick={() => {
+            setActiveCategory(activeCategory === "all" ? defaultCategories[0] : "all");
+            setPage(1);
+          }}
+          className="text-xs text-slate-400 hover:text-white underline underline-offset-4 self-center sm:self-auto cursor-pointer"
+        >
+          {activeCategory === "all" ? "Show 2 Main Menus" : "View All Packages"}
+        </button>
+      </div>
+
+      {/* Category Section Header Banner */}
+      <div className="flex items-center gap-3 px-4 py-3 bg-[#111c38] rounded-xl border border-slate-800/80 shadow-sm">
+        <div className="w-8 h-8 rounded-lg bg-blue-600/20 border border-blue-500/40 flex items-center justify-center shrink-0">
+          {activeCategory === "Frost Star Pack" ? (
+            <Sparkles className="w-4 h-4 text-cyan-400" />
+          ) : activeCategory === "Kingdom Star Pack" ? (
+            <Crown className="w-4 h-4 text-amber-400" />
+          ) : (
+            <Package className="w-4 h-4 text-blue-400" />
+          )}
+        </div>
+        <div>
+          <h3 className="font-bold text-sm sm:text-base text-white">
+            {activeCategory === "all" ? "All Top-Up Packs" : activeCategory}
+          </h3>
+          <p className="text-[11px] text-slate-400">
+            {activeCategory === "Frost Star Pack"
+              ? "Official Whiteout Survival Frost Star currency pack top-up."
+              : activeCategory === "Kingdom Star Pack"
+                ? "Official Kingshot Kingdom Star perks & VIP top-up."
+                : "Direct in-game Pack ID instant delivery via Discord middleman."}
+          </p>
+        </div>
+        <span className="ml-auto text-xs font-mono text-slate-400 tabular-nums">
+          {filteredByCategory.length} packs
+        </span>
+      </div>
+
+      {/* Grid of Cards */}
+      {paginatedItems.length === 0 ? (
+        <div className="text-center py-12 bg-[#0c152e] rounded-2xl border border-slate-800">
+          <p className="text-slate-400 text-sm">
+            No top-up packs found for {activeCategory}. You can add them in the admin panel or
+            contact us on Discord.
+          </p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+          {paginatedItems.map((p) => (
+            <TopUpCard key={p.code} p={p} />
           ))}
         </div>
       )}
 
-      <div className="bm-topups">
-        {paginatedItems.map((p) => (
-          <TopUpCard key={p.code} p={p} />
-        ))}
-      </div>
+      {total > perPage && (
+        <Pagination total={total} perPage={perPage} page={page} onChange={setPage} />
+      )}
 
-      <Pagination total={total} perPage={perPage} page={page} onChange={setPage} />
-
-      <p className="bm-mono bm-topup-note mt-6">
-        Sample prices only. Confirm the current price on Discord before ordering.
+      <p className="text-xs text-slate-400 font-mono text-center pt-2">
+        Click on any card to view full product details, specs, and requirements. Order via Discord
+        ticket with verified middleman transfer.
       </p>
     </div>
   );

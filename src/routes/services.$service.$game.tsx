@@ -115,7 +115,7 @@ function ServicePage() {
             <span className="bm-mono">(01) Prices</span>
             <h2>{game.name} top up packs.</h2>
           </div>
-          <TopUpGrid items={topUpForGame(game.slug)} />
+          <TopUpGrid items={topUpForGame(game.slug)} gameSlug={game.slug} />
         </section>
       )}
 
