@@ -17,6 +17,12 @@ export interface PageContent {
   heroImage: string;
   leadText?: string;
   announcement?: string;
+  buttonText?: string;
+  buttonLink?: string;
+  secondaryButtonText?: string;
+  secondaryButtonLink?: string;
+  sectionTitle?: string;
+  sectionSubtitle?: string;
   updatedAt: string;
 }
 
@@ -42,6 +48,13 @@ const defaultPages: Record<string, PageContent> = {
     leadText:
       "Your trusted destination for game account trading, middleman services, and instant top-ups.",
     announcement: "Flash Sale: All game accounts feature an automatic 20% discount!",
+    buttonText: "Browse Accounts",
+    buttonLink: "/accounts",
+    secondaryButtonText: "Explore Top Up",
+    secondaryButtonLink: "/games",
+    sectionTitle: "Featured Verified Accounts",
+    sectionSubtitle:
+      "Fully verified high-level strategy game accounts ready for secure instant transfer.",
     updatedAt: new Date().toISOString(),
   },
   accounts: {
@@ -51,6 +64,31 @@ const defaultPages: Record<string, PageContent> = {
     heroSubtitle: "Verified strategy game accounts with safe middleman transfer.",
     heroImage: "/assets/aistudio/bg_fe70fe49.jpg",
     leadText: "Sample listings only. Confirm current availability and prices on Discord.",
+    sectionTitle: "All Available Accounts",
+    sectionSubtitle: "Filter by game title or server to find your next power account.",
+    updatedAt: new Date().toISOString(),
+  },
+  games: {
+    slug: "games",
+    title: "Game Top Up Center",
+    heroTitle: "Instant Game Top Up",
+    heroSubtitle: "Fast and secure game currency top-up for Whiteout Survival and Kingshot.",
+    heroImage: "/assets/aistudio/bg_fe70fe49.jpg",
+    leadText: "Select your game and pack ID to top up instantly with reliable delivery.",
+    sectionTitle: "Available Pack IDs & Top Up Catalogs",
+    sectionSubtitle: "Frost Star Pack for Whiteout Survival & Kingdom Star Pack for Kingshot.",
+    updatedAt: new Date().toISOString(),
+  },
+  services: {
+    slug: "services",
+    title: "Professional Gaming Services & Middleman",
+    heroTitle: "Middleman & Account Services",
+    heroSubtitle:
+      "Secure escrow, account leveling, and trading assistance by professional operators.",
+    heroImage: "/assets/aistudio/bg_fe70fe49.jpg",
+    leadText: "Protect your trades and guarantee smooth transfers with BlueMask Middleman.",
+    sectionTitle: "Our Professional Services",
+    sectionSubtitle: "Choose a service category to begin your order.",
     updatedAt: new Date().toISOString(),
   },
   contact: {
@@ -61,6 +99,18 @@ const defaultPages: Record<string, PageContent> = {
       "Customer support for product questions, payment guidance, and transfer assistance.",
     heroImage: "/assets/aistudio/bg_fe70fe49.jpg",
     leadText: "Reach our support team anytime on Discord or WhatsApp.",
+    sectionTitle: "Direct Communication Channels",
+    sectionSubtitle: "We reply within minutes during active hours.",
+    updatedAt: new Date().toISOString(),
+  },
+  global_chrome: {
+    slug: "global_chrome",
+    title: "Global Header, Footer & Announcements",
+    heroTitle: "Global Site Settings",
+    heroSubtitle: "Manage site-wide announcement banners, brand titles, and footer text.",
+    heroImage: "/assets/aistudio/bg_fe70fe49.jpg",
+    leadText: "Global changes apply across all public pages instantly.",
+    announcement: "Flash Sale: All game accounts feature an automatic 20% discount!",
     updatedAt: new Date().toISOString(),
   },
 };
@@ -541,4 +591,3 @@ export async function deleteFaqFromDB(id: string): Promise<void> {
     console.warn("Delete FAQ DB error:", err);
   }
 }
-
