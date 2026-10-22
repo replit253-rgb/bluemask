@@ -139,28 +139,7 @@ function ContactPage() {
                   {displayDiscord} <ArrowUpRight style={{ width: "14px", height: "14px" }} />
                 </a>
               </li>
-              {rawWa && (
-                <li style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                  <strong style={{ minWidth: "140px", color: "var(--bm-ink-soft)" }}>
-                    WhatsApp:
-                  </strong>
-                  <a
-                    href={`https://wa.me/${cleanWa}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    style={{
-                      color: "var(--bm-glow)",
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: "6px",
-                      fontWeight: 600,
-                    }}
-                  >
-                    <Phone style={{ width: "16px", height: "16px" }} />
-                    {rawWa} <ArrowUpRight style={{ width: "14px", height: "14px" }} />
-                  </a>
-                </li>
-              )}
+
               <li style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                 <strong style={{ minWidth: "140px", color: "var(--bm-ink-soft)" }}>
                   Response Time:

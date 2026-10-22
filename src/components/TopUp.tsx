@@ -466,10 +466,10 @@ export function TopUpGrid({ items, gameSlug }: { items: TopUpPackage[]; gameSlug
           </h3>
           <p className="text-[11px] text-slate-400">
             {activeCategory === "Frost Star Pack"
-              ? "Official Whiteout Survival Frost Star currency pack top-up."
+              ? "Account for Sale"
               : activeCategory === "Kingdom Star Pack"
-                ? "Official Kingshot Kingdom Star perks & VIP top-up."
-                : "Direct in-game Pack ID instant delivery via Discord middleman."}
+                ? "Account for Sale"
+                : "Account for Sale"}
           </p>
         </div>
         <span className="ml-auto text-xs font-mono text-slate-400 tabular-nums">

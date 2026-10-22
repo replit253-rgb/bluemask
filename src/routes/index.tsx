@@ -228,9 +228,7 @@ function Index() {
             <span className="text-xs font-semibold tracking-wider text-sky-400 uppercase">
               Catalog
             </span>
-            <h2 className="text-2xl md:text-3xl font-bold mt-1">
-              Available Accounts Ready to Play
-            </h2>
+            <h2 className="text-2xl md:text-3xl font-bold mt-1">Account for Sale</h2>
           </div>
           <Link className="bm-text-link" to="/accounts" search={{}}>
             View all accounts <ArrowUpRight aria-hidden="true" />
