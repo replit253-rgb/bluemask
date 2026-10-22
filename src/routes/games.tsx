@@ -61,7 +61,7 @@ function GamesPage() {
       <SiteHeader />
       <section className="bm-section">
         <span className="bm-eyebrow">THE COLLECTION</span>
-        <h1 className="bm-page-title">Choose your game.</h1>
+        <h1 className="bm-page-title">Accounts for Sale</h1>
         <p className="bm-lead">Four worlds. Your next adventure.</p>
         <GameCards />
       </section>

@@ -81,12 +81,15 @@ function Index() {
 
       {/* Hero Section */}
       <section className="bm-hero">
-        <img
-          className="bm-hero-image"
-          src={pageContent?.heroImage || "/assets/aistudio/bg_fe70fe49.jpg"}
-          alt="BlueMask Gaming Store"
-          fetchPriority="high"
-        />
+        <picture>
+          <source media="(max-width: 768px)" srcSet="/assets/aistudio/bg-mobile.jpeg" />
+          <img
+            className="bm-hero-image"
+            src={pageContent?.heroImage || "/assets/aistudio/bg_fe70fe49.jpg"}
+            alt="BlueMask Gaming Store"
+            fetchPriority="high"
+          />
+        </picture>
         <div className="bm-hero-content">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-sky-950/80 border border-sky-400/40 text-sky-300 text-xs font-semibold mb-4 tracking-wide shadow-sm backdrop-blur-md">
             TRUSTED GAMING ACCOUNT MARKETPLACE
@@ -248,7 +251,7 @@ function Index() {
             <span className="text-xs font-semibold tracking-wider text-sky-400 uppercase">
               Games
             </span>
-            <h2 className="text-2xl md:text-3xl font-bold mt-1">Choose Your Battlefield</h2>
+            <h2 className="text-2xl md:text-3xl font-bold mt-1">Choose your Game</h2>
           </div>
           <Link to="/games" className="bm-text-link">
             All games <ArrowUpRight />
@@ -294,7 +297,7 @@ function Index() {
             <div className="w-10 h-10 rounded-lg bg-sky-950/60 border border-sky-800/40 flex items-center justify-center text-sky-400 mb-4">
               <ShieldCheck className="w-5 h-5" />
             </div>
-            <h3 className="font-semibold text-lg text-foreground mb-2">Escrow Middleman</h3>
+            <h3 className="font-semibold text-lg text-foreground mb-2">Middleman Service</h3>
             <p className="text-sm text-muted-foreground leading-relaxed">
               We hold the account credentials and payment until both buyer and seller verify full
               delivery. No unauthorized releases.
