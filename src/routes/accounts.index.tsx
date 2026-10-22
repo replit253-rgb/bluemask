@@ -96,66 +96,67 @@ function AccountsPage() {
       </section>
 
       {/* Choose Your Battlefield Section matching user screenshot */}
-      <section className="bm-section">
-        <div className="bm-section-head mb-8">
-          <span className="bm-mono text-sky-400">CHOOSE YOUR BATTLEFIELD</span>
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-white mt-1">
-            Explore Battlefields & Games
-          </h2>
-        </div>
+      {!game && (
+        <section className="bm-section">
+          <div className="bm-section-head mb-8">
+            <span className="bm-mono text-sky-400">CHOOSE YOUR BATTLEFIELD</span>
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-white mt-1">
+              Explore Battlefields & Games
+            </h2>
+          </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {games.map((g) => {
-            const isSelected = game === g.slug;
-            return (
-              <Link
-                key={g.slug}
-                to="/accounts"
-                search={{ game: isSelected ? undefined : g.slug, sort, status, q }}
-                className={`group relative flex flex-col justify-between rounded-2xl overflow-hidden border transition-all duration-300 ${
-                  isSelected
-                    ? "bg-[#111c3d] border-blue-500 shadow-xl shadow-blue-950/60 ring-2 ring-blue-400"
-                    : "bg-[#0c152e] border-slate-800/80 hover:border-blue-500/40 hover:bg-[#101b3a]"
-                }`}
-              >
-                <div className="relative aspect-[16/10] overflow-hidden bg-secondary">
-                  <img
-                    src={g.image}
-                    alt={g.imageAlt}
-                    width={800}
-                    height={600}
-                    loading="lazy"
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#0c152e] via-transparent to-transparent opacity-80" />
-                  <span className="absolute top-3 right-3 px-2 py-0.5 rounded-md bg-black/60 backdrop-blur-sm text-[10px] font-mono font-bold text-sky-300 border border-slate-700">
-                    {g.number}
-                  </span>
-                </div>
-
-                <div className="p-5 flex flex-col justify-between flex-1 space-y-4">
-                  <div>
-                    <span className="text-[11px] font-mono font-bold uppercase tracking-widest text-slate-400 block mb-1">
-                      {g.genre}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {games.map((g) => {
+              const isSelected = game === g.slug;
+              return (
+                <a
+                  key={g.slug}
+                  href={`/accounts?game=${g.slug}#inventory`}
+                  className={`group relative flex flex-col justify-between rounded-2xl overflow-hidden border transition-all duration-300 ${
+                    isSelected
+                      ? "bg-[#111c3d] border-blue-500 shadow-xl shadow-blue-950/60 ring-2 ring-blue-400"
+                      : "bg-[#0c152e] border-slate-800/80 hover:border-blue-500/40 hover:bg-[#101b3a]"
+                  }`}
+                >
+                  <div className="relative aspect-[16/10] overflow-hidden bg-secondary">
+                    <img
+                      src={g.image}
+                      alt={g.imageAlt}
+                      width={800}
+                      height={600}
+                      loading="lazy"
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#0c152e] via-transparent to-transparent opacity-80" />
+                    <span className="absolute top-3 right-3 px-2 py-0.5 rounded-md bg-black/60 backdrop-blur-sm text-[10px] font-mono font-bold text-sky-300 border border-slate-700">
+                      {g.number}
                     </span>
-                    <h3 className="font-extrabold text-lg sm:text-xl text-white tracking-tight">
-                      {g.name}
-                    </h3>
                   </div>
 
-                  <div className="pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs font-bold text-sky-400 group-hover:text-sky-300">
-                    <span>Explore accounts</span>
-                    <ArrowUpRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                  <div className="p-5 flex flex-col justify-between flex-1 space-y-4">
+                    <div>
+                      <span className="text-[11px] font-mono font-bold uppercase tracking-widest text-slate-400 block mb-1">
+                        {g.genre}
+                      </span>
+                      <h3 className="font-extrabold text-lg sm:text-xl text-white tracking-tight">
+                        {g.name}
+                      </h3>
+                    </div>
+
+                    <div className="pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs font-bold text-sky-400 group-hover:text-sky-300">
+                      <span>Explore accounts</span>
+                      <ArrowUpRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                    </div>
                   </div>
-                </div>
-              </Link>
-            );
-          })}
-        </div>
-      </section>
+                </a>
+              );
+            })}
+          </div>
+        </section>
+      )}
 
       {/* Filters & Inventory Section */}
-      <section className="bm-section border-t border-slate-800/80 pt-12">
+      <section id="inventory" className="bm-section border-t border-slate-800/80 pt-12">
         <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 mb-8">
           <div>
             <h2 className="text-xl font-bold text-white">
