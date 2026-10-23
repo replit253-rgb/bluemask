@@ -24,6 +24,11 @@ import {
   Eye,
   Sparkles,
   Gamepad2,
+  PanelLeftClose,
+  PanelLeftOpen,
+  ChevronLeft,
+  ChevronRight,
+  Menu,
 } from "lucide-react";
 import { AdminGameWorldsManager } from "@/components/AdminGameWorldsManager";
 import { AdminHomeGamesManager } from "@/components/AdminHomeGamesManager";
@@ -91,6 +96,25 @@ export function AdminDashboardPage() {
   // Navigation & Notification
   const [tab, setTab] = useState<AdminTab>("overview");
   const [notice, setNotice] = useState<string | null>(null);
+
+  // Collapsible Sidebar State
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("bm_admin_sidebar_collapsed") === "true";
+    }
+    return false;
+  });
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+
+  const toggleSidebarCollapse = () => {
+    setIsSidebarCollapsed((prev) => {
+      const next = !prev;
+      if (typeof window !== "undefined") {
+        localStorage.setItem("bm_admin_sidebar_collapsed", String(next));
+      }
+      return next;
+    });
+  };
 
   // Repositories
   const [products, setProducts] = useState<Product[]>([]);
@@ -856,152 +880,319 @@ export function AdminDashboardPage() {
         </div>
       )}
 
-      {/* Full Height & Width Sidebar */}
-      <aside className="w-full md:w-72 md:h-screen md:sticky md:top-0 bg-secondary/20 border-r border-border/60 p-6 flex flex-col justify-between shrink-0 overflow-y-auto">
+      {/* Mobile Top Navigation Bar */}
+      <div className="md:hidden flex items-center justify-between p-4 bg-secondary/30 border-b border-border/60 sticky top-0 z-40 backdrop-blur-md">
+        <div className="flex items-center gap-2">
+          <Shield className="w-5 h-5 text-sky-400" />
+          <span className="font-extrabold text-sm text-foreground">RedMoon Admin</span>
+        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
+          className="text-xs"
+        >
+          <Menu className="w-4 h-4 mr-1.5" /> Menu
+        </Button>
+      </div>
+
+      {/* Collapsible Full Height Sidebar (No-Scrollbar) */}
+      <aside
+        className={`no-scrollbar transition-all duration-300 md:h-screen md:sticky md:top-0 bg-secondary/20 border-r border-border/60 flex flex-col justify-between shrink-0 overflow-y-auto ${
+          isSidebarCollapsed ? "md:w-20 p-3" : "md:w-72 p-6"
+        } ${isMobileSidebarOpen ? "block p-4" : "hidden md:flex"}`}
+      >
         <div className="space-y-6">
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-sky-950/70 border border-sky-400/30 text-sky-400 text-xs font-semibold">
-                <Shield className="w-3.5 h-3.5" /> Admin Panel
-              </span>
-            </div>
-            <h1 className="text-xl font-extrabold text-foreground tracking-tight">
-              Store Management
-            </h1>
+          {/* Sidebar Header with Collapse Toggle */}
+          <div className="flex items-center justify-between gap-2">
+            {!isSidebarCollapsed ? (
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-sky-950/70 border border-sky-400/30 text-sky-400 text-xs font-semibold">
+                    <Shield className="w-3.5 h-3.5" /> Admin Panel
+                  </span>
+                </div>
+                <h1 className="text-xl font-extrabold text-foreground tracking-tight">
+                  Store Management
+                </h1>
+              </div>
+            ) : (
+              <div className="mx-auto my-1 p-2 rounded-xl bg-sky-950/80 border border-sky-400/30 text-sky-400">
+                <Shield className="w-5 h-5" />
+              </div>
+            )}
+
+            <button
+              onClick={toggleSidebarCollapse}
+              className="hidden md:flex p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary/60 transition-colors"
+              title={isSidebarCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+            >
+              {isSidebarCollapsed ? (
+                <PanelLeftOpen className="w-5 h-5 text-sky-400" />
+              ) : (
+                <PanelLeftClose className="w-5 h-5" />
+              )}
+            </button>
           </div>
 
+          {/* Navigation Items */}
           <nav className="flex flex-col gap-2">
+            {/* Overview */}
             <button
-              onClick={() => setTab("overview")}
-              className={`w-full px-4 py-3 text-sm font-medium rounded-lg flex items-center gap-3 transition-all ${
+              onClick={() => {
+                setTab("overview");
+                setIsMobileSidebarOpen(false);
+              }}
+              title="Overview"
+              className={`w-full text-sm font-medium rounded-lg flex items-center transition-all ${
+                isSidebarCollapsed ? "justify-center p-3" : "px-4 py-3 gap-3"
+              } ${
                 tab === "overview"
                   ? "bg-primary text-primary-foreground shadow-sm"
                   : "text-muted-foreground hover:text-foreground hover:bg-secondary/40"
               }`}
             >
-              <TrendingUp className="w-4 h-4" /> Overview
+              <TrendingUp className="w-4 h-4 shrink-0" />
+              {!isSidebarCollapsed && <span>Overview</span>}
             </button>
+
+            {/* Accounts for Sale Worlds */}
             <button
-              onClick={() => setTab("worlds")}
-              className={`w-full px-4 py-3 text-sm font-medium rounded-lg flex items-center justify-between transition-all ${
+              onClick={() => {
+                setTab("worlds");
+                setIsMobileSidebarOpen(false);
+              }}
+              title="Accounts for Sale (Worlds)"
+              className={`w-full text-sm font-medium rounded-lg flex items-center transition-all ${
+                isSidebarCollapsed ? "justify-center p-3 relative" : "px-4 py-3 justify-between"
+              } ${
                 tab === "worlds"
                   ? "bg-primary text-primary-foreground shadow-sm"
                   : "text-muted-foreground hover:text-foreground hover:bg-secondary/40"
               }`}
             >
-              <span className="flex items-center gap-3">
-                <Sparkles className="w-4 h-4 text-red-400" /> Accounts for Sale (Worlds)
+              <span className={`flex items-center ${isSidebarCollapsed ? "" : "gap-3"}`}>
+                <Sparkles className="w-4 h-4 text-red-400 shrink-0" />
+                {!isSidebarCollapsed && <span>Accounts for Sale (Worlds)</span>}
               </span>
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-red-950/80 border border-red-800/40 font-mono text-red-300 font-bold">
-                CRUD
-              </span>
+              {!isSidebarCollapsed ? (
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-red-950/80 border border-red-800/40 font-mono text-red-300 font-bold">
+                  CRUD
+                </span>
+              ) : (
+                <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-red-500" />
+              )}
             </button>
+
+            {/* Choose your Game Home */}
             <button
-              onClick={() => setTab("home-games")}
-              className={`w-full px-4 py-3 text-sm font-medium rounded-lg flex items-center justify-between transition-all ${
+              onClick={() => {
+                setTab("home-games");
+                setIsMobileSidebarOpen(false);
+              }}
+              title="Choose your Game (Home)"
+              className={`w-full text-sm font-medium rounded-lg flex items-center transition-all ${
+                isSidebarCollapsed ? "justify-center p-3 relative" : "px-4 py-3 justify-between"
+              } ${
                 tab === "home-games"
                   ? "bg-primary text-primary-foreground shadow-sm"
                   : "text-muted-foreground hover:text-foreground hover:bg-secondary/40"
               }`}
             >
-              <span className="flex items-center gap-3">
-                <Gamepad2 className="w-4 h-4 text-amber-400" /> Choose your Game (Home)
+              <span className={`flex items-center ${isSidebarCollapsed ? "" : "gap-3"}`}>
+                <Gamepad2 className="w-4 h-4 text-amber-400 shrink-0" />
+                {!isSidebarCollapsed && <span>Choose your Game (Home)</span>}
               </span>
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-950/80 border border-amber-800/40 font-mono text-amber-300 font-bold">
-                CRUD
-              </span>
+              {!isSidebarCollapsed ? (
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-950/80 border border-amber-800/40 font-mono text-amber-300 font-bold">
+                  CRUD
+                </span>
+              ) : (
+                <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-amber-400" />
+              )}
             </button>
+
+            {/* Accounts Jual Beli */}
             <button
-              onClick={() => setTab("accounts")}
-              className={`w-full px-4 py-3 text-sm font-medium rounded-lg flex items-center justify-between transition-all ${
+              onClick={() => {
+                setTab("accounts");
+                setIsMobileSidebarOpen(false);
+              }}
+              title="Accounts (Jual Beli)"
+              className={`w-full text-sm font-medium rounded-lg flex items-center transition-all ${
+                isSidebarCollapsed ? "justify-center p-3 relative" : "px-4 py-3 justify-between"
+              } ${
                 tab === "accounts"
                   ? "bg-primary text-primary-foreground shadow-sm"
                   : "text-muted-foreground hover:text-foreground hover:bg-secondary/40"
               }`}
             >
-              <span className="flex items-center gap-3">
-                <Package className="w-4 h-4" /> Accounts (Jual Beli)
+              <span className={`flex items-center ${isSidebarCollapsed ? "" : "gap-3"}`}>
+                <Package className="w-4 h-4 shrink-0" />
+                {!isSidebarCollapsed && <span>Accounts (Jual Beli)</span>}
               </span>
-              <span className="text-xs px-2 py-0.5 rounded-full bg-background/50 border border-border/40 font-mono">
-                {products.length}
-              </span>
+              {!isSidebarCollapsed ? (
+                <span className="text-xs px-2 py-0.5 rounded-full bg-background/50 border border-border/40 font-mono">
+                  {products.length}
+                </span>
+              ) : (
+                <span className="absolute -top-1 -right-1 text-[9px] px-1 rounded bg-red-950 text-red-300 border border-red-800 font-mono">
+                  {products.length}
+                </span>
+              )}
             </button>
+
+            {/* Top-Up Cards */}
             <button
-              onClick={() => setTab("topups")}
-              className={`w-full px-4 py-3 text-sm font-medium rounded-lg flex items-center justify-between transition-all ${
+              onClick={() => {
+                setTab("topups");
+                setIsMobileSidebarOpen(false);
+              }}
+              title="Top-Up Cards"
+              className={`w-full text-sm font-medium rounded-lg flex items-center transition-all ${
+                isSidebarCollapsed ? "justify-center p-3 relative" : "px-4 py-3 justify-between"
+              } ${
                 tab === "topups"
                   ? "bg-primary text-primary-foreground shadow-sm"
                   : "text-muted-foreground hover:text-foreground hover:bg-secondary/40"
               }`}
             >
-              <span className="flex items-center gap-3">
-                <CreditCard className="w-4 h-4" /> Top-Up Cards
+              <span className={`flex items-center ${isSidebarCollapsed ? "" : "gap-3"}`}>
+                <CreditCard className="w-4 h-4 shrink-0" />
+                {!isSidebarCollapsed && <span>Top-Up Cards</span>}
               </span>
-              <span className="text-xs px-2 py-0.5 rounded-full bg-background/50 border border-border/40 font-mono">
-                {topups.length}
-              </span>
+              {!isSidebarCollapsed ? (
+                <span className="text-xs px-2 py-0.5 rounded-full bg-background/50 border border-border/40 font-mono">
+                  {topups.length}
+                </span>
+              ) : (
+                <span className="absolute -top-1 -right-1 text-[9px] px-1 rounded bg-sky-950 text-sky-300 border border-sky-800 font-mono">
+                  {topups.length}
+                </span>
+              )}
             </button>
+
+            {/* Middleware & Services */}
             <button
-              onClick={() => setTab("services")}
-              className={`w-full px-4 py-3 text-sm font-medium rounded-lg flex items-center justify-between transition-all ${
+              onClick={() => {
+                setTab("services");
+                setIsMobileSidebarOpen(false);
+              }}
+              title="Middleware & Services"
+              className={`w-full text-sm font-medium rounded-lg flex items-center transition-all ${
+                isSidebarCollapsed ? "justify-center p-3 relative" : "px-4 py-3 justify-between"
+              } ${
                 tab === "services"
                   ? "bg-primary text-primary-foreground shadow-sm"
                   : "text-muted-foreground hover:text-foreground hover:bg-secondary/40"
               }`}
             >
-              <span className="flex items-center gap-3">
-                <Layers className="w-4 h-4" /> Middleware & Services
+              <span className={`flex items-center ${isSidebarCollapsed ? "" : "gap-3"}`}>
+                <Layers className="w-4 h-4 shrink-0" />
+                {!isSidebarCollapsed && <span>Middleware & Services</span>}
               </span>
-              <span className="text-xs px-2 py-0.5 rounded-full bg-background/50 border border-border/40 font-mono">
-                {servicesList.length}
-              </span>
+              {!isSidebarCollapsed ? (
+                <span className="text-xs px-2 py-0.5 rounded-full bg-background/50 border border-border/40 font-mono">
+                  {servicesList.length}
+                </span>
+              ) : (
+                <span className="absolute -top-1 -right-1 text-[9px] px-1 rounded bg-emerald-950 text-emerald-300 border border-emerald-800 font-mono">
+                  {servicesList.length}
+                </span>
+              )}
             </button>
+
+            {/* Testimonials */}
             <button
-              onClick={() => setTab("testimonials")}
-              className={`w-full px-4 py-3 text-sm font-medium rounded-lg flex items-center justify-between transition-all ${
+              onClick={() => {
+                setTab("testimonials");
+                setIsMobileSidebarOpen(false);
+              }}
+              title="Testimonials"
+              className={`w-full text-sm font-medium rounded-lg flex items-center transition-all ${
+                isSidebarCollapsed ? "justify-center p-3 relative" : "px-4 py-3 justify-between"
+              } ${
                 tab === "testimonials"
                   ? "bg-primary text-primary-foreground shadow-sm"
                   : "text-muted-foreground hover:text-foreground hover:bg-secondary/40"
               }`}
             >
-              <span className="flex items-center gap-3">
-                <MessageSquare className="w-4 h-4" /> Testimonials
+              <span className={`flex items-center ${isSidebarCollapsed ? "" : "gap-3"}`}>
+                <MessageSquare className="w-4 h-4 shrink-0" />
+                {!isSidebarCollapsed && <span>Testimonials</span>}
               </span>
-              <span className="text-xs px-2 py-0.5 rounded-full bg-background/50 border border-border/40 font-mono">
-                {testimonialsList.length}
-              </span>
+              {!isSidebarCollapsed ? (
+                <span className="text-xs px-2 py-0.5 rounded-full bg-background/50 border border-border/40 font-mono">
+                  {testimonialsList.length}
+                </span>
+              ) : (
+                <span className="absolute -top-1 -right-1 text-[9px] px-1 rounded bg-amber-950 text-amber-300 border border-amber-800 font-mono">
+                  {testimonialsList.length}
+                </span>
+              )}
             </button>
+
+            {/* Store Settings */}
             <button
-              onClick={() => setTab("settings")}
-              className={`w-full px-4 py-3 text-sm font-medium rounded-lg flex items-center gap-3 transition-all ${
+              onClick={() => {
+                setTab("settings");
+                setIsMobileSidebarOpen(false);
+              }}
+              title="Store Settings"
+              className={`w-full text-sm font-medium rounded-lg flex items-center transition-all ${
+                isSidebarCollapsed ? "justify-center p-3" : "px-4 py-3 gap-3"
+              } ${
                 tab === "settings"
                   ? "bg-primary text-primary-foreground shadow-sm"
                   : "text-muted-foreground hover:text-foreground hover:bg-secondary/40"
               }`}
             >
-              <Settings className="w-4 h-4" /> Store Settings
+              <Settings className="w-4 h-4 shrink-0" />
+              {!isSidebarCollapsed && <span>Store Settings</span>}
             </button>
           </nav>
         </div>
 
         {/* Sidebar Footer Actions */}
         <div className="pt-6 border-t border-border/60 space-y-3">
-          <Button asChild variant="outline" className="w-full justify-start text-xs">
+          <Button
+            asChild
+            variant="outline"
+            className={`w-full text-xs ${
+              isSidebarCollapsed ? "justify-center px-0" : "justify-start"
+            }`}
+            title="CMS & Live Preview"
+          >
             <Link to="/admin/cms">
-              <Layout className="w-4 h-4 mr-2" /> CMS & Live Preview
+              <Layout className={`w-4 h-4 ${isSidebarCollapsed ? "" : "mr-2"}`} />
+              {!isSidebarCollapsed && <span>CMS & Live Preview</span>}
             </Link>
           </Button>
-          <Button asChild variant="outline" className="w-full justify-start text-xs">
+
+          <Button
+            asChild
+            variant="outline"
+            className={`w-full text-xs ${
+              isSidebarCollapsed ? "justify-center px-0" : "justify-start"
+            }`}
+            title="View Storefront"
+          >
             <Link to="/">
-              <ArrowUpRight className="w-4 h-4 mr-2" /> View Storefront
+              <ArrowUpRight className={`w-4 h-4 ${isSidebarCollapsed ? "" : "mr-2"}`} />
+              {!isSidebarCollapsed && <span>View Storefront</span>}
             </Link>
           </Button>
+
           <Button
             onClick={handleLogout}
             variant="ghost"
-            className="w-full justify-start text-xs text-rose-400 hover:bg-rose-950/30 hover:text-rose-300"
+            className={`w-full text-xs text-rose-400 hover:bg-rose-950/30 hover:text-rose-300 ${
+              isSidebarCollapsed ? "justify-center px-0" : "justify-start"
+            }`}
+            title="Logout"
           >
-            <LogOut className="w-4 h-4 mr-2" /> Logout
+            <LogOut className={`w-4 h-4 ${isSidebarCollapsed ? "" : "mr-2"}`} />
+            {!isSidebarCollapsed && <span>Logout</span>}
           </Button>
         </div>
       </aside>

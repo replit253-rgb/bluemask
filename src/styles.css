@@ -1576,10 +1576,12 @@ html {
 }
 
 /* Hide scrollbar */
-html {
+html,
+.no-scrollbar {
   scrollbar-width: none; /* Firefox */
   -ms-overflow-style: none; /* IE and Edge */
 }
-html::-webkit-scrollbar {
+html::-webkit-scrollbar,
+.no-scrollbar::-webkit-scrollbar {
   display: none; /* Chrome, Safari, and Opera */
 }
