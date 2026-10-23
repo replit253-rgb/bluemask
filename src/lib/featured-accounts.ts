@@ -43,28 +43,6 @@ export function getFeaturedAccountsConfig(): FeaturedAccountsConfig {
   if (typeof window === "undefined") {
     return DEFAULT_FEATURED_ACCOUNTS_CONFIG;
   }
-
-  getFeaturedAccountsConfigFn()
-    .then((data) => {
-      if (data) {
-        cachedFeaturedAccountsConfig = {
-          eyebrow: (data.eyebrow as string) || DEFAULT_FEATURED_ACCOUNTS_CONFIG.eyebrow,
-          title: (data.title as string) || DEFAULT_FEATURED_ACCOUNTS_CONFIG.title,
-          linkText: (data.linkText as string) || DEFAULT_FEATURED_ACCOUNTS_CONFIG.linkText,
-          linkUrl: (data.linkUrl as string) || DEFAULT_FEATURED_ACCOUNTS_CONFIG.linkUrl,
-          selectionMode: (data.selectionMode as "auto" | "manual") || "auto",
-          selectedCodes:
-            (data.selectedCodes as string[]) || DEFAULT_FEATURED_ACCOUNTS_CONFIG.selectedCodes,
-          maxDisplayCount: Number(data.maxDisplayCount) || 6,
-        };
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(cachedFeaturedAccountsConfig));
-        window.dispatchEvent(new Event("featured-accounts-changed"));
-      }
-    })
-    .catch((err) => {
-      console.warn("getFeaturedAccountsConfig error:", err);
-    });
-
   return cachedFeaturedAccountsConfig;
 }
 

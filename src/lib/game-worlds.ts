@@ -119,24 +119,6 @@ export function getGameWorldsConfig(): GameWorldSectionConfig {
   if (typeof window === "undefined") {
     return DEFAULT_GAME_WORLDS_CONFIG;
   }
-
-  getGameWorldsFn()
-    .then((data) => {
-      if (data && Array.isArray(data.cards)) {
-        cachedWorldsConfig = {
-          eyebrow: (data.eyebrow as string) || DEFAULT_GAME_WORLDS_CONFIG.eyebrow,
-          title: (data.title as string) || DEFAULT_GAME_WORLDS_CONFIG.title,
-          subtitle: (data.subtitle as string) || DEFAULT_GAME_WORLDS_CONFIG.subtitle,
-          cards: data.cards as GameWorldCard[],
-        };
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(cachedWorldsConfig));
-        window.dispatchEvent(new Event("game-worlds-changed"));
-      }
-    })
-    .catch((err) => {
-      console.warn("PostgreSQL getGameWorlds error:", err);
-    });
-
   return cachedWorldsConfig;
 }
 

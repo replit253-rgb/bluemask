@@ -96,25 +96,6 @@ export function getHomeGamesConfig(): HomeGamesSectionConfig {
   if (typeof window === "undefined") {
     return DEFAULT_HOME_GAMES_CONFIG;
   }
-
-  getHomeGamesFn()
-    .then((data) => {
-      if (data && Array.isArray(data.cards)) {
-        cachedHomeGamesConfig = {
-          eyebrow: (data.eyebrow as string) || DEFAULT_HOME_GAMES_CONFIG.eyebrow,
-          title: (data.title as string) || DEFAULT_HOME_GAMES_CONFIG.title,
-          linkText: (data.linkText as string) || DEFAULT_HOME_GAMES_CONFIG.linkText,
-          linkUrl: (data.linkUrl as string) || DEFAULT_HOME_GAMES_CONFIG.linkUrl,
-          cards: data.cards as HomeGameCard[],
-        };
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(cachedHomeGamesConfig));
-        window.dispatchEvent(new Event("home-games-changed"));
-      }
-    })
-    .catch((err) => {
-      console.warn("PostgreSQL getHomeGames error:", err);
-    });
-
   return cachedHomeGamesConfig;
 }
 
