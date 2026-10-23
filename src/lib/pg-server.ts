@@ -23,17 +23,5 @@ export function getPgPool(): pg.Pool {
 
 export async function queryPostgres(text: string, params?: unknown[]): Promise<pg.QueryResult> {
   const pool = getPgPool();
-  try {
-    const res = await pool.query(text, params);
-    return res;
-  } catch {
-    // Return empty result set gracefully when PostgreSQL is unreachable or offline
-    return {
-      rows: [],
-      rowCount: 0,
-      command: "",
-      oid: 0,
-      fields: [],
-    };
-  }
+  return await pool.query(text, params);
 }
