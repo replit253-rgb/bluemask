@@ -12,7 +12,8 @@
     "format": "prettier --write .",
     "test": "vitest run",
     "test:watch": "vitest",
-    "db:push": "tsx scripts/db-push.ts"
+    "db:push": "tsx scripts/db-push.ts",
+    "db:seed": "tsx scripts/seed.ts"
   },
   "overrides": {
     "rolldown": "1.2.1"
