@@ -1,5 +1,5 @@
 import { type Product } from "./products";
-import { getFeaturedAccountsConfigFn, saveFeaturedAccountsConfigFn } from "./pg-server-fn";
+import { saveFeaturedAccountsConfigFn } from "./pg-server-fn";
 
 export interface FeaturedAccountsConfig {
   eyebrow: string;
@@ -29,11 +29,9 @@ export function getFeaturedAccountsConfig(): FeaturedAccountsConfig {
 
 export function saveFeaturedAccountsConfig(config: FeaturedAccountsConfig): void {
   cachedFeaturedAccountsConfig = config;
-
   if (typeof window !== "undefined") {
     window.dispatchEvent(new Event("featured-accounts-changed"));
   }
-
   saveFeaturedAccountsConfigFn({ data: config as unknown as Record<string, unknown> }).catch(
     (err) => {
       console.warn("saveFeaturedAccountsConfig error:", err);

@@ -2,7 +2,7 @@ import whiteoutArtworkUrl from "@/assets/game-whiteout.jpg";
 import kingshotArtworkUrl from "@/assets/game-kingshot.jpg";
 import rokArtworkUrl from "@/assets/game-rok.jpg";
 import dragonsArtworkUrl from "@/assets/game-dragons.jpg";
-import { getGameWorldsFn, saveGameWorldsFn } from "./pg-server-fn";
+import { saveGameWorldsFn } from "./pg-server-fn";
 
 export interface GameWorldCard {
   id: string;
@@ -103,11 +103,9 @@ export function getGameWorldsConfig(): GameWorldSectionConfig {
 
 export function saveGameWorldsConfig(config: GameWorldSectionConfig): void {
   cachedWorldsConfig = config;
-
   if (typeof window !== "undefined") {
     window.dispatchEvent(new Event("game-worlds-changed"));
   }
-
   saveGameWorldsFn({ data: config as unknown as Record<string, unknown> }).catch((err) => {
     console.warn("PostgreSQL saveGameWorlds error:", err);
   });

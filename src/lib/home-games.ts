@@ -2,7 +2,7 @@ import whiteoutArtworkUrl from "@/assets/game-whiteout.jpg";
 import kingshotArtworkUrl from "@/assets/game-kingshot.jpg";
 import rokArtworkUrl from "@/assets/game-rok.jpg";
 import dragonsArtworkUrl from "@/assets/game-dragons.jpg";
-import { getHomeGamesFn, saveHomeGamesFn } from "./pg-server-fn";
+import { saveHomeGamesFn } from "./pg-server-fn";
 
 export interface HomeGameCard {
   id: string;
@@ -80,11 +80,9 @@ export function getHomeGamesConfig(): HomeGamesSectionConfig {
 
 export function saveHomeGamesConfig(config: HomeGamesSectionConfig): void {
   cachedHomeGamesConfig = config;
-
   if (typeof window !== "undefined") {
     window.dispatchEvent(new Event("home-games-changed"));
   }
-
   saveHomeGamesFn({ data: config as unknown as Record<string, unknown> }).catch((err) => {
     console.warn("PostgreSQL saveHomeGames error:", err);
   });
