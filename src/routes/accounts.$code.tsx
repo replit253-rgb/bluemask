@@ -21,10 +21,10 @@ export const Route = createFileRoute("/accounts/$code")({
     const code = loaderData?.code || params.code;
     const p = findProduct(code);
     const g = p && findGame(p.game);
-    const title = p && g ? `${g.name} ${p.title} — reedmoon` : `Account ${code} — reedmoon`;
+    const title = p && g ? `${g.name} ${p.title} — RedMoon` : `Account ${code} — RedMoon`;
     const desc = p
-      ? `${p.title}. ${formatCurrency(p.price)}. Order safely through the reedmoon Discord.`
-      : "Gaming account details and verified middleman transfer at reedmoon.";
+      ? `${p.title}. ${formatCurrency(p.price)}. Order safely through the RedMoon Discord.`
+      : "Gaming account details and verified middleman transfer at RedMoon.";
     return {
       meta: [
         { title },
@@ -56,7 +56,7 @@ const flow = [
 ];
 
 const included = [
-  { title: "Verified Listing", text: "Reviewed by the reedmoon team before publication." },
+  { title: "Verified Listing", text: "Reviewed by the RedMoon team before publication." },
   {
     title: "Secure Checkout",
     text: "Payment runs only through the official channels the team gives you.",
@@ -234,7 +234,7 @@ function ProductPage() {
             })()}
             <OrderButton p={p} />
             <p className="bm-mono bm-note">
-              <ShieldCheck aria-hidden="true" /> Deals happen only through the official reedmoon
+              <ShieldCheck aria-hidden="true" /> Deals happen only through the official RedMoon
               Discord. Never transfer to a personal bank account.
             </p>
             <div className="bm-included">

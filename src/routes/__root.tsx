@@ -78,39 +78,39 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "reedmoon — Game Accounts, Middleman & Top Up" },
+      { title: "RedMoon — Game Accounts, Middleman & Top Up" },
       {
         name: "description",
         content:
-          "Toko game terpercaya reedmoon — Jual beli akun game aman, top up termurah, dan jasa middleman/rekber bergaransi untuk game strategi favorit Anda.",
+          "Toko game terpercaya RedMoon — Jual beli akun game aman, top up termurah, dan jasa middleman/rekber bergaransi untuk game strategi favorit Anda.",
       },
       {
         name: "keywords",
         content:
-          "reedmoon, redmoon shop, redmoon-shop.com, jual akun game, beli akun game, top up game murah, middleman game, rekber game, Whiteout Survival, Kingshot, Rise of Kingdoms, Call of Dragons",
+          "RedMoon, redmoon shop, redmoon-shop.com, jual akun game, beli akun game, top up game murah, middleman game, rekber game, Whiteout Survival, Kingshot, Rise of Kingdoms, Call of Dragons",
       },
-      { name: "author", content: "reedmoon" },
+      { name: "author", content: "RedMoon" },
       {
         name: "robots",
         content: "index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1",
       },
       { name: "google-site-verification", content: "google4dfae9546e319b9f" },
-      { property: "og:site_name", content: "reedmoon" },
-      { property: "og:title", content: "reedmoon — Game Accounts, Middleman & Top Up" },
+      { property: "og:site_name", content: "RedMoon" },
+      { property: "og:title", content: "RedMoon — Game Accounts, Middleman & Top Up" },
       {
         property: "og:description",
         content:
-          "Toko game terpercaya reedmoon — Jual beli akun game aman, top up termurah, dan jasa middleman/rekber bergaransi.",
+          "Toko game terpercaya RedMoon — Jual beli akun game aman, top up termurah, dan jasa middleman/rekber bergaransi.",
       },
       { property: "og:type", content: "website" },
       { property: "og:url", content: "https://redmoon-shop.com/" },
       { property: "og:image", content: "https://redmoon-shop.com/logo.png" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: "reedmoon — Game Accounts, Middleman & Top Up" },
+      { name: "twitter:title", content: "RedMoon — Game Accounts, Middleman & Top Up" },
       {
         name: "twitter:description",
         content:
-          "Toko game terpercaya reedmoon — Jual beli akun game aman, top up termurah, dan jasa middleman/rekber bergaransi.",
+          "Toko game terpercaya RedMoon — Jual beli akun game aman, top up termurah, dan jasa middleman/rekber bergaransi.",
       },
       { name: "twitter:image", content: "https://redmoon-shop.com/logo.png" },
     ],
@@ -132,7 +132,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
             {
               "@type": "Organization",
               "@id": "https://redmoon-shop.com/#organization",
-              name: "reedmoon",
+              name: "RedMoon",
               url: "https://redmoon-shop.com/",
               logo: "https://redmoon-shop.com/logo.png",
               description:
@@ -142,7 +142,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
               "@type": "WebSite",
               "@id": "https://redmoon-shop.com/#website",
               url: "https://redmoon-shop.com/",
-              name: "reedmoon",
+              name: "RedMoon",
               publisher: {
                 "@id": "https://redmoon-shop.com/#organization",
               },
@@ -150,7 +150,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
             {
               "@type": "Store",
               "@id": "https://redmoon-shop.com/#store",
-              name: "reedmoon Gaming Store",
+              name: "RedMoon Gaming Store",
               url: "https://redmoon-shop.com/",
               description:
                 "Jual beli akun game, middleman escrow terpercaya, dan top up game terlengkap dan termurah.",

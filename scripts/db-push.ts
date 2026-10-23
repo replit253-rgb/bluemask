@@ -16,7 +16,7 @@ async function pushDb() {
     await client.connect();
     console.log("Connected successfully to PostgreSQL.");
 
-    console.log("Creating tables if not exist...");
+    console.log("Creating PostgreSQL tables if not exist...");
 
     // Products table
     await client.query(`
@@ -86,7 +86,67 @@ async function pushDb() {
       );
     `);
 
-    console.log("Database schema pushed successfully!");
+    // Game Worlds section table
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS game_worlds (
+        id VARCHAR(255) PRIMARY KEY,
+        slug VARCHAR(100) NOT NULL,
+        name VARCHAR(255) NOT NULL,
+        genre VARCHAR(100),
+        image TEXT,
+        image_alt TEXT,
+        number_code VARCHAR(50),
+        services TEXT[],
+        account_points TEXT[],
+        sort_order INTEGER DEFAULT 0
+      );
+    `);
+
+    // Home Games section table
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS home_games (
+        id VARCHAR(255) PRIMARY KEY,
+        slug VARCHAR(100) NOT NULL,
+        name VARCHAR(255) NOT NULL,
+        genre VARCHAR(100),
+        image TEXT,
+        image_alt TEXT,
+        action_text VARCHAR(100),
+        link_url TEXT,
+        sort_order INTEGER DEFAULT 0
+      );
+    `);
+
+    // Testimonials table
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS testimonials (
+        id VARCHAR(255) PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        role VARCHAR(100),
+        comment TEXT,
+        rating INTEGER DEFAULT 5,
+        avatar TEXT
+      );
+    `);
+
+    // FAQs table
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS faqs (
+        id VARCHAR(255) PRIMARY KEY,
+        question TEXT NOT NULL,
+        answer TEXT NOT NULL
+      );
+    `);
+
+    // Store settings table
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS store_settings (
+        key VARCHAR(100) PRIMARY KEY,
+        value JSONB NOT NULL
+      );
+    `);
+
+    console.log("PostgreSQL database schema created successfully!");
   } catch (err) {
     console.error("Error pushing database schema:", err);
     process.exit(1);

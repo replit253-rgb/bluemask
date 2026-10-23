@@ -22,7 +22,11 @@ import {
   RotateCcw,
   MessageSquare,
   Eye,
+  Sparkles,
+  Gamepad2,
 } from "lucide-react";
+import { AdminGameWorldsManager } from "@/components/AdminGameWorldsManager";
+import { AdminHomeGamesManager } from "@/components/AdminHomeGamesManager";
 import { Button } from "@/components/ui/button";
 import { SiteHeader } from "@/components/SiteChrome";
 import {
@@ -60,18 +64,26 @@ import { TopUpProductDetailModal } from "@/components/TopUp";
 export const Route = createFileRoute("/admin/")({
   head: () => ({
     meta: [
-      { title: "Store Management Panel — reedmoon" },
+      { title: "Store Management Panel — RedMoon" },
       {
         name: "description",
         content:
-          "Store management portal for reedmoon gaming accounts, top-ups, and middleware services.",
+          "Store management portal for RedMoon gaming accounts, top-ups, and middleware services.",
       },
     ],
   }),
   component: AdminDashboardPage,
 });
 
-type AdminTab = "overview" | "accounts" | "topups" | "services" | "testimonials" | "settings";
+type AdminTab =
+  | "overview"
+  | "worlds"
+  | "home-games"
+  | "accounts"
+  | "topups"
+  | "services"
+  | "testimonials"
+  | "settings";
 
 export function AdminDashboardPage() {
   const navigate = useNavigate();
@@ -870,6 +882,36 @@ export function AdminDashboardPage() {
               <TrendingUp className="w-4 h-4" /> Overview
             </button>
             <button
+              onClick={() => setTab("worlds")}
+              className={`w-full px-4 py-3 text-sm font-medium rounded-lg flex items-center justify-between transition-all ${
+                tab === "worlds"
+                  ? "bg-primary text-primary-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground hover:bg-secondary/40"
+              }`}
+            >
+              <span className="flex items-center gap-3">
+                <Sparkles className="w-4 h-4 text-red-400" /> Accounts for Sale (Worlds)
+              </span>
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-red-950/80 border border-red-800/40 font-mono text-red-300 font-bold">
+                CRUD
+              </span>
+            </button>
+            <button
+              onClick={() => setTab("home-games")}
+              className={`w-full px-4 py-3 text-sm font-medium rounded-lg flex items-center justify-between transition-all ${
+                tab === "home-games"
+                  ? "bg-primary text-primary-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground hover:bg-secondary/40"
+              }`}
+            >
+              <span className="flex items-center gap-3">
+                <Gamepad2 className="w-4 h-4 text-amber-400" /> Choose your Game (Home)
+              </span>
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-950/80 border border-amber-800/40 font-mono text-amber-300 font-bold">
+                CRUD
+              </span>
+            </button>
+            <button
               onClick={() => setTab("accounts")}
               className={`w-full px-4 py-3 text-sm font-medium rounded-lg flex items-center justify-between transition-all ${
                 tab === "accounts"
@@ -1065,6 +1107,20 @@ export function AdminDashboardPage() {
                     className="bm-btn bm-btn-outline"
                   >
                     <Plus className="w-4 h-4 mr-1.5" /> Add Service Card
+                  </Button>
+                  <Button
+                    onClick={() => setTab("worlds")}
+                    variant="outline"
+                    className="bm-btn bm-btn-outline border-red-900/60 text-red-300 hover:text-red-200"
+                  >
+                    <Sparkles className="w-4 h-4 mr-1.5 text-red-400" /> Accounts for Sale (Worlds)
+                  </Button>
+                  <Button
+                    onClick={() => setTab("home-games")}
+                    variant="outline"
+                    className="bm-btn bm-btn-outline border-amber-900/60 text-amber-300 hover:text-amber-200"
+                  >
+                    <Gamepad2 className="w-4 h-4 mr-1.5 text-amber-400" /> Choose your Game (Home)
                   </Button>
                 </div>
               </div>
@@ -3883,6 +3939,16 @@ export function AdminDashboardPage() {
               </form>
             </div>
           )}
+
+          {/* --------------------------------------------------------- */}
+          {/* TAB: ACCOUNTS FOR SALE / GAME WORLDS CRUD & LIVE PREVIEW */}
+          {/* --------------------------------------------------------- */}
+          {tab === "worlds" && <AdminGameWorldsManager />}
+
+          {/* --------------------------------------------------------- */}
+          {/* TAB: CHOOSE YOUR GAME (HOME) CRUD & LIVE PREVIEW */}
+          {/* --------------------------------------------------------- */}
+          {tab === "home-games" && <AdminHomeGamesManager />}
         </div>
       </div>
     </main>

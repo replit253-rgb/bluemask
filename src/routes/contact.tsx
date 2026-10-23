@@ -8,17 +8,17 @@ import { SiteFooter, SiteHeader } from "@/components/SiteChrome";
 export const Route = createFileRoute("/contact")({
   head: () => ({
     meta: [
-      { title: "Contact reedmoon — Support & Discord" },
+      { title: "Contact RedMoon — Support & Discord" },
       {
         name: "description",
         content:
-          "Get in touch with the reedmoon team for product questions, middleman support, and top up assistance via Discord and WhatsApp.",
+          "Get in touch with the RedMoon team for product questions, middleman support, and top up assistance via Discord and WhatsApp.",
       },
-      { property: "og:title", content: "Contact reedmoon — Support & Discord" },
+      { property: "og:title", content: "Contact RedMoon — Support & Discord" },
       {
         property: "og:description",
         content:
-          "Connect with reedmoon on Discord or WhatsApp. Fast support for accounts and top ups.",
+          "Connect with RedMoon on Discord or WhatsApp. Fast support for accounts and top ups.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -75,7 +75,7 @@ function ContactPage() {
             We're here to help.
           </h1>
           <p className="bm-lead" style={{ fontSize: "17px", marginBottom: "32px" }}>
-            The reedmoon team can help with product questions, payment guidance, delivery support,
+            The RedMoon team can help with product questions, payment guidance, delivery support,
             transfer assistance, and transaction process questions.
           </p>
           <p className="bm-lead" style={{ fontSize: "15px", color: "var(--bm-ink-soft)" }}>

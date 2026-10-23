@@ -16,9 +16,14 @@ import {
   FileText,
   HelpCircle,
   Globe,
+  Sparkles,
+  Gamepad2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SiteFooter, SiteHeader } from "@/components/SiteChrome";
+import { AdminGameWorldsManager } from "@/components/AdminGameWorldsManager";
+import { AdminHomeGamesManager } from "@/components/AdminHomeGamesManager";
+import { AdminFeaturedAccountsManager } from "@/components/AdminFeaturedAccountsManager";
 import {
   getPageFromDB,
   savePageToDB,
@@ -33,7 +38,7 @@ import {
 export const Route = createFileRoute("/admin/cms")({
   head: () => ({
     meta: [
-      { title: "CMS & Component Manager — reedmoon" },
+      { title: "CMS & Component Manager — RedMoon" },
       { name: "description", content: "Granular per-component CMS and real-time live preview." },
     ],
   }),
@@ -47,8 +52,8 @@ function AdminCMSPage() {
   const [activeSlug, setActiveSlug] = useState<string>("home");
   const [pageData, setPageData] = useState<PageContent>({
     slug: "home",
-    title: "reedmoon Gaming Store",
-    heroTitle: "reedmoon Gaming Store",
+    title: "RedMoon Gaming Store",
+    heroTitle: "RedMoon Gaming Store",
     heroSubtitle: "Great accounts. Safer trades. More possibilities in every game.",
     heroImage: "/assets/aistudio/bg_fe70fe49.jpg",
     leadText: "Your trusted destination for game accounts and top-ups.",
@@ -159,6 +164,21 @@ function AdminCMSPage() {
       <section className="max-w-7xl w-full mx-auto px-4 md:px-8 py-6 flex-1">
         <div className="flex items-center gap-2 p-1.5 bg-secondary/40 rounded-xl border border-border/60 mb-6 overflow-x-auto shadow-sm">
           {[
+            {
+              id: "featured_account_cards",
+              label: "Account for Sale Cards (Home)",
+              icon: Sparkles,
+            },
+            {
+              id: "accounts_for_sale_worlds",
+              label: "Four Worlds Showcase",
+              icon: Sparkles,
+            },
+            {
+              id: "choose_your_game",
+              label: "Choose your Game (Home)",
+              icon: Gamepad2,
+            },
             { id: "home", label: "Home Page (/)Components", icon: Layers },
             { id: "accounts", label: "Accounts Catalog", icon: FileText },
             { id: "games", label: "Top Up & Games", icon: Layers },
@@ -184,8 +204,14 @@ function AdminCMSPage() {
           })}
         </div>
 
-        {/* Split Grid: Editor (Left) & Live Preview (Right) */}
-        {activeSlug !== "faq" ? (
+        {/* Component / Page Views */}
+        {activeSlug === "featured_account_cards" ? (
+          <AdminFeaturedAccountsManager />
+        ) : activeSlug === "accounts_for_sale_worlds" ? (
+          <AdminGameWorldsManager />
+        ) : activeSlug === "choose_your_game" ? (
+          <AdminHomeGamesManager />
+        ) : activeSlug !== "faq" ? (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             {/* Editor Panel (5 cols) */}
             <div className="lg:col-span-6 bg-card border border-border/80 rounded-2xl p-6 shadow-xl">

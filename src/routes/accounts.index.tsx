@@ -24,13 +24,13 @@ export const Route = createFileRoute("/accounts/")({
   }),
   head: () => ({
     meta: [
-      { title: "Accounts for Sale — reedmoon Gaming Store" },
+      { title: "Accounts for Sale — RedMoon Gaming Store" },
       {
         name: "description",
         content:
           "Ready-to-play Whiteout Survival, Kingshot, Rise of Kingdoms, and Call of Dragons accounts. Pick one and order on Discord.",
       },
-      { property: "og:title", content: "Accounts for Sale — reedmoon" },
+      { property: "og:title", content: "Accounts for Sale — RedMoon" },
       {
         property: "og:description",
         content: "Pick the strategy game account you want and order on Discord.",

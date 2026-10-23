@@ -9,16 +9,16 @@ export function SiteHeader() {
   const [open, setOpen] = useState(false);
   return (
     <header className="bm-header relative">
-      <Link to="/" className="bm-logo" aria-label="reedmoon, home">
+      <Link to="/" className="bm-logo" aria-label="RedMoon, home">
         <img
           src={logoAsset}
           width={42}
           height={42}
-          alt="reedmoon logo"
+          alt="RedMoon logo"
           className="rounded-lg object-contain h-10 w-10"
         />
         <span className="text-white text-xl md:text-2xl font-bold tracking-tight">
-          reed<span className="text-red-500">moon</span>
+          Red<span className="text-red-500">Moon</span>
         </span>
       </Link>
       <nav className="hidden md:flex items-center gap-8 text-[15px] font-medium text-slate-300">
@@ -127,11 +127,11 @@ export function SiteFooter() {
             src={logoAsset}
             width={40}
             height={40}
-            alt="reedmoon logo"
+            alt="RedMoon logo"
             className="rounded-lg object-contain h-10 w-10"
           />
           <span>
-            reed<span className="text-red-500">moon</span>
+            Red<span className="text-red-500">Moon</span>
           </span>
         </Link>
         <a

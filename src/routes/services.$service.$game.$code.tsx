@@ -43,11 +43,11 @@ export const Route = createFileRoute("/services/$service/$game/$code")({
     const g = item ? findGame(item.game) : findGame(params.game);
     const title =
       item && g
-        ? `${item.name} (${g.name}) — Top Up reedmoon`
-        : `Top Up Pack ${code} — reedmoon Gaming Store`;
+        ? `${item.name} (${g.name}) — Top Up RedMoon`
+        : `Top Up Pack ${code} — RedMoon Gaming Store`;
     const desc =
       item?.description ||
-      `Top up ${item?.name || code} for ${g?.name || "your game"} safely in USD via reedmoon Discord ticket.`;
+      `Top up ${item?.name || code} for ${g?.name || "your game"} safely in USD via RedMoon Discord ticket.`;
     const url = `/services/${params.service}/${params.game}/${params.code}`;
 
     return {
@@ -229,7 +229,7 @@ function TopUpDetailPage() {
               </div>
               <div className="flex items-center gap-3 text-xs text-slate-300">
                 <Zap className="w-4 h-4 text-amber-400 shrink-0" />
-                <span>Handled directly by official reedmoon team on Discord</span>
+                <span>Handled directly by official RedMoon team on Discord</span>
               </div>
             </div>
           </div>
@@ -346,7 +346,7 @@ function TopUpDetailPage() {
               </h3>
               <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
                 {pack.instructions ||
-                  `Send your ${game.name} Player ID and State / Kingdom number when opening your ticket on the reedmoon Discord. Our staff will fulfill and verify your order within minutes.`}
+                  `Send your ${game.name} Player ID and State / Kingdom number when opening your ticket on the RedMoon Discord. Our staff will fulfill and verify your order within minutes.`}
               </p>
             </div>
           </div>
@@ -378,7 +378,7 @@ function TopUpDetailPage() {
               <span className="font-mono text-2xl font-black text-red-400/60 block">02</span>
               <h3 className="font-bold text-sm text-white">Paste in Ticket</h3>
               <p className="text-xs text-slate-400 leading-relaxed">
-                Paste your message in the reedmoon Discord ticket with your Player ID and State.
+                Paste your message in the RedMoon Discord ticket with your Player ID and State.
               </p>
             </div>
 

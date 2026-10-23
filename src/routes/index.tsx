@@ -9,35 +9,37 @@ import { SiteFooter, SiteHeader } from "@/components/SiteChrome";
 import { ProductGrid } from "@/components/Products";
 import { HomeTestimonials } from "@/components/Testimonials";
 import { ServiceCards } from "@/components/ServiceCards";
+import { HomeGamesShowcase } from "@/components/HomeGamesShowcase";
+import { FeaturedAccountsShowcase } from "@/components/FeaturedAccountsShowcase";
 import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "reedmoon — Game Accounts, Middleman & Top Up Terpercaya" },
+      { title: "RedMoon — Game Accounts, Middleman & Top Up Terpercaya" },
       {
         name: "description",
         content:
-          "Toko game terpercaya reedmoon — Jual beli akun game aman, top up termurah, dan jasa middleman/rekber untuk Whiteout Survival, Kingshot, Rise of Kingdoms, dan Call of Dragons.",
+          "Toko game terpercaya RedMoon — Jual beli akun game aman, top up termurah, dan jasa middleman/rekber untuk Whiteout Survival, Kingshot, Rise of Kingdoms, dan Call of Dragons.",
       },
       {
         property: "og:title",
-        content: "reedmoon — Game Accounts, Middleman & Top Up Terpercaya",
+        content: "RedMoon — Game Accounts, Middleman & Top Up Terpercaya",
       },
       {
         property: "og:description",
         content:
-          "Beli dan jual akun game, top up termurah, dan jasa middleman terpercaya bergaransi di reedmoon.",
+          "Beli dan jual akun game, top up termurah, dan jasa middleman terpercaya bergaransi di RedMoon.",
       },
       { property: "og:type", content: "website" },
       { property: "og:url", content: "https://redmoon-shop.com/" },
       { property: "og:image", content: "https://redmoon-shop.com/logo.png" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: "reedmoon — Game Accounts, Middleman & Top Up Terpercaya" },
+      { name: "twitter:title", content: "RedMoon — Game Accounts, Middleman & Top Up Terpercaya" },
       {
         name: "twitter:description",
         content:
-          "Beli dan jual akun game, top up termurah, dan jasa middleman terpercaya bergaransi di reedmoon.",
+          "Beli dan jual akun game, top up termurah, dan jasa middleman terpercaya bergaransi di RedMoon.",
       },
       { name: "twitter:image", content: "https://redmoon-shop.com/logo.png" },
     ],
@@ -49,15 +51,15 @@ export const Route = createFileRoute("/")({
 const faqs = [
   {
     q: "How do I order an account?",
-    a: "Pick an account from the collection, then message reedmoon on Discord to confirm availability and complete your purchase. Every listing links straight to our Discord.",
+    a: "Pick an account from the collection, then message RedMoon on Discord to confirm availability and complete your purchase. Every listing links straight to our Discord.",
   },
   {
-    q: "Is trading with reedmoon safe?",
+    q: "Is trading with RedMoon safe?",
     a: "Yes. Every deal goes through our verified process — secure checkout, guided transfer, and an account guarantee so you're never left on your own.",
   },
   {
     q: "What is the middleman service?",
-    a: "If you're trading with another player, reedmoon acts as the trusted middleman: we hold the account and the payment until both sides have delivered, then release them.",
+    a: "If you're trading with another player, RedMoon acts as the trusted middleman: we hold the account and the payment until both sides have delivered, then release them.",
   },
   {
     q: "How fast are game top ups?",
@@ -65,7 +67,7 @@ const faqs = [
   },
   {
     q: "Can I sell my account here?",
-    a: "Absolutely. Contact reedmoon on Discord with your account details and we'll verify it, list it, and handle the sale for you.",
+    a: "Absolutely. Contact RedMoon on Discord with your account details and we'll verify it, list it, and handle the sale for you.",
   },
 ];
 
@@ -105,7 +107,7 @@ function Index() {
                 ? pageContent.heroImage
                 : "/bg-hero-deskrop.png"
             }
-            alt="reedmoon"
+            alt="RedMoon"
             fetchPriority="high"
           />
         </picture>
@@ -118,7 +120,7 @@ function Index() {
               pageContent.heroTitle
             ) : (
               <>
-                reed<span className="text-red-500">moon</span>
+                Red<span className="text-red-500">Moon</span>
               </>
             )}
           </h1>
@@ -240,64 +242,11 @@ function Index() {
         <ServiceCards />
       </section>
 
-      {/* Featured Accounts Section */}
-      <section id="accounts" className="bm-section--full">
-        <div className="bm-section-head">
-          <div>
-            <span className="text-xs font-semibold tracking-wider text-red-500 uppercase">
-              Catalog
-            </span>
-            <h2 className="text-2xl md:text-3xl font-bold mt-1">Account for Sale</h2>
-          </div>
-          <Link className="bm-text-link" to="/accounts" search={{}}>
-            View all accounts <ArrowUpRight aria-hidden="true" />
-          </Link>
-        </div>
-        <ProductGrid items={activeCatalog.filter((p) => p.status === "tersedia").slice(0, 6)} />
-        <div className="mt-8 text-center md:hidden">
-          <Link className="bm-btn bm-btn-outline w-full" to="/accounts" search={{}}>
-            See all accounts <ArrowUpRight aria-hidden="true" />
-          </Link>
-        </div>
-      </section>
+      {/* Featured Accounts Section (Dynamic & Live Synced with Admin) */}
+      <FeaturedAccountsShowcase />
 
-      {/* Game Catalog Section */}
-      <section id="games" className="bm-section--full">
-        <div className="bm-section-head">
-          <div>
-            <span className="text-xs font-semibold tracking-wider text-red-500 uppercase">
-              Games
-            </span>
-            <h2 className="text-2xl md:text-3xl font-bold mt-1">Choose your Game</h2>
-          </div>
-          <Link to="/games" className="bm-text-link">
-            All games <ArrowUpRight />
-          </Link>
-        </div>
-        <div className="bm-cards bm-cards--4">
-          {games.map((g) => (
-            <Link key={g.slug} to="/accounts" search={{ game: g.slug }} className="bm-card group">
-              <div className="bm-card-img">
-                <img
-                  src={g.image}
-                  alt={g.imageAlt}
-                  width={928}
-                  height={720}
-                  loading="lazy"
-                  className="transition-transform duration-300 group-hover:scale-105"
-                />
-              </div>
-              <div className="bm-card-body">
-                <span className="text-xs text-muted-foreground">{g.genre}</span>
-                <h3 className="font-semibold text-base text-foreground mt-1">{g.name}</h3>
-                <span className="bm-text-link mt-auto pt-3 text-red-500">
-                  Explore accounts <ArrowUpRight />
-                </span>
-              </div>
-            </Link>
-          ))}
-        </div>
-      </section>
+      {/* Game Catalog Section (Dynamic & Live Synced with Admin) */}
+      <HomeGamesShowcase />
 
       {/* Security Pillars Section */}
       <section className="bm-section--full bg-secondary/20">
@@ -306,7 +255,7 @@ function Index() {
             <span className="text-xs font-semibold tracking-wider text-red-500 uppercase">
               Trust & Safety
             </span>
-            <h2 className="text-2xl md:text-3xl font-bold mt-1">Why Players Trade with reedmoon</h2>
+            <h2 className="text-2xl md:text-3xl font-bold mt-1">Why Players Trade with RedMoon</h2>
           </div>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
