@@ -4111,15 +4111,56 @@ export function AdminDashboardPage() {
 
                 <div>
                   <label className="text-xs font-semibold text-muted-foreground uppercase block mb-1.5">
-                    Official WhatsApp Support Number
+                    Discord Support Users
                   </label>
-                  <input
-                    type="text"
-                    value={settings.whatsapp || ""}
-                    onChange={(e) => setSettings({ ...settings, whatsapp: e.target.value })}
-                    placeholder="+62 821-2780-6072"
-                    className="w-full bg-secondary/40 border border-border rounded-lg p-2.5 text-xs"
-                  />
+                  <div className="space-y-2">
+                    {settings.discordUsers.map((user, idx) => (
+                      <div key={idx} className="flex gap-2">
+                        <input
+                          type="text"
+                          value={user.name}
+                          onChange={(e) => {
+                            const newUsers = [...settings.discordUsers];
+                            newUsers[idx].name = e.target.value;
+                            setSettings({ ...settings, discordUsers: newUsers });
+                          }}
+                          placeholder="Name (e.g. bluemask22)"
+                          className="flex-1 bg-secondary/40 border border-border rounded-lg p-2 text-xs"
+                        />
+                        <input
+                          type="url"
+                          value={user.link}
+                          onChange={(e) => {
+                            const newUsers = [...settings.discordUsers];
+                            newUsers[idx].link = e.target.value;
+                            setSettings({ ...settings, discordUsers: newUsers });
+                          }}
+                          placeholder="Link"
+                          className="flex-1 bg-secondary/40 border border-border rounded-lg p-2 text-xs"
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          onClick={() => {
+                            const newUsers = settings.discordUsers.filter((_, i) => i !== idx);
+                            setSettings({ ...settings, discordUsers: newUsers });
+                          }}
+                          className="text-rose-400"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    ))}
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setSettings({ ...settings, discordUsers: [...settings.discordUsers, { name: "", link: "" }] })}
+                      className="text-xs"
+                    >
+                      <Plus className="w-3.5 h-3.5 mr-1" /> Add Discord User
+                    </Button>
+                  </div>
                 </div>
 
                 <div className="pt-2">

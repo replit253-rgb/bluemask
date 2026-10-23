@@ -1,14 +1,19 @@
 import { products as initialProducts, type Product } from "./products";
 import { topUpPackages as initialTopUpPackages, type TopUpPackage } from "./topup";
-import { discordLink as defaultDiscord, whatsappNumber as defaultWa } from "./catalog";
+import { discordLink as defaultDiscord } from "./catalog";
 import { getProductsFromDB, saveProductToDB, getTopUpsFromDB, saveTopUpToDB } from "./db";
+
+export type DiscordUser = { name: string; link: string };
 
 export type StoreSettings = {
   discordLink: string;
-  whatsapp?: string;
+  discordUsers: DiscordUser[];
 };
 
-let cachedSettings: StoreSettings = { discordLink: defaultDiscord, whatsapp: defaultWa };
+let cachedSettings: StoreSettings = {
+  discordLink: defaultDiscord,
+  discordUsers: [{ name: "bluemask22", link: "https://discord.com/users/123456789" }],
+};
 
 export function getStoredProducts(): Product[] {
   return initialProducts;
