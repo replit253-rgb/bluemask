@@ -14,24 +14,34 @@ import { Button } from "@/components/ui/button";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "BlueMask Gaming Store — Game Accounts, Middleman & Top Up" },
+      { title: "reedmoon — Game Accounts, Middleman & Top Up Terpercaya" },
       {
         name: "description",
         content:
-          "Buy and sell accounts, middleman, and top up at BlueMask Gaming Store for Whiteout Survival, Kingshot, Rise of Kingdoms, and Call of Dragons.",
+          "Toko game terpercaya reedmoon — Jual beli akun game aman, top up termurah, dan jasa middleman/rekber untuk Whiteout Survival, Kingshot, Rise of Kingdoms, dan Call of Dragons.",
       },
       {
         property: "og:title",
-        content: "BlueMask Gaming Store — Game Accounts, Middleman & Top Up",
+        content: "reedmoon — Game Accounts, Middleman & Top Up Terpercaya",
       },
       {
         property: "og:description",
         content:
-          "Buy and sell accounts, middleman, and top up for strategy games. Reach BlueMask on Discord.",
+          "Beli dan jual akun game, top up termurah, dan jasa middleman terpercaya bergaransi di reedmoon.",
       },
       { property: "og:type", content: "website" },
+      { property: "og:url", content: "https://redmoon-shop.com/" },
+      { property: "og:image", content: "https://redmoon-shop.com/logo.png" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "reedmoon — Game Accounts, Middleman & Top Up Terpercaya" },
+      {
+        name: "twitter:description",
+        content:
+          "Beli dan jual akun game, top up termurah, dan jasa middleman terpercaya bergaransi di reedmoon.",
+      },
+      { name: "twitter:image", content: "https://redmoon-shop.com/logo.png" },
     ],
+    links: [{ rel: "canonical", href: "https://redmoon-shop.com/" }],
   }),
   component: Index,
 });
@@ -39,15 +49,15 @@ export const Route = createFileRoute("/")({
 const faqs = [
   {
     q: "How do I order an account?",
-    a: "Pick an account from the collection, then message BlueMask on Discord to confirm availability and complete your purchase. Every listing links straight to our Discord.",
+    a: "Pick an account from the collection, then message reedmoon on Discord to confirm availability and complete your purchase. Every listing links straight to our Discord.",
   },
   {
-    q: "Is trading with BlueMask safe?",
+    q: "Is trading with reedmoon safe?",
     a: "Yes. Every deal goes through our verified process — secure checkout, guided transfer, and an account guarantee so you're never left on your own.",
   },
   {
     q: "What is the middleman service?",
-    a: "If you're trading with another player, BlueMask acts as the trusted middleman: we hold the account and the payment until both sides have delivered, then release them.",
+    a: "If you're trading with another player, reedmoon acts as the trusted middleman: we hold the account and the payment until both sides have delivered, then release them.",
   },
   {
     q: "How fast are game top ups?",
@@ -55,7 +65,7 @@ const faqs = [
   },
   {
     q: "Can I sell my account here?",
-    a: "Absolutely. Contact BlueMask on Discord with your account details and we'll verify it, list it, and handle the sale for you.",
+    a: "Absolutely. Contact reedmoon on Discord with your account details and we'll verify it, list it, and handle the sale for you.",
   },
 ];
 
@@ -82,24 +92,33 @@ function Index() {
       {/* Hero Section */}
       <section className="bm-hero">
         <picture>
-          <source media="(max-width: 768px)" srcSet="/assets/aistudio/bg-mobile.jpeg" />
+          <source
+            media="(max-width: 768px)"
+            srcSet={pageContent?.heroImageMobile || "/bg-hero-mobile.png"}
+          />
           <img
             className="bm-hero-image"
-            src={pageContent?.heroImage || "/assets/aistudio/bg_fe70fe49.jpg"}
-            alt="BlueMask Gaming Store"
+            src={
+              pageContent?.heroImage &&
+              !pageContent.heroImage.includes("bg_fe70fe49.jpg") &&
+              pageContent.heroImage !== "/bg-mobile.jpeg"
+                ? pageContent.heroImage
+                : "/bg-hero-deskrop.png"
+            }
+            alt="reedmoon"
             fetchPriority="high"
           />
         </picture>
         <div className="bm-hero-content">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-sky-950/80 border border-sky-400/40 text-sky-300 text-xs font-semibold mb-4 tracking-wide shadow-sm backdrop-blur-md">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-red-950/80 border border-red-500/40 text-red-300 text-xs font-semibold mb-4 tracking-wide shadow-sm backdrop-blur-md">
             TRUSTED GAMING ACCOUNT MARKETPLACE
           </div>
           <h1 className="bm-hero-title">
-            {pageContent?.heroTitle ? (
+            {pageContent?.heroTitle && !pageContent.heroTitle.includes("BlueMask") ? (
               pageContent.heroTitle
             ) : (
               <>
-                BlueMask<span className="text-sky-400">Gaming Store</span>
+                reed<span className="text-red-500">moon</span>
               </>
             )}
           </h1>
@@ -148,7 +167,7 @@ function Index() {
 
           <div className="bm-trust-ribbon">
             <span>
-              <ShieldCheck className="w-4 h-4 text-sky-400" /> Middleman Service
+              <ShieldCheck className="w-4 h-4 text-red-500" /> Middleman Service
             </span>
             <span aria-hidden="true">·</span>
             <span>
@@ -166,8 +185,8 @@ function Index() {
       <section className="relative z-10 border-b border-border/40 bg-card/60 backdrop-blur-sm py-8">
         <div className="max-w-7xl mx-auto px-4 md:px-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="flex items-start gap-4 p-5 rounded-xl border border-border/60 bg-card/80 hover:border-sky-500/50 transition-all duration-200 shadow-sm">
-              <div className="w-12 h-12 rounded-lg bg-sky-950/80 border border-sky-800/60 flex items-center justify-center text-sky-400 shrink-0">
+            <div className="flex items-start gap-4 p-5 rounded-xl border border-border/60 bg-card/80 hover:border-red-500/50 transition-all duration-200 shadow-sm">
+              <div className="w-12 h-12 rounded-lg bg-red-950/80 border border-red-800/60 flex items-center justify-center text-red-500 shrink-0">
                 <ShieldCheck className="w-6 h-6" />
               </div>
               <div>
@@ -209,7 +228,7 @@ function Index() {
       <section className="bm-section--full bm-section-services">
         <div className="bm-section-head">
           <div>
-            <span className="text-xs font-semibold tracking-wider text-sky-400 uppercase">
+            <span className="text-xs font-semibold tracking-wider text-red-500 uppercase">
               Core Services
             </span>
             <h2 className="text-2xl md:text-3xl font-bold mt-1">Middleman & Trading Services</h2>
@@ -225,7 +244,7 @@ function Index() {
       <section id="accounts" className="bm-section--full">
         <div className="bm-section-head">
           <div>
-            <span className="text-xs font-semibold tracking-wider text-sky-400 uppercase">
+            <span className="text-xs font-semibold tracking-wider text-red-500 uppercase">
               Catalog
             </span>
             <h2 className="text-2xl md:text-3xl font-bold mt-1">Account for Sale</h2>
@@ -246,7 +265,7 @@ function Index() {
       <section id="games" className="bm-section--full">
         <div className="bm-section-head">
           <div>
-            <span className="text-xs font-semibold tracking-wider text-sky-400 uppercase">
+            <span className="text-xs font-semibold tracking-wider text-red-500 uppercase">
               Games
             </span>
             <h2 className="text-2xl md:text-3xl font-bold mt-1">Choose your Game</h2>
@@ -271,7 +290,7 @@ function Index() {
               <div className="bm-card-body">
                 <span className="text-xs text-muted-foreground">{g.genre}</span>
                 <h3 className="font-semibold text-base text-foreground mt-1">{g.name}</h3>
-                <span className="bm-text-link mt-auto pt-3 text-sky-400">
+                <span className="bm-text-link mt-auto pt-3 text-red-500">
                   Explore accounts <ArrowUpRight />
                 </span>
               </div>
@@ -284,15 +303,15 @@ function Index() {
       <section className="bm-section--full bg-secondary/20">
         <div className="bm-section-head mb-8">
           <div>
-            <span className="text-xs font-semibold tracking-wider text-sky-400 uppercase">
+            <span className="text-xs font-semibold tracking-wider text-red-500 uppercase">
               Trust & Safety
             </span>
-            <h2 className="text-2xl md:text-3xl font-bold mt-1">Why Players Trade with BlueMask</h2>
+            <h2 className="text-2xl md:text-3xl font-bold mt-1">Why Players Trade with reedmoon</h2>
           </div>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="p-6 rounded-xl border border-border/60 bg-card/60 backdrop-blur-sm">
-            <div className="w-10 h-10 rounded-lg bg-sky-950/60 border border-sky-800/40 flex items-center justify-center text-sky-400 mb-4">
+            <div className="w-10 h-10 rounded-lg bg-red-950/60 border border-red-800/40 flex items-center justify-center text-red-500 mb-4">
               <ShieldCheck className="w-5 h-5" />
             </div>
             <h3 className="font-semibold text-lg text-foreground mb-2">Middleman Service</h3>
@@ -330,7 +349,7 @@ function Index() {
       <section className="bm-section--full">
         <div className="bm-section-head">
           <div>
-            <span className="text-xs font-semibold tracking-wider text-sky-400 uppercase">
+            <span className="text-xs font-semibold tracking-wider text-red-500 uppercase">
               Reviews
             </span>
             <h2 className="text-2xl md:text-3xl font-bold mt-1">From Players Who Traded With Us</h2>
@@ -343,7 +362,7 @@ function Index() {
       <section className="bm-section--full">
         <div className="bm-section-head">
           <div>
-            <span className="text-xs font-semibold tracking-wider text-sky-400 uppercase">
+            <span className="text-xs font-semibold tracking-wider text-red-500 uppercase">
               Support
             </span>
             <h2 className="text-2xl md:text-3xl font-bold mt-1">Frequently Asked Questions</h2>
@@ -357,7 +376,7 @@ function Index() {
                 onClick={() => setOpenIndex(openIndex === i ? null : i)}
               >
                 {f.q}
-                <span className="ml-4 text-sky-400">{openIndex === i ? "—" : "+"}</span>
+                <span className="ml-4 text-red-500">{openIndex === i ? "—" : "+"}</span>
               </button>
               {openIndex === i && (
                 <p className="mt-3 text-sm text-muted-foreground leading-relaxed">{f.a}</p>

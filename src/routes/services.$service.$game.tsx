@@ -27,19 +27,19 @@ export const Route = createFileRoute("/services/$service/$game")({
     if (!s || !g)
       return {
         meta: [
-          { title: "Page unavailable — BlueMask" },
-          { name: "description", content: "This BlueMask service page is unavailable." },
-          { property: "og:title", content: "Page unavailable — BlueMask" },
-          { property: "og:description", content: "This BlueMask service page is unavailable." },
+          { title: "Page unavailable — reedmoon" },
+          { name: "description", content: "This reedmoon service page is unavailable." },
+          { property: "og:title", content: "Page unavailable — reedmoon" },
+          { property: "og:description", content: "This reedmoon service page is unavailable." },
           { property: "og:type", content: "website" },
           { name: "twitter:card", content: "summary" },
           { name: "robots", content: "noindex" },
         ],
       };
-    const title = `${s.name} ${g.name} — BlueMask Gaming Store`;
+    const title = `${s.name} ${g.name} — reedmoon Gaming Store`;
     const desc =
       s.slug === "top-up"
-        ? `Affordable, safe ${g.name} top ups with BlueMask. Pick a pack, send your player ID, and it lands in your account.`
+        ? `Affordable, safe ${g.name} top ups with reedmoon. Pick a pack, send your player ID, and it lands in your account.`
         : `${s.intro} For ${g.name} accounts.`;
     const url = `/services/${params.service}/${params.game}`;
     return {
@@ -160,7 +160,7 @@ function ServicePage() {
         </section>
       )}
 
-      <Marquee items={[service.name, game.name, "BlueMask"]} />
+      <Marquee items={[service.name, game.name, "reedmoon"]} />
 
       <section className="bm-section">
         <div className="bm-section-head">

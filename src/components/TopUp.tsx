@@ -41,8 +41,8 @@ export function TopUpCard({
     <div
       className={`group relative flex flex-col justify-between rounded-xl p-3 sm:p-4 transition-all duration-300 border text-foreground ${
         p.popular
-          ? "bg-[#111c3d] border-blue-500/50 shadow-lg shadow-blue-950/40 hover:border-blue-400 hover:shadow-blue-500/20"
-          : "bg-[#0c152e] border-slate-800/80 hover:border-blue-500/40 hover:bg-[#101b3a]"
+          ? "bg-[#18050b] border-red-500/50 shadow-lg shadow-red-950/40 hover:border-red-400 hover:shadow-red-500/20"
+          : "bg-[#0c0407] border-red-950/60 hover:border-red-500/40 hover:bg-[#14060a]"
       }`}
     >
       {/* Popular Badge */}
@@ -69,7 +69,7 @@ export function TopUpCard({
           <img
             src={bgImg}
             alt={p.name}
-            className="w-full h-full object-contain rounded-lg drop-shadow-[0_4px_12px_rgba(59,130,246,0.35)]"
+            className="w-full h-full object-contain rounded-lg drop-shadow-[0_4px_12px_rgba(220,38,38,0.35)]"
           />
         </div>
       </Link>
@@ -85,7 +85,7 @@ export function TopUpCard({
               onOpenDetail(p);
             }
           }}
-          className="font-bold text-xs sm:text-sm text-white tracking-tight line-clamp-1 hover:text-sky-300 transition-colors block w-full text-center cursor-pointer"
+          className="font-bold text-xs sm:text-sm text-white tracking-tight line-clamp-1 hover:text-red-400 transition-colors block w-full text-center cursor-pointer"
         >
           {p.name}
         </Link>
@@ -105,14 +105,14 @@ export function TopUpCard({
               onOpenDetail(p);
             }
           }}
-          className="text-[10px] sm:text-[11px] font-semibold text-sky-400 hover:text-sky-300 hover:underline inline-flex items-center gap-1 cursor-pointer"
+          className="text-[10px] sm:text-[11px] font-semibold text-red-400 hover:text-red-300 hover:underline inline-flex items-center gap-1 cursor-pointer"
         >
           <Info className="w-3 h-3" /> View Detail
         </Link>
       </div>
 
       {/* Footer / Price & Order Button */}
-      <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between gap-2">
+      <div className="pt-2 border-t border-red-950/60 flex items-center justify-between gap-2">
         <div>
           <span className="text-[9px] uppercase font-mono text-slate-400 block -mb-0.5">Price</span>
           <strong className="text-sm sm:text-base font-black text-white tabular-nums tracking-tight">
@@ -136,7 +136,7 @@ export function TopUpCard({
           className={`px-2.5 py-1 rounded-lg text-[11px] font-bold inline-flex items-center gap-1 transition-all ${
             copied
               ? "bg-emerald-500 text-white shadow-md shadow-emerald-500/30"
-              : "bg-blue-600 text-white hover:bg-blue-500 shadow-md shadow-blue-600/30 group-hover:translate-x-0.5"
+              : "bg-red-600 text-white hover:bg-red-500 shadow-md shadow-red-600/30 group-hover:translate-x-0.5"
           }`}
         >
           {copied ? (
@@ -188,13 +188,13 @@ export function TopUpProductDetailModal({
       onClick={onClose}
     >
       <div
-        className="relative w-full max-w-2xl bg-[#0c152e] border border-blue-500/40 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
+        className="relative w-full max-w-2xl bg-[#0c0407] border border-red-500/40 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Modal Header */}
-        <div className="flex items-center justify-between p-4 sm:p-5 border-b border-slate-800/80 bg-[#101b3a]">
+        <div className="flex items-center justify-between p-4 sm:p-5 border-b border-red-950/80 bg-[#14060a]">
           <div className="flex items-center gap-2.5">
-            <span className="px-2.5 py-1 rounded-md bg-blue-950 text-sky-400 font-mono text-xs font-bold border border-blue-500/30">
+            <span className="px-2.5 py-1 rounded-md bg-red-950/70 text-red-400 font-mono text-xs font-bold border border-red-500/30">
               {pack.code}
             </span>
             <span className="text-xs font-semibold text-slate-300">
@@ -220,25 +220,25 @@ export function TopUpProductDetailModal({
           <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
             {/* Left Column: Image & Quick Specs */}
             <div className="md:col-span-5 flex flex-col items-center space-y-4">
-              <div className="w-full aspect-square max-w-[220px] rounded-xl bg-[#142144] border border-slate-700/60 p-4 flex items-center justify-center shadow-inner">
+              <div className="w-full aspect-square max-w-[220px] rounded-xl bg-[#18050b] border border-red-950/60 p-4 flex items-center justify-center shadow-inner">
                 <img
                   src={bgImg}
                   alt={pack.name}
-                  className="w-full h-full object-contain drop-shadow-[0_8px_20px_rgba(59,130,246,0.35)]"
+                  className="w-full h-full object-contain drop-shadow-[0_8px_20px_rgba(220,38,38,0.35)]"
                 />
               </div>
 
               {/* Quick Spec Tags */}
               <div className="w-full space-y-2">
-                <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#111c38] border border-slate-800 text-xs text-slate-300">
-                  <Clock className="w-4 h-4 text-sky-400 shrink-0" />
+                <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#14060a] border border-red-950/80 text-xs text-slate-300">
+                  <Clock className="w-4 h-4 text-red-400 shrink-0" />
                   <span>Delivery: </span>
                   <strong className="text-white ml-auto">
                     {pack.deliveryTime || "5 - 15 Minutes"}
                   </strong>
                 </div>
 
-                <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#111c38] border border-slate-800 text-xs text-slate-300">
+                <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#14060a] border border-red-950/80 text-xs text-slate-300">
                   <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
                   <span>Security: </span>
                   <strong className="text-emerald-300 ml-auto">Player ID Only</strong>
@@ -256,7 +256,7 @@ export function TopUpProductDetailModal({
               </div>
 
               {/* Price Banner */}
-              <div className="p-3.5 rounded-xl bg-[#131f42] border border-blue-500/30 flex items-center justify-between">
+              <div className="p-3.5 rounded-xl bg-[#1a080d] border border-red-500/30 flex items-center justify-between">
                 <div>
                   <span className="text-[10px] uppercase font-mono text-slate-400 block">
                     Fixed Price (USD)
@@ -275,7 +275,7 @@ export function TopUpProductDetailModal({
                 <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">
                   Product Description
                 </h4>
-                <p className="text-xs sm:text-sm text-slate-300 leading-relaxed bg-[#0e1935] p-3 rounded-lg border border-slate-800">
+                <p className="text-xs sm:text-sm text-slate-300 leading-relaxed bg-[#14060a] p-3 rounded-lg border border-red-950/60">
                   {pack.description ||
                     `Official top up for ${game?.name || pack.game}. Fast transfer to your in-game player ID with 100% receipt assurance and zero risk to your account.`}
                 </p>
@@ -293,7 +293,7 @@ export function TopUpProductDetailModal({
                         key={i}
                         className="flex items-start gap-2 text-xs text-slate-300 leading-relaxed"
                       >
-                        <Check className="w-4 h-4 text-sky-400 shrink-0 mt-0.5" />
+                        <Check className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
                         <span>{f}</span>
                       </li>
                     ))}
@@ -303,8 +303,8 @@ export function TopUpProductDetailModal({
 
               {/* Instructions */}
               {pack.instructions && (
-                <div className="p-3 rounded-lg bg-secondary/20 border border-slate-800 text-xs text-slate-300 space-y-1">
-                  <strong className="text-sky-300 block font-semibold">How to Order:</strong>
+                <div className="p-3 rounded-lg bg-secondary/20 border border-red-950/60 text-xs text-slate-300 space-y-1">
+                  <strong className="text-red-300 block font-semibold">How to Order:</strong>
                   <p className="text-slate-400 leading-relaxed">{pack.instructions}</p>
                 </div>
               )}
@@ -313,7 +313,7 @@ export function TopUpProductDetailModal({
         </div>
 
         {/* Modal Footer CTA */}
-        <div className="p-4 sm:p-5 border-t border-slate-800/80 bg-[#101b3a] flex flex-wrap items-center justify-between gap-3">
+        <div className="p-4 sm:p-5 border-t border-red-950/80 bg-[#14060a] flex flex-wrap items-center justify-between gap-3">
           <div className="text-xs text-slate-400">
             Clicking Order copies your player ticket message to clipboard.
           </div>
@@ -340,7 +340,7 @@ export function TopUpProductDetailModal({
               target="_blank"
               rel="noreferrer"
               onClick={handleOrder}
-              className="px-5 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs shadow-lg shadow-blue-600/30 flex items-center gap-1.5 cursor-pointer"
+              className="px-5 py-2 rounded-lg bg-red-600 hover:bg-red-500 text-white font-bold text-xs shadow-lg shadow-red-600/30 flex items-center gap-1.5 cursor-pointer"
             >
               Order on Discord <ArrowUpRight className="w-4 h-4" />
             </a>
@@ -424,11 +424,11 @@ export function TopUpGrid({ items, gameSlug }: { items: TopUpPackage[]; gameSlug
                 }}
                 className={`py-3.5 px-4 rounded-xl font-bold text-xs sm:text-sm transition-all duration-200 flex items-center justify-center gap-2 shadow-md cursor-pointer ${
                   isActive
-                    ? "bg-blue-600 text-white shadow-blue-600/30 ring-2 ring-blue-400"
-                    : "bg-[#142042] text-slate-300 hover:bg-[#1a2b58] hover:text-white border border-slate-700/60"
+                    ? "bg-red-600 text-white shadow-red-600/30 ring-2 ring-red-400"
+                    : "bg-[#14060a] text-slate-300 hover:bg-[#1f090f] hover:text-white border border-red-950/60"
                 }`}
               >
-                {cat === "Pack ID Top Up" && <Package className="w-4 h-4 text-blue-300" />}
+                {cat === "Pack ID Top Up" && <Package className="w-4 h-4 text-red-300" />}
                 {cat === "Frost Star Pack" && <Sparkles className="w-4 h-4 text-cyan-300" />}
                 {cat === "Kingdom Star Pack" && <Crown className="w-4 h-4 text-amber-300" />}
                 <span className="truncate">{cat}</span>
@@ -450,14 +450,14 @@ export function TopUpGrid({ items, gameSlug }: { items: TopUpPackage[]; gameSlug
       </div>
 
       {/* Category Section Header Banner */}
-      <div className="flex items-center gap-3 px-4 py-3 bg-[#111c38] rounded-xl border border-slate-800/80 shadow-sm">
-        <div className="w-8 h-8 rounded-lg bg-blue-600/20 border border-blue-500/40 flex items-center justify-center shrink-0">
+      <div className="flex items-center gap-3 px-4 py-3 bg-[#14060a] rounded-xl border border-red-950/80 shadow-sm">
+        <div className="w-8 h-8 rounded-lg bg-red-600/20 border border-red-500/40 flex items-center justify-center shrink-0">
           {activeCategory === "Frost Star Pack" ? (
             <Sparkles className="w-4 h-4 text-cyan-400" />
           ) : activeCategory === "Kingdom Star Pack" ? (
             <Crown className="w-4 h-4 text-amber-400" />
           ) : (
-            <Package className="w-4 h-4 text-blue-400" />
+            <Package className="w-4 h-4 text-red-400" />
           )}
         </div>
         <div>
@@ -479,7 +479,7 @@ export function TopUpGrid({ items, gameSlug }: { items: TopUpPackage[]; gameSlug
 
       {/* Grid of Cards */}
       {paginatedItems.length === 0 ? (
-        <div className="text-center py-12 bg-[#0c152e] rounded-2xl border border-slate-800">
+        <div className="text-center py-12 bg-[#0c0407] rounded-2xl border border-red-950">
           <p className="text-slate-400 text-sm">
             No top-up packs found for {activeCategory}. You can add them in the admin panel or
             contact us on Discord.

@@ -5,16 +5,16 @@ import { ServiceCards } from "@/components/ServiceCards";
 export const Route = createFileRoute("/services/")({
   head: () => ({
     meta: [
-      { title: "Services — BlueMask Gaming Store" },
+      { title: "Services — reedmoon Gaming Store" },
       {
         name: "description",
         content:
-          "Explore BlueMask game account trading, middleman support, and Whiteout Survival and Kingshot top ups.",
+          "Explore reedmoon game account trading, middleman support, and Whiteout Survival and Kingshot top ups.",
       },
-      { property: "og:title", content: "Services — BlueMask Gaming Store" },
+      { property: "og:title", content: "Services — reedmoon Gaming Store" },
       {
         property: "og:description",
-        content: "Account trading, middleman support and game top ups through BlueMask.",
+        content: "Account trading, middleman support and game top ups through reedmoon.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

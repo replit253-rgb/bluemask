@@ -6,8 +6,8 @@ import { Button } from "@/components/ui/button";
 export const Route = createFileRoute("/admin/login")({
   head: () => ({
     meta: [
-      { title: "Admin Login — BlueMask" },
-      { name: "description", content: "Admin login portal for BlueMask store management." },
+      { title: "Admin Login — reedmoon" },
+      { name: "description", content: "Admin login portal for reedmoon store management." },
     ],
   }),
   component: AdminLoginPage,
@@ -25,7 +25,8 @@ function AdminLoginPage() {
     const trimmedPass = password.trim();
 
     const isValidUser = normalizedUser === "admin" || normalizedUser === "admin@gmail.com";
-    const isValidPass = trimmedPass === "bluemask" || trimmedPass === "123admin123";
+    const isValidPass =
+      trimmedPass === "reedmoon" || trimmedPass === "bluemask" || trimmedPass === "123admin123";
 
     if (isValidUser && isValidPass) {
       localStorage.setItem("bm_is_admin", "true");
@@ -42,7 +43,7 @@ function AdminLoginPage() {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--bm-blue)_0%,_transparent_70%)] opacity-20" />
         <div className="relative z-10 text-center">
           <Shield className="w-24 h-24 text-primary mx-auto mb-8" />
-          <h2 className="text-4xl font-bold text-foreground">BlueMask Admin</h2>
+          <h2 className="text-4xl font-bold text-foreground">reedmoon Admin</h2>
           <p className="text-muted-foreground mt-4">Secure Store Management System</p>
         </div>
       </div>

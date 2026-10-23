@@ -60,11 +60,11 @@ import { TopUpProductDetailModal } from "@/components/TopUp";
 export const Route = createFileRoute("/admin/")({
   head: () => ({
     meta: [
-      { title: "Store Management Panel — BlueMask" },
+      { title: "Store Management Panel — reedmoon" },
       {
         name: "description",
         content:
-          "Store management portal for BlueMask gaming accounts, top-ups, and middleware services.",
+          "Store management portal for reedmoon gaming accounts, top-ups, and middleware services.",
       },
     ],
   }),
@@ -159,8 +159,8 @@ export function AdminDashboardPage() {
     image: "",
     checklist: ["Player ID", "Account credentials agreement", "Confirmation screenshot"],
     steps: [
-      { title: "Open a ticket", text: "Contact the BlueMask team on Discord with deal details." },
-      { title: "Review & Hold", text: "BlueMask holds funds safely until handover is complete." },
+      { title: "Open a ticket", text: "Contact the reedmoon team on Discord with deal details." },
+      { title: "Review & Hold", text: "reedmoon holds funds safely until handover is complete." },
       { title: "Complete", text: "Account verified and funds released smoothly." },
     ],
     gameSlugs: ["whiteout-survival", "kingshot", "rise-of-kingdoms", "call-of-dragons"],
@@ -747,7 +747,7 @@ export function AdminDashboardPage() {
       image: newService.image || undefined,
       checklist: newService.checklist || ["Player ID", "Deal confirmation"],
       steps: newService.steps || [
-        { title: "Contact on Discord", text: "Open a ticket with BlueMask." },
+        { title: "Contact on Discord", text: "Open a ticket with reedmoon." },
       ],
       gameSlugs: newService.gameSlugs || [
         "whiteout-survival",
@@ -3111,7 +3111,7 @@ export function AdminDashboardPage() {
                           type="text"
                           value={newService.intro}
                           onChange={(e) => setNewService({ ...newService, intro: e.target.value })}
-                          placeholder="BlueMask acts as the go-between for buyer and seller."
+                          placeholder="reedmoon acts as the go-between for buyer and seller."
                           className="w-full bg-secondary/30 border border-border rounded-lg px-3 py-2 text-xs"
                         />
                       </div>

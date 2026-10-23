@@ -6,16 +6,16 @@ import { SiteHeader, SiteFooter } from "@/components/SiteChrome";
 export const Route = createFileRoute("/games")({
   head: () => ({
     meta: [
-      { title: "Games — BlueMask Gaming Store" },
+      { title: "Games — reedmoon Gaming Store" },
       {
         name: "description",
         content:
-          "Explore Whiteout Survival, Kingshot, Rise of Kingdoms and Call of Dragons accounts and services at BlueMask.",
+          "Explore Whiteout Survival, Kingshot, Rise of Kingdoms and Call of Dragons accounts and services at reedmoon.",
       },
-      { property: "og:title", content: "Games — BlueMask Gaming Store" },
+      { property: "og:title", content: "Games — reedmoon Gaming Store" },
       {
         property: "og:description",
-        content: "Choose your game and explore BlueMask accounts, middleman and top ups.",
+        content: "Choose your game and explore reedmoon accounts, middleman and top ups.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

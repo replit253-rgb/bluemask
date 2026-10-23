@@ -24,13 +24,13 @@ export const Route = createFileRoute("/accounts/")({
   }),
   head: () => ({
     meta: [
-      { title: "Accounts for Sale — BlueMask Gaming Store" },
+      { title: "Accounts for Sale — reedmoon Gaming Store" },
       {
         name: "description",
         content:
           "Ready-to-play Whiteout Survival, Kingshot, Rise of Kingdoms, and Call of Dragons accounts. Pick one and order on Discord.",
       },
-      { property: "og:title", content: "Accounts for Sale — BlueMask" },
+      { property: "og:title", content: "Accounts for Sale — reedmoon" },
       {
         property: "og:description",
         content: "Pick the strategy game account you want and order on Discord.",
@@ -99,7 +99,7 @@ function AccountsPage() {
       {!game && (
         <section className="bm-section">
           <div className="bm-section-head mb-8">
-            <span className="bm-mono text-sky-400">CHOOSE YOUR BATTLEFIELD</span>
+            <span className="bm-mono text-red-500">CHOOSE YOUR BATTLEFIELD</span>
             <h2 className="text-2xl sm:text-3xl font-extrabold text-white mt-1">
               Explore Battlefields & Games
             </h2>
@@ -114,8 +114,8 @@ function AccountsPage() {
                   href={`/accounts?game=${g.slug}#inventory`}
                   className={`group relative flex flex-col justify-between rounded-2xl overflow-hidden border transition-all duration-300 ${
                     isSelected
-                      ? "bg-[#111c3d] border-blue-500 shadow-xl shadow-blue-950/60 ring-2 ring-blue-400"
-                      : "bg-[#0c152e] border-slate-800/80 hover:border-blue-500/40 hover:bg-[#101b3a]"
+                      ? "bg-[#220a11] border-red-500 shadow-xl shadow-red-950/60 ring-2 ring-red-500"
+                      : "bg-[#14060a] border-red-950/80 hover:border-red-500/50 hover:bg-[#1d0910]"
                   }`}
                 >
                   <div className="relative aspect-[16/10] overflow-hidden bg-secondary">
@@ -127,8 +127,8 @@ function AccountsPage() {
                       loading="lazy"
                       className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#0c152e] via-transparent to-transparent opacity-80" />
-                    <span className="absolute top-3 right-3 px-2 py-0.5 rounded-md bg-black/60 backdrop-blur-sm text-[10px] font-mono font-bold text-sky-300 border border-slate-700">
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#14060a] via-transparent to-transparent opacity-80" />
+                    <span className="absolute top-3 right-3 px-2 py-0.5 rounded-md bg-black/60 backdrop-blur-sm text-[10px] font-mono font-bold text-red-300 border border-red-900/60">
                       {g.number}
                     </span>
                   </div>
@@ -143,7 +143,7 @@ function AccountsPage() {
                       </h3>
                     </div>
 
-                    <div className="pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs font-bold text-sky-400 group-hover:text-sky-300">
+                    <div className="pt-3 border-t border-red-950/80 flex items-center justify-between text-xs font-bold text-red-400 group-hover:text-red-300">
                       <span>Explore accounts</span>
                       <ArrowUpRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                     </div>
@@ -156,7 +156,7 @@ function AccountsPage() {
       )}
 
       {/* Filters & Inventory Section */}
-      <section id="inventory" className="bm-section border-t border-slate-800/80 pt-12">
+      <section id="inventory" className="bm-section border-t border-red-950/80 pt-12">
         <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 mb-8">
           <div>
             <h2 className="text-xl font-bold text-white">
@@ -173,7 +173,7 @@ function AccountsPage() {
             <Link
               to="/accounts"
               search={{ game: undefined, sort, status, q }}
-              className="text-xs font-semibold text-sky-400 hover:text-sky-300 underline underline-offset-4 self-start md:self-auto"
+              className="text-xs font-semibold text-red-400 hover:text-red-300 underline underline-offset-4 self-start md:self-auto"
             >
               ← Clear game filter (Show all)
             </Link>
@@ -181,7 +181,7 @@ function AccountsPage() {
         </div>
 
         {/* Search & Sorting Toolbar */}
-        <div className="mb-8 p-4 rounded-xl bg-[#0c152e] border border-slate-800/80 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
+        <div className="mb-8 p-4 rounded-xl bg-[#14060a] border border-red-950/80 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
           <div className="relative flex-1 max-w-md">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <input
@@ -199,7 +199,7 @@ function AccountsPage() {
                 }
               }}
               placeholder="Search by code, server, or keyword..."
-              className="w-full bg-[#090f20] border border-slate-800 rounded-lg pl-9 pr-24 py-2 text-xs text-white placeholder:text-slate-500"
+              className="w-full bg-[#0b0305] border border-red-950/80 rounded-lg pl-9 pr-24 py-2 text-xs text-white placeholder:text-slate-500"
             />
             <button
               type="button"
@@ -211,7 +211,7 @@ function AccountsPage() {
                   ...(searchTerm ? { q: searchTerm } : {}),
                 }).toString()}`;
               }}
-              className="absolute right-1 top-1/2 -translate-y-1/2 px-3 py-1 bg-blue-600 text-white text-[11px] font-semibold rounded-md hover:bg-blue-500"
+              className="absolute right-1 top-1/2 -translate-y-1/2 px-3 py-1 bg-red-600 text-white text-[11px] font-semibold rounded-md hover:bg-red-500 shadow-md shadow-red-950/50"
             >
               Search
             </button>
@@ -233,7 +233,7 @@ function AccountsPage() {
                     ...(q ? { q } : {}),
                   }).toString()}`;
                 }}
-                className="bg-[#090f20] border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-white font-semibold"
+                className="bg-[#0b0305] border border-red-950/80 rounded-lg px-3 py-1.5 text-xs text-white font-semibold"
               >
                 <option value="default">Default Order</option>
                 <option value="price-asc">Lowest Price (Ascending)</option>
@@ -256,7 +256,7 @@ function AccountsPage() {
                     ...(q ? { q } : {}),
                   }).toString()}`;
                 }}
-                className="bg-[#090f20] border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-white font-semibold"
+                className="bg-[#0b0305] border border-red-950/80 rounded-lg px-3 py-1.5 text-xs text-white font-semibold"
               >
                 <option value="all">All Status</option>
                 <option value="tersedia">Available</option>

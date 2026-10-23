@@ -19,6 +19,7 @@ export interface PageContent {
   heroTitle: string;
   heroSubtitle: string;
   heroImage: string;
+  heroImageMobile?: string;
   leadText?: string;
   announcement?: string;
   buttonText?: string;
@@ -45,10 +46,11 @@ const DB_VERSION = 1;
 const defaultPages: Record<string, PageContent> = {
   home: {
     slug: "home",
-    title: "BlueMask Gaming Store",
-    heroTitle: "BlueMask Gaming Store",
+    title: "reedmoon Gaming Store",
+    heroTitle: "reedmoon Gaming Store",
     heroSubtitle: "Great accounts. Safer trades. More possibilities in every game.",
-    heroImage: "/assets/aistudio/bg_fe70fe49.jpg",
+    heroImage: "/bg-hero-deskrop.png",
+    heroImageMobile: "/bg-hero-mobile.png",
     leadText:
       "Your trusted destination for game account trading, middleman services, and instant top-ups.",
     announcement: "Flash Sale: All game accounts feature an automatic 20% discount!",
@@ -90,7 +92,7 @@ const defaultPages: Record<string, PageContent> = {
     heroSubtitle:
       "Secure escrow, account leveling, and trading assistance by professional operators.",
     heroImage: "/assets/aistudio/bg_fe70fe49.jpg",
-    leadText: "Protect your trades and guarantee smooth transfers with BlueMask Middleman.",
+    leadText: "Protect your trades and guarantee smooth transfers with reedmoon Middleman.",
     sectionTitle: "Our Professional Services",
     sectionSubtitle: "Choose a service category to begin your order.",
     updatedAt: new Date().toISOString(),
@@ -98,7 +100,7 @@ const defaultPages: Record<string, PageContent> = {
   contact: {
     slug: "contact",
     title: "We're here to help.",
-    heroTitle: "Get in Touch with BlueMask",
+    heroTitle: "Get in Touch with reedmoon",
     heroSubtitle:
       "Customer support for product questions, payment guidance, and transfer assistance.",
     heroImage: "/assets/aistudio/bg_fe70fe49.jpg",

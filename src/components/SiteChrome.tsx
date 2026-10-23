@@ -3,21 +3,23 @@ import { Link } from "@tanstack/react-router";
 import { ArrowUpRight, ChevronDown, Menu, ShoppingCart, X } from "lucide-react";
 import { discordLink, games, gamesForService, services } from "@/lib/catalog";
 import { Button } from "@/components/ui/button";
-import emblemAsset from "@/assets/bluemask-logo.png";
+import logoAsset from "@/assets/logo.png";
 
 export function SiteHeader() {
   const [open, setOpen] = useState(false);
   return (
     <header className="bm-header relative">
-      <Link to="/" className="bm-logo" aria-label="BlueMask, home">
+      <Link to="/" className="bm-logo" aria-label="reedmoon, home">
         <img
-          src={emblemAsset}
+          src={logoAsset}
           width={42}
           height={42}
-          alt="BlueMask logo"
-          className="rounded-lg object-cover"
+          alt="reedmoon logo"
+          className="rounded-lg object-contain h-10 w-10"
         />
-        <span className="text-white text-xl md:text-2xl font-bold tracking-tight">BlueMask</span>
+        <span className="text-white text-xl md:text-2xl font-bold tracking-tight">
+          reed<span className="text-red-500">moon</span>
+        </span>
       </Link>
       <nav className="hidden md:flex items-center gap-8 text-[15px] font-medium text-slate-300">
         <Link to="/" className="hover:text-white transition-colors py-2">
@@ -41,7 +43,7 @@ export function SiteHeader() {
           href={discordLink}
           target="_blank"
           rel="noreferrer"
-          className="hidden sm:inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-sky-400 bg-sky-950/40 hover:bg-sky-900/50 border border-sky-500/30 rounded-lg transition-colors"
+          className="hidden sm:inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-red-400 bg-red-950/40 hover:bg-red-900/50 border border-red-500/30 rounded-lg transition-colors"
         >
           <span>Discord</span>
           <ArrowUpRight className="w-4 h-4" />
@@ -67,7 +69,7 @@ export function SiteHeader() {
 
       {/* Mobile Drawer */}
       {open && (
-        <div className="absolute top-full left-0 right-0 bg-[#0e111a]/98 backdrop-blur-2xl border-b border-border/80 px-6 py-5 flex flex-col gap-3 md:hidden shadow-2xl z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+        <div className="absolute top-full left-0 right-0 bg-[#0c0407]/98 backdrop-blur-2xl border-b border-border/80 px-6 py-5 flex flex-col gap-3 md:hidden shadow-2xl z-50 animate-in fade-in slide-in-from-top-2 duration-200">
           <Link
             to="/"
             onClick={() => setOpen(false)}
@@ -107,7 +109,7 @@ export function SiteHeader() {
             href={discordLink}
             target="_blank"
             rel="noreferrer"
-            className="inline-flex items-center justify-center gap-2 mt-2 px-4 py-2.5 text-sm font-semibold text-white bg-sky-600 hover:bg-sky-500 rounded-lg transition-colors"
+            className="inline-flex items-center justify-center gap-2 mt-2 px-4 py-2.5 text-sm font-semibold text-white bg-red-600 hover:bg-red-500 rounded-lg transition-colors shadow-lg shadow-red-950/40"
           >
             Join Discord Community <ArrowUpRight className="w-4 h-4" />
           </a>
@@ -121,8 +123,16 @@ export function SiteFooter() {
     <footer className="bm-footer">
       <div className="bm-footer-top">
         <Link to="/" className="bm-logo">
-          <img src={emblemAsset} width={40} height={40} alt="BlueMask logo" />
-          <span>BlueMask</span>
+          <img
+            src={logoAsset}
+            width={40}
+            height={40}
+            alt="reedmoon logo"
+            className="rounded-lg object-contain h-10 w-10"
+          />
+          <span>
+            reed<span className="text-red-500">moon</span>
+          </span>
         </Link>
         <a
           href={discordLink}
@@ -146,7 +156,7 @@ export function SiteFooter() {
         </a>
       </div>
       <div className="bm-footer-row">
-        <span>© BlueMask Gaming Store</span>
+        <span>© reedmoon Gaming Store</span>
         <div className="bm-footer-links">
           <Link to="/games">Games</Link>
           <Link to="/accounts" search={{}}>

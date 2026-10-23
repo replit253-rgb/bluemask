@@ -216,7 +216,7 @@ export const formatCurrency = (n: number) =>
 
 /** Message copied to the clipboard before opening Discord. */
 export const orderMessage = (p: Product) =>
-  `Hi BlueMask, I'd like to order account ${p.code} — ${p.title} (${formatCurrency(p.price)}).`;
+  `Hi reedmoon, I'd like to order account ${p.code} — ${p.title} (${formatCurrency(p.price)}).`;
 
 export const stats = [
   { value: "4.9", label: "Buyer rating" },

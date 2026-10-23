@@ -78,27 +78,87 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "BlueMask Gaming Store" },
+      { title: "reedmoon — Game Accounts, Middleman & Top Up" },
       {
         name: "description",
-        content: "Game accounts, middleman support, and top-ups from BlueMask Gaming Store.",
+        content:
+          "Toko game terpercaya reedmoon — Jual beli akun game aman, top up termurah, dan jasa middleman/rekber bergaransi untuk game strategi favorit Anda.",
       },
-      { name: "author", content: "BlueMask Gaming Store" },
-      { property: "og:title", content: "BlueMask Gaming Store" },
+      {
+        name: "keywords",
+        content:
+          "reedmoon, redmoon shop, redmoon-shop.com, jual akun game, beli akun game, top up game murah, middleman game, rekber game, Whiteout Survival, Kingshot, Rise of Kingdoms, Call of Dragons",
+      },
+      { name: "author", content: "reedmoon" },
+      {
+        name: "robots",
+        content: "index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1",
+      },
+      { name: "google-site-verification", content: "google4dfae9546e319b9f" },
+      { property: "og:site_name", content: "reedmoon" },
+      { property: "og:title", content: "reedmoon — Game Accounts, Middleman & Top Up" },
       {
         property: "og:description",
-        content: "Game accounts, middleman support, and top-ups from BlueMask Gaming Store.",
+        content:
+          "Toko game terpercaya reedmoon — Jual beli akun game aman, top up termurah, dan jasa middleman/rekber bergaransi.",
       },
       { property: "og:type", content: "website" },
+      { property: "og:url", content: "https://redmoon-shop.com/" },
+      { property: "og:image", content: "https://redmoon-shop.com/logo.png" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:title", content: "reedmoon — Game Accounts, Middleman & Top Up" },
+      {
+        name: "twitter:description",
+        content:
+          "Toko game terpercaya reedmoon — Jual beli akun game aman, top up termurah, dan jasa middleman/rekber bergaransi.",
+      },
+      { name: "twitter:image", content: "https://redmoon-shop.com/logo.png" },
     ],
     links: [
       {
         rel: "stylesheet",
         href: appCss,
       },
-      { rel: "icon", type: "image/png", href: "/favicon.png" },
+      { rel: "canonical", href: "https://redmoon-shop.com/" },
+      { rel: "icon", type: "image/png", href: "/logo.png" },
+      { rel: "apple-touch-icon", href: "/logo.png" },
+    ],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@graph": [
+            {
+              "@type": "Organization",
+              "@id": "https://redmoon-shop.com/#organization",
+              name: "reedmoon",
+              url: "https://redmoon-shop.com/",
+              logo: "https://redmoon-shop.com/logo.png",
+              description:
+                "Toko game terpercaya untuk jual beli akun, jasa middleman/rekber, dan top up game.",
+            },
+            {
+              "@type": "WebSite",
+              "@id": "https://redmoon-shop.com/#website",
+              url: "https://redmoon-shop.com/",
+              name: "reedmoon",
+              publisher: {
+                "@id": "https://redmoon-shop.com/#organization",
+              },
+            },
+            {
+              "@type": "Store",
+              "@id": "https://redmoon-shop.com/#store",
+              name: "reedmoon Gaming Store",
+              url: "https://redmoon-shop.com/",
+              description:
+                "Jual beli akun game, middleman escrow terpercaya, dan top up game terlengkap dan termurah.",
+              image: "https://redmoon-shop.com/logo.png",
+            },
+          ],
+        }),
+      },
     ],
   }),
   shellComponent: RootShell,

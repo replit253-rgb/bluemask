@@ -38,7 +38,7 @@ export const topUpPackages: TopUpPackage[] = [
     features: [
       "Starter pack in-game items & resources",
       "No account login credentials required",
-      "Instant transfer via BlueMask Discord ticket",
+      "Instant transfer via reedmoon Discord ticket",
     ],
     instructions: "Provide your Whiteout Survival Player ID & State Number in your Discord ticket.",
     deliveryTime: "5 - 15 Minutes",
@@ -75,7 +75,7 @@ export const topUpPackages: TopUpPackage[] = [
     features: [
       "Popular event tier rewards & hero shards",
       "Bonus gems included in package",
-      "Safe transfer via BlueMask middleman warranty",
+      "Safe transfer via reedmoon middleman warranty",
     ],
     instructions: "Provide your Whiteout Survival Player ID & State Number in your Discord ticket.",
     deliveryTime: "5 - 15 Minutes",
@@ -279,7 +279,7 @@ export const topUpPackages: TopUpPackage[] = [
     features: [
       "Standard speedup and hero token crates",
       "Fast Player ID top-up delivery",
-      "BlueMask transaction warranty",
+      "reedmoon transaction warranty",
     ],
     instructions: "Provide your Kingshot Player ID & Kingdom Number in your Discord ticket.",
     deliveryTime: "5 - 15 Minutes",
@@ -411,7 +411,7 @@ export const topUpPackages: TopUpPackage[] = [
     features: [
       "3,500 Kingdom Stars loaded directly",
       "No password needed",
-      "Verified BlueMask middleman transfer",
+      "Verified reedmoon middleman transfer",
     ],
     instructions: "Provide your Kingshot Player ID & Kingdom Number in your Discord ticket.",
     deliveryTime: "5 - 15 Minutes",
@@ -478,7 +478,7 @@ export const enrichTopUpDetails = (p: TopUpPackage): TopUpPackage => {
     ...norm,
     description:
       norm.description ||
-      `Official in-game ${norm.category || "top-up"} for ${gameName}. Direct delivery using your Player ID without password required. Safe, fast, and protected by BlueMask transaction warranty.`,
+      `Official in-game ${norm.category || "top-up"} for ${gameName}. Direct delivery using your Player ID without password required. Safe, fast, and protected by reedmoon transaction warranty.`,
     features:
       norm.features && norm.features.length > 0
         ? norm.features
@@ -513,7 +513,7 @@ export const topUpForGame = (game: string) => {
 /** Message copied to the clipboard before opening Discord. */
 export const topUpMessage = (p: TopUpPackage) => {
   const gameName = findGame(p.game)?.name ?? p.game;
-  return `Hi BlueMask, I'd like to top up ${gameName} [${p.category || "Top-Up"}] ${p.name} (${formatCurrency(p.price)}). Player ID: `;
+  return `Hi reedmoon, I'd like to top up ${gameName} [${p.category || "Top-Up"}] ${p.name} (${formatCurrency(p.price)}). Player ID: `;
 };
 
 /** Find a top up package by code with sync fallback */

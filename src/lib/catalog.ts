@@ -96,7 +96,7 @@ export const services: Service[] = [
     name: "Middleman",
     tagline: "Calm transactions, both sides protected.",
     intro:
-      "BlueMask acts as the go-between for buyer and seller so the account and the payment change hands safely.",
+      "reedmoon acts as the go-between for buyer and seller so the account and the payment change hands safely.",
     steps: [
       {
         title: "Contact the team",
@@ -121,7 +121,7 @@ export const services: Service[] = [
     name: "Buy & Sell Accounts",
     tagline: "The account you want for your next adventure.",
     intro:
-      "Find an account that fits your playstyle, or list the account you want to sell through the BlueMask team.",
+      "Find an account that fits your playstyle, or list the account you want to sell through the reedmoon team.",
     steps: [
       {
         title: "Tell us what you need",
@@ -143,7 +143,7 @@ export const services: Service[] = [
     name: "Top Up",
     tagline: "Fast top ups, straight to your account.",
     intro:
-      "Top up in-game packs for Whiteout Survival and Kingshot in rupiah, handled by the BlueMask team on Discord.",
+      "Top up in-game packs for Whiteout Survival and Kingshot in rupiah, handled by the reedmoon team on Discord.",
     gameSlugs: ["whiteout-survival", "kingshot"],
     checklist: ["Player ID", "Character name", "State / kingdom number", "Chosen pack"],
     steps: [

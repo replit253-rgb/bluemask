@@ -21,10 +21,10 @@ export const Route = createFileRoute("/accounts/$code")({
     const code = loaderData?.code || params.code;
     const p = findProduct(code);
     const g = p && findGame(p.game);
-    const title = p && g ? `${g.name} ${p.title} — BlueMask` : `Account ${code} — BlueMask`;
+    const title = p && g ? `${g.name} ${p.title} — reedmoon` : `Account ${code} — reedmoon`;
     const desc = p
-      ? `${p.title}. ${formatCurrency(p.price)}. Order safely through the BlueMask Discord.`
-      : "Gaming account details and verified middleman transfer at BlueMask.";
+      ? `${p.title}. ${formatCurrency(p.price)}. Order safely through the reedmoon Discord.`
+      : "Gaming account details and verified middleman transfer at reedmoon.";
     return {
       meta: [
         { title },
@@ -56,7 +56,7 @@ const flow = [
 ];
 
 const included = [
-  { title: "Verified Listing", text: "Reviewed by the BlueMask team before publication." },
+  { title: "Verified Listing", text: "Reviewed by the reedmoon team before publication." },
   {
     title: "Secure Checkout",
     text: "Payment runs only through the official channels the team gives you.",
@@ -224,7 +224,7 @@ function ProductPage() {
                       <span className="text-base text-muted-foreground line-through tabular-nums">
                         {formatCurrency(p.price)}
                       </span>
-                      <span className="text-xs font-semibold text-sky-400 bg-sky-950/60 border border-sky-800/50 px-2 py-0.5 rounded">
+                      <span className="text-xs font-semibold text-red-400 bg-red-950/60 border border-red-800/50 px-2 py-0.5 rounded">
                         {p.discountPercent}% OFF
                       </span>
                     </>
@@ -234,7 +234,7 @@ function ProductPage() {
             })()}
             <OrderButton p={p} />
             <p className="bm-mono bm-note">
-              <ShieldCheck aria-hidden="true" /> Deals happen only through the official BlueMask
+              <ShieldCheck aria-hidden="true" /> Deals happen only through the official reedmoon
               Discord. Never transfer to a personal bank account.
             </p>
             <div className="bm-included">

@@ -33,7 +33,7 @@ import {
 export const Route = createFileRoute("/admin/cms")({
   head: () => ({
     meta: [
-      { title: "CMS & Component Manager — BlueMask" },
+      { title: "CMS & Component Manager — reedmoon" },
       { name: "description", content: "Granular per-component CMS and real-time live preview." },
     ],
   }),
@@ -47,8 +47,8 @@ function AdminCMSPage() {
   const [activeSlug, setActiveSlug] = useState<string>("home");
   const [pageData, setPageData] = useState<PageContent>({
     slug: "home",
-    title: "BlueMask Gaming Store",
-    heroTitle: "BlueMask Gaming Store",
+    title: "reedmoon Gaming Store",
+    heroTitle: "reedmoon Gaming Store",
     heroSubtitle: "Great accounts. Safer trades. More possibilities in every game.",
     heroImage: "/assets/aistudio/bg_fe70fe49.jpg",
     leadText: "Your trusted destination for game accounts and top-ups.",
@@ -338,6 +338,35 @@ function AdminCMSPage() {
                     </div>
                   )}
                 </div>
+
+                {/* Hero Image Mobile */}
+                {activeSlug === "home" && (
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1.5">
+                      Hero Image (Mobile Screens &lt;= 768px)
+                    </label>
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="text"
+                        value={pageData.heroImageMobile || ""}
+                        onChange={(e) =>
+                          setPageData({ ...pageData, heroImageMobile: e.target.value })
+                        }
+                        placeholder="/bg-hero-mobile.png"
+                        className="flex-1 bg-background border border-input rounded-lg px-3.5 py-2 text-xs text-foreground font-mono"
+                      />
+                    </div>
+                    {pageData.heroImageMobile && (
+                      <div className="mt-3 h-28 rounded-lg overflow-hidden border border-border/50 relative">
+                        <img
+                          src={pageData.heroImageMobile}
+                          alt="Mobile Hero Preview"
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 {/* CTA Buttons */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
