@@ -1,12 +1,14 @@
 import pg from "pg";
 
-const connectionString =
-  process.env.DATABASE_URL || "postgresql://postgres:EDUJUANDA12345@localhost:5432/BLUEMASK";
-
 let poolInstance: pg.Pool | null = null;
 
 export function getPgPool(): pg.Pool {
   if (!poolInstance) {
+    const connectionString = process.env["DATABASE_URL"];
+    if (!connectionString) {
+      throw new Error("DATABASE_URL is required");
+    }
+
     poolInstance = new pg.Pool({
       connectionString,
       max: 10,
@@ -14,8 +16,8 @@ export function getPgPool(): pg.Pool {
       connectionTimeoutMillis: 3000,
     });
 
-    poolInstance.on("error", () => {
-      // Quiet handler to avoid noisy unhandled connection warnings
+    poolInstance.on("error", (err) => {
+      console.error("Unexpected error on idle client", err);
     });
   }
   return poolInstance;

@@ -3,8 +3,11 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-const connectionString =
-  process.env.DATABASE_URL || "postgresql://postgres:EDUJUANDA12345@localhost:5432/BLUEMASK";
+const connectionString = process.env.DATABASE_URL;
+if (!connectionString) {
+  console.error("DATABASE_URL is required for seeding.");
+  process.exit(1);
+}
 
 const initialProducts = [
   {
@@ -13,8 +16,6 @@ const initialProducts = [
     title: "FC 5 · 92M Power · 6 Mythic Heroes",
     badge: "FC 5",
     price: 300,
-    hasDiscount: true,
-    discountPercent: 20,
     status: "tersedia",
     stats: [
       { label: "Furnace", value: "FC 5" },
@@ -34,8 +35,6 @@ const initialProducts = [
     title: "FC 3 · 58M Power · Clean Farm Account",
     badge: "FC 3",
     price: 140,
-    hasDiscount: true,
-    discountPercent: 20,
     status: "tersedia",
     stats: [
       { label: "Furnace", value: "FC 3" },
@@ -49,117 +48,177 @@ const initialProducts = [
       "Never topped up via third parties",
     ],
   },
+];
+
+const initialTopups = Array.from({ length: 23 }, (_, i) => ({
+  code: `WOS-PID-${i + 1}`,
+  game: "whiteout-survival",
+  name: `${(i + 1) * 0.99} Pack ID Top Up`,
+  detail: "Pack ID top up for WOS",
+  price: (i + 1) * 0.99,
+  category: "Pack ID Top Up",
+  popular: i === 9,
+  image: "/src/assets/images/chest_wooden_loot_1792579173425.jpg",
+  sort_order: i,
+}));
+
+const initialServices = [
   {
-    code: "BM-KS-01",
-    game: "kingshot",
-    title: "TC 30 · 74M Power · 4 Gen 3 Heroes",
-    badge: "TC 30",
-    price: 200,
-    hasDiscount: true,
-    discountPercent: 20,
-    status: "tersedia",
-    stats: [
-      { label: "Town Center", value: "30" },
-      { label: "Power", value: "74M" },
-      { label: "VIP", value: "9" },
-      { label: "Kingdom", value: "#215" },
+    slug: "middleman",
+    name: "Middleman",
+    tagline: "Calm transactions, both sides protected.",
+    intro: "RedMoon acts as the go-between for buyer and seller.",
+    steps: [
+      { title: "Contact the team", text: "Open a ticket on Discord." },
+      { title: "Account check", text: "Team reviews the account." },
+      { title: "Funds held", text: "Buyer pays middleman." },
+      { title: "Done", text: "Funds released to seller." },
     ],
-    highlights: ["4 fully starred gen 3 heroes", "Gold governor gear", "Clean binding history"],
+    sort_order: 1,
   },
   {
-    code: "BM-ROK-01",
-    game: "rise-of-kingdoms",
-    title: "103M · VIP 18 · 48 Legendary Gear",
-    badge: "VIP 17–18",
-    price: 1900,
-    hasDiscount: true,
-    discountPercent: 20,
-    status: "tersedia",
-    stats: [
-      { label: "Power", value: "103M" },
-      { label: "VIP", value: "18" },
-      { label: "Legendary Gear", value: "48" },
-      { label: "Passport", value: "16" },
+    slug: "boost",
+    name: "Power Boost",
+    tagline: "Reach your goals faster.",
+    intro: "We help you grow your account power safely.",
+    steps: [
+      { title: "Select plan", text: "Choose your boost target." },
+      { title: "Team start", text: "Our pros log in and work." },
+      { title: "Progress check", text: "Get daily updates." },
+      { title: "Success", text: "Target reached." },
     ],
-    highlights: ["238 gold heads stored", "Main archer commanders maxed", "City hall 25"],
+    sort_order: 2,
+  },
+  {
+    slug: "maintenance",
+    name: "Account Maintenance",
+    tagline: "Keep your account active while you sleep.",
+    intro: "Daily tasks and event management by RedMoon.",
+    steps: [
+      { title: "Consultation", text: "Discuss your account needs." },
+      { title: "Assignment", text: "Assigned staff takes over." },
+      { title: "Maintenance", text: "Daily tasks completed." },
+      { title: "Reporting", text: "Weekly activity report." },
+    ],
+    sort_order: 3,
   },
 ];
 
-const initialTopups = [
+const initialTestimonials = Array.from({ length: 12 }, (_, i) => ({
+  id: `test-${i + 1}`,
+  service: i % 2 === 0 ? "middleman" : "boost",
+  game: "whiteout-survival",
+  name: `User ${i + 1}`,
+  role: i % 3 === 0 ? "Seller" : "Buyer",
+  quote: `Great experience with RedMoon service! Recommended for everyone. #${i + 1}`,
+  date: "Oct 2026",
+  image: null,
+}));
+
+const initialFAQs = [
+  { id: "faq-1", question: "How long does top up take?", answer: "Typically 5-15 minutes." },
+];
+
+const initialPages = [
   {
-    code: "WOS-PACK-1",
-    game: "whiteout-survival",
-    name: "Frost Star Pack",
-    detail: "1,000 + 100 Gems & Speedups",
-    price: 10,
-    image: "/assets/game-whiteout.jpg",
-  },
-  {
-    code: "KS-PACK-1",
-    game: "kingshot",
-    name: "Kingdom Star Pack",
-    detail: "1,200 Gold & Resource Chests",
-    price: 12,
-    image: "/assets/game-kingshot.jpg",
+    slug: "home",
+    title: "RedMoon Gaming Store",
+    hero_title: "Dominance starts here.",
+    hero_subtitle: "The trusted hub for high-tier accounts.",
+    hero_image: "/src/assets/hero-bg.jpg",
+    lead_text: "Safe middleman service and account marketplace.",
+    announcement: "New stock available now!",
   },
 ];
 
 async function seedDatabase() {
-  console.log("Connecting to PostgreSQL to seed database...");
   const client = new pg.Client({ connectionString });
 
   try {
     await client.connect();
-    console.log("Connected to PostgreSQL for seeding.");
+    console.log("Connected to PostgreSQL for idempotent seeding.");
 
-    // Seed products
-    for (const p of initialProducts) {
-      await client.query(
-        `INSERT INTO products (code, game, title, badge, price, status, image, screenshots, description, server, stats, highlights)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
-         ON CONFLICT (code) DO UPDATE SET
-           game = EXCLUDED.game,
-           title = EXCLUDED.title,
-           badge = EXCLUDED.badge,
-           price = EXCLUDED.price,
-           status = EXCLUDED.status,
-           stats = EXCLUDED.stats,
-           highlights = EXCLUDED.highlights`,
-        [
-          p.code,
-          p.game,
-          p.title,
-          p.badge,
-          p.price,
-          p.status,
-          null,
-          [],
-          null,
-          null,
-          JSON.stringify(p.stats),
-          p.highlights,
-        ],
-      );
+    const checkTable = async (tableName: string) => {
+      const res = await client.query(`SELECT count(*) FROM ${tableName}`);
+      return parseInt(res.rows[0].count) === 0;
+    };
+
+    // Products (initialProducts.length = 2)
+    if (await checkTable("products")) {
+      for (const p of initialProducts) {
+        await client.query(
+          `INSERT INTO products (code, game, title, badge, price, status, stats, highlights) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+          [p.code, p.game, p.title, p.badge, p.price, p.status, JSON.stringify(p.stats), JSON.stringify(p.highlights)]
+        );
+      }
+      console.log(`Seeded ${initialProducts.length} products.`);
     }
-    console.log(`Seeded ${initialProducts.length} products.`);
 
-    // Seed topups
-    for (const t of initialTopups) {
-      await client.query(
-        `INSERT INTO topups (code, game, name, detail, price, image)
-         VALUES ($1, $2, $3, $4, $5, $6)
-         ON CONFLICT (code) DO UPDATE SET
-           game = EXCLUDED.game,
-           name = EXCLUDED.name,
-           detail = EXCLUDED.detail,
-           price = EXCLUDED.price,
-           image = EXCLUDED.image`,
-        [t.code, t.game, t.name, t.detail, t.price, t.image],
-      );
+    // Topups (initialTopups.length = 23)
+    if (await checkTable("topups")) {
+      for (const t of initialTopups) {
+        await client.query(
+          `INSERT INTO topups (code, game, name, detail, price, category, popular, image, sort_order) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+          [t.code, t.game, t.name, t.detail, t.price, t.category, t.popular, t.image, t.sort_order]
+        );
+      }
+      console.log(`Seeded ${initialTopups.length} topups.`);
     }
-    console.log(`Seeded ${initialTopups.length} topup packages.`);
 
-    console.log("Database seeding completed successfully!");
+    // Services (initialServices.length = 3)
+    if (await checkTable("services")) {
+      for (const s of initialServices) {
+        await client.query(
+          `INSERT INTO services (slug, name, tagline, intro, steps, sort_order) VALUES ($1, $2, $3, $4, $5, $6)`,
+          [s.slug, s.name, s.tagline, s.intro, JSON.stringify(s.steps), s.sort_order]
+        );
+      }
+      console.log(`Seeded ${initialServices.length} services.`);
+    }
+
+    // Testimonials (initialTestimonials.length = 12)
+    if (await checkTable("testimonials")) {
+      for (let i = 0; i < initialTestimonials.length; i++) {
+        const t = initialTestimonials[i];
+        // Ensure unique timestamps for sorting proof
+        await client.query(
+          `INSERT INTO testimonials (id, service, game, name, role, quote, date, image, created_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW() + interval '${i} minutes')`,
+          [t.id, t.service, t.game, t.name, t.role, t.quote, t.date, t.image]
+        );
+      }
+      console.log(`Seeded ${initialTestimonials.length} testimonials.`);
+    }
+
+    // FAQs
+    if (await checkTable("faqs")) {
+      for (const f of initialFAQs) {
+        await client.query(`INSERT INTO faqs (id, question, answer) VALUES ($1, $2, $3)`, [f.id, f.question, f.answer]);
+      }
+    }
+
+    // Pages
+    if (await checkTable("pages")) {
+      for (const p of initialPages) {
+        await client.query(
+          `INSERT INTO pages (slug, title, hero_title, hero_subtitle, hero_image, lead_text, announcement) VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+          [p.slug, p.title, p.hero_title, p.hero_subtitle, p.hero_image, p.lead_text, p.announcement]
+        );
+      }
+    }
+
+    // Initial Store Settings
+    if (await checkTable("store_settings")) {
+      const defaultSettings = [
+        { key: "discordLink", value: "https://discord.gg/WHRzebh8pz" },
+        { key: "whatsapp", value: "+62 821-2780-6072" },
+        { key: "discordUsers", value: [{ name: "bluemask22", link: "https://discord.com/users/980636376691249152" }] }
+      ];
+      for (const s of defaultSettings) {
+        await client.query(`INSERT INTO store_settings (key, value) VALUES ($1, $2)`, [s.key, JSON.stringify(s.value)]);
+      }
+    }
+
+    console.log("Database seeding finished.");
   } catch (err) {
     console.error("Error seeding database:", err);
   } finally {

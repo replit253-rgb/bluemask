@@ -51,7 +51,7 @@ import {
   uploadMultipleImages,
   initDatabase,
 } from "@/lib/db";
-import { getStoreSettings, saveStoreSettings } from "@/lib/admin-store";
+import { getStoreSettings, saveStoreSettings, type StoreSettings } from "@/lib/admin-store";
 import { formatCurrency, type Product } from "@/lib/products";
 // ... (I need to find where to replace all instances)
 
@@ -120,7 +120,7 @@ export function AdminDashboardPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [topups, setTopups] = useState<TopUpPackage[]>([]);
   const [servicesList, setServicesList] = useState<Service[]>(defaultServices);
-  const [settings, setSettings] = useState({ discordLink: "", whatsapp: "" });
+  const [settings, setSettings] = useState<StoreSettings>({ discordLink: "", whatsapp: "", discordUsers: [] });
 
   // Filters & Search
   const [accountSearch, setAccountSearch] = useState("");
@@ -230,7 +230,7 @@ export function AdminDashboardPage() {
         if (t && t.length > 0) setTestimonialsList(t);
       });
     });
-    setSettings(getStoreSettings());
+      getStoreSettings().then((s) => setSettings(s));
   }, [navigate]);
 
   const showNotification = (msg: string) => {

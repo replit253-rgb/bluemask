@@ -43,13 +43,14 @@ function ContactPage() {
   });
 
   useEffect(() => {
-    const s = getStoreSettings();
-    if (s) {
-      setActiveSettings({
-        discordLink: s.discordLink || discordLink || "",
-        whatsapp: s.whatsapp || whatsappNumber || "",
-      });
-    }
+    getStoreSettings().then((s) => {
+      if (s) {
+        setActiveSettings({
+          discordLink: s.discordLink || discordLink || "",
+          whatsapp: s.whatsapp || whatsappNumber || "",
+        });
+      }
+    });
   }, []);
 
   const rawWa = activeSettings.whatsapp || whatsappNumber || whatsappClean || "";

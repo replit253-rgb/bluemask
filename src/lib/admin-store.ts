@@ -1,44 +1,46 @@
-import { products as initialProducts, type Product } from "./products";
-import { topUpPackages as initialTopUpPackages, type TopUpPackage } from "./topup";
-import { discordLink as defaultDiscord } from "./catalog";
-import { getProductsFromDB, saveProductToDB, getTopUpsFromDB, saveTopUpToDB } from "./db";
+import { type Product } from "./products";
+import { type TopUpPackage } from "./topup";
+import { 
+  getProductsFromDB, 
+  saveProductToDB, 
+  getTopUpsFromDB, 
+  saveTopUpToDB,
+  getStoreSettingsFromDB,
+  saveStoreSettingsToDB
+} from "./db";
 
 export type DiscordUser = { name: string; link: string };
 
 export type StoreSettings = {
   discordLink: string;
+  whatsapp: string;
   discordUsers: DiscordUser[];
 };
 
-let cachedSettings: StoreSettings = {
-  discordLink: defaultDiscord,
-  discordUsers: [{ name: "bluemask22", link: "https://discord.com/users/123456789" }],
-};
-
-export function getStoredProducts(): Product[] {
-  return initialProducts;
+export async function getStoredProducts(): Promise<Product[]> {
+  return await getProductsFromDB();
 }
 
-export function saveProducts(items: Product[]) {
-  items.forEach((item) => {
-    saveProductToDB(item);
-  });
+export async function saveProducts(items: Product[]) {
+  for (const item of items) {
+    await saveProductToDB(item);
+  }
 }
 
-export function getStoredTopUps(): TopUpPackage[] {
-  return initialTopUpPackages;
+export async function getStoredTopUps(): Promise<TopUpPackage[]> {
+  return await getTopUpsFromDB();
 }
 
-export function saveTopUps(items: TopUpPackage[]) {
-  items.forEach((item) => {
-    saveTopUpToDB(item);
-  });
+export async function saveTopUps(items: TopUpPackage[]) {
+  for (const item of items) {
+    await saveTopUpToDB(item);
+  }
 }
 
-export function getStoreSettings(): StoreSettings {
-  return cachedSettings;
+export async function getStoreSettings(): Promise<StoreSettings> {
+  return await getStoreSettingsFromDB();
 }
 
-export function saveStoreSettings(settings: StoreSettings) {
-  cachedSettings = settings;
+export async function saveStoreSettings(settings: StoreSettings) {
+  await saveStoreSettingsToDB(settings);
 }

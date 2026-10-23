@@ -496,18 +496,7 @@ export const enrichTopUpDetails = (p: TopUpPackage): TopUpPackage => {
 };
 
 export const topUpForGame = (game: string) => {
-  let list = topUpPackages;
-  if (typeof window !== "undefined") {
-    try {
-      const raw = localStorage.getItem("bm_admin_topups_v1");
-      if (raw) {
-        list = JSON.parse(raw) as TopUpPackage[];
-      }
-    } catch (err) {
-      console.warn("Storage check failed", err);
-    }
-  }
-  return list.map(enrichTopUpDetails).filter((p) => p.game === game);
+  return topUpPackages.map(enrichTopUpDetails).filter((p) => p.game === game);
 };
 
 /** Message copied to the clipboard before opening Discord. */
@@ -518,17 +507,6 @@ export const topUpMessage = (p: TopUpPackage) => {
 
 /** Find a top up package by code with sync fallback */
 export const findTopUpPackage = (code: string): TopUpPackage | undefined => {
-  let list = topUpPackages;
-  if (typeof window !== "undefined") {
-    try {
-      const raw = localStorage.getItem("bm_admin_topups_v1");
-      if (raw) {
-        list = JSON.parse(raw) as TopUpPackage[];
-      }
-    } catch (err) {
-      console.warn("Storage check failed", err);
-    }
-  }
-  const item = list.find((p) => p.code.toLowerCase() === code.toLowerCase());
+  const item = topUpPackages.find((p) => p.code.toLowerCase() === code.toLowerCase());
   return item ? enrichTopUpDetails(item) : undefined;
 };

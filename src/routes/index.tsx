@@ -72,7 +72,7 @@ const faqs = [
 ];
 
 function Index() {
-  const [productList, setProductList] = useState<Product[]>(() => getStoredProducts());
+  const [productList, setProductList] = useState<Product[]>([]);
   const [pageContent, setPageContent] = useState<PageContent | null>(null);
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
