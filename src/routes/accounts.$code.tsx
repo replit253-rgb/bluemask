@@ -82,12 +82,18 @@ function ProductPage() {
   const [activeImage, setActiveImage] = useState<string | null>(null);
 
   useEffect(() => {
-    getProductsFromDB().then((list) => {
-      const match = list.find((item) => item.code.toLowerCase() === code.toLowerCase());
-      if (match) {
-        setProduct(match);
-      }
-    });
+    const fetchAndUpdate = () => {
+      getProductsFromDB().then((list) => {
+        const match = list.find((item) => item.code.toLowerCase() === code.toLowerCase());
+        if (match) {
+          setProduct(match);
+        }
+      });
+    };
+    fetchAndUpdate();
+
+    window.addEventListener("products-changed", fetchAndUpdate);
+    return () => window.removeEventListener("products-changed", fetchAndUpdate);
   }, [code]);
 
   const p = product;

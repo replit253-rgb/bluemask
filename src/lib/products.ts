@@ -179,6 +179,12 @@ export const products: Product[] = [
 export const findProduct = (code: string) => {
   if (typeof window !== "undefined") {
     try {
+      const rawRM = localStorage.getItem("rm_v3_products");
+      if (rawRM) {
+        const storedList = JSON.parse(rawRM) as Product[];
+        const match = storedList.find((p) => p.code.toLowerCase() === code.toLowerCase());
+        if (match) return match;
+      }
       const raw = localStorage.getItem("bm_admin_products_v1");
       if (raw) {
         const storedList = JSON.parse(raw) as Product[];
@@ -196,9 +202,14 @@ export const productsForGame = (game: string) => {
   let list = products;
   if (typeof window !== "undefined") {
     try {
-      const raw = localStorage.getItem("bm_admin_products_v1");
-      if (raw) {
-        list = JSON.parse(raw) as Product[];
+      const rawRM = localStorage.getItem("rm_v3_products");
+      if (rawRM) {
+        list = JSON.parse(rawRM) as Product[];
+      } else {
+        const raw = localStorage.getItem("bm_admin_products_v1");
+        if (raw) {
+          list = JSON.parse(raw) as Product[];
+        }
       }
     } catch (err) {
       console.warn("Storage check failed", err);
