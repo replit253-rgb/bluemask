@@ -21,28 +21,9 @@ export const DEFAULT_FEATURED_ACCOUNTS_CONFIG: FeaturedAccountsConfig = {
   maxDisplayCount: 6,
 };
 
-const STORAGE_KEY = "rm_v3_featured_accounts";
-
-function loadSavedFeaturedConfig(): FeaturedAccountsConfig {
-  if (typeof window === "undefined") return DEFAULT_FEATURED_ACCOUNTS_CONFIG;
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      if (parsed) return parsed;
-    }
-  } catch (err) {
-    console.warn("Storage load error for featured accounts config:", err);
-  }
-  return DEFAULT_FEATURED_ACCOUNTS_CONFIG;
-}
-
-let cachedFeaturedAccountsConfig: FeaturedAccountsConfig = loadSavedFeaturedConfig();
+let cachedFeaturedAccountsConfig: FeaturedAccountsConfig = DEFAULT_FEATURED_ACCOUNTS_CONFIG;
 
 export function getFeaturedAccountsConfig(): FeaturedAccountsConfig {
-  if (typeof window === "undefined") {
-    return DEFAULT_FEATURED_ACCOUNTS_CONFIG;
-  }
   return cachedFeaturedAccountsConfig;
 }
 
@@ -50,20 +31,14 @@ export function saveFeaturedAccountsConfig(config: FeaturedAccountsConfig): void
   cachedFeaturedAccountsConfig = config;
 
   if (typeof window !== "undefined") {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
-    } catch (err) {
-      console.warn("Storage save error for featured accounts config:", err);
-    }
-
-    saveFeaturedAccountsConfigFn({ data: config as unknown as Record<string, unknown> })
-      .then(() => {
-        window.dispatchEvent(new Event("featured-accounts-changed"));
-      })
-      .catch((err) => {
-        console.warn("saveFeaturedAccountsConfig error:", err);
-      });
+    window.dispatchEvent(new Event("featured-accounts-changed"));
   }
+
+  saveFeaturedAccountsConfigFn({ data: config as unknown as Record<string, unknown> }).catch(
+    (err) => {
+      console.warn("saveFeaturedAccountsConfig error:", err);
+    },
+  );
 }
 
 export function resetFeaturedAccountsToDefault(): FeaturedAccountsConfig {

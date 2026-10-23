@@ -95,30 +95,9 @@ export const DEFAULT_GAME_WORLDS_CONFIG: GameWorldSectionConfig = {
   ],
 };
 
-const STORAGE_KEY = "rm_v3_game_worlds";
-
-function loadSavedWorlds(): GameWorldSectionConfig {
-  if (typeof window === "undefined") return DEFAULT_GAME_WORLDS_CONFIG;
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      if (parsed && Array.isArray(parsed.cards)) {
-        return parsed;
-      }
-    }
-  } catch (err) {
-    console.warn("Storage load error for game worlds:", err);
-  }
-  return DEFAULT_GAME_WORLDS_CONFIG;
-}
-
-let cachedWorldsConfig: GameWorldSectionConfig = loadSavedWorlds();
+let cachedWorldsConfig: GameWorldSectionConfig = DEFAULT_GAME_WORLDS_CONFIG;
 
 export function getGameWorldsConfig(): GameWorldSectionConfig {
-  if (typeof window === "undefined") {
-    return DEFAULT_GAME_WORLDS_CONFIG;
-  }
   return cachedWorldsConfig;
 }
 
@@ -126,20 +105,12 @@ export function saveGameWorldsConfig(config: GameWorldSectionConfig): void {
   cachedWorldsConfig = config;
 
   if (typeof window !== "undefined") {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
-    } catch (err) {
-      console.warn("Storage save error for game worlds:", err);
-    }
-
-    saveGameWorldsFn({ data: config as unknown as Record<string, unknown> })
-      .then(() => {
-        window.dispatchEvent(new Event("game-worlds-changed"));
-      })
-      .catch((err) => {
-        console.warn("PostgreSQL saveGameWorlds error:", err);
-      });
+    window.dispatchEvent(new Event("game-worlds-changed"));
   }
+
+  saveGameWorldsFn({ data: config as unknown as Record<string, unknown> }).catch((err) => {
+    console.warn("PostgreSQL saveGameWorlds error:", err);
+  });
 }
 
 export function resetGameWorldsToDefault(): GameWorldSectionConfig {

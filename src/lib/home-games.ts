@@ -72,30 +72,9 @@ export const DEFAULT_HOME_GAMES_CONFIG: HomeGamesSectionConfig = {
   ],
 };
 
-const STORAGE_KEY = "rm_v3_home_games";
-
-function loadSavedHomeGames(): HomeGamesSectionConfig {
-  if (typeof window === "undefined") return DEFAULT_HOME_GAMES_CONFIG;
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      if (parsed && Array.isArray(parsed.cards)) {
-        return parsed;
-      }
-    }
-  } catch (err) {
-    console.warn("Storage load error for home games:", err);
-  }
-  return DEFAULT_HOME_GAMES_CONFIG;
-}
-
-let cachedHomeGamesConfig: HomeGamesSectionConfig = loadSavedHomeGames();
+let cachedHomeGamesConfig: HomeGamesSectionConfig = DEFAULT_HOME_GAMES_CONFIG;
 
 export function getHomeGamesConfig(): HomeGamesSectionConfig {
-  if (typeof window === "undefined") {
-    return DEFAULT_HOME_GAMES_CONFIG;
-  }
   return cachedHomeGamesConfig;
 }
 
@@ -103,20 +82,12 @@ export function saveHomeGamesConfig(config: HomeGamesSectionConfig): void {
   cachedHomeGamesConfig = config;
 
   if (typeof window !== "undefined") {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
-    } catch (err) {
-      console.warn("Storage save error for home games:", err);
-    }
-
-    saveHomeGamesFn({ data: config as unknown as Record<string, unknown> })
-      .then(() => {
-        window.dispatchEvent(new Event("home-games-changed"));
-      })
-      .catch((err) => {
-        console.warn("PostgreSQL saveHomeGames error:", err);
-      });
+    window.dispatchEvent(new Event("home-games-changed"));
   }
+
+  saveHomeGamesFn({ data: config as unknown as Record<string, unknown> }).catch((err) => {
+    console.warn("PostgreSQL saveHomeGames error:", err);
+  });
 }
 
 export function resetHomeGamesToDefault(): HomeGamesSectionConfig {
