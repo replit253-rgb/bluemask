@@ -72,7 +72,25 @@ export const DEFAULT_HOME_GAMES_CONFIG: HomeGamesSectionConfig = {
   ],
 };
 
-let cachedHomeGamesConfig: HomeGamesSectionConfig = DEFAULT_HOME_GAMES_CONFIG;
+const STORAGE_KEY = "rm_v3_home_games";
+
+function loadSavedHomeGames(): HomeGamesSectionConfig {
+  if (typeof window === "undefined") return DEFAULT_HOME_GAMES_CONFIG;
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed && Array.isArray(parsed.cards)) {
+        return parsed;
+      }
+    }
+  } catch (err) {
+    console.warn("Storage load error for home games:", err);
+  }
+  return DEFAULT_HOME_GAMES_CONFIG;
+}
+
+let cachedHomeGamesConfig: HomeGamesSectionConfig = loadSavedHomeGames();
 
 export function getHomeGamesConfig(): HomeGamesSectionConfig {
   if (typeof window === "undefined") {
@@ -81,7 +99,7 @@ export function getHomeGamesConfig(): HomeGamesSectionConfig {
 
   getHomeGamesFn()
     .then((data) => {
-      if (data && Array.isArray(data.cards) && data.cards.length > 0) {
+      if (data && Array.isArray(data.cards)) {
         cachedHomeGamesConfig = {
           eyebrow: (data.eyebrow as string) || DEFAULT_HOME_GAMES_CONFIG.eyebrow,
           title: (data.title as string) || DEFAULT_HOME_GAMES_CONFIG.title,
@@ -89,6 +107,7 @@ export function getHomeGamesConfig(): HomeGamesSectionConfig {
           linkUrl: (data.linkUrl as string) || DEFAULT_HOME_GAMES_CONFIG.linkUrl,
           cards: data.cards as HomeGameCard[],
         };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(cachedHomeGamesConfig));
         window.dispatchEvent(new Event("home-games-changed"));
       }
     })
@@ -103,6 +122,12 @@ export function saveHomeGamesConfig(config: HomeGamesSectionConfig): void {
   cachedHomeGamesConfig = config;
 
   if (typeof window !== "undefined") {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
+    } catch (err) {
+      console.warn("Storage save error for home games:", err);
+    }
+
     saveHomeGamesFn({ data: config as unknown as Record<string, unknown> })
       .then(() => {
         window.dispatchEvent(new Event("home-games-changed"));

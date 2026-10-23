@@ -95,7 +95,25 @@ export const DEFAULT_GAME_WORLDS_CONFIG: GameWorldSectionConfig = {
   ],
 };
 
-let cachedWorldsConfig: GameWorldSectionConfig = DEFAULT_GAME_WORLDS_CONFIG;
+const STORAGE_KEY = "rm_v3_game_worlds";
+
+function loadSavedWorlds(): GameWorldSectionConfig {
+  if (typeof window === "undefined") return DEFAULT_GAME_WORLDS_CONFIG;
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed && Array.isArray(parsed.cards)) {
+        return parsed;
+      }
+    }
+  } catch (err) {
+    console.warn("Storage load error for game worlds:", err);
+  }
+  return DEFAULT_GAME_WORLDS_CONFIG;
+}
+
+let cachedWorldsConfig: GameWorldSectionConfig = loadSavedWorlds();
 
 export function getGameWorldsConfig(): GameWorldSectionConfig {
   if (typeof window === "undefined") {
@@ -104,13 +122,14 @@ export function getGameWorldsConfig(): GameWorldSectionConfig {
 
   getGameWorldsFn()
     .then((data) => {
-      if (data && Array.isArray(data.cards) && data.cards.length > 0) {
+      if (data && Array.isArray(data.cards)) {
         cachedWorldsConfig = {
           eyebrow: (data.eyebrow as string) || DEFAULT_GAME_WORLDS_CONFIG.eyebrow,
           title: (data.title as string) || DEFAULT_GAME_WORLDS_CONFIG.title,
           subtitle: (data.subtitle as string) || DEFAULT_GAME_WORLDS_CONFIG.subtitle,
           cards: data.cards as GameWorldCard[],
         };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(cachedWorldsConfig));
         window.dispatchEvent(new Event("game-worlds-changed"));
       }
     })
@@ -125,6 +144,12 @@ export function saveGameWorldsConfig(config: GameWorldSectionConfig): void {
   cachedWorldsConfig = config;
 
   if (typeof window !== "undefined") {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
+    } catch (err) {
+      console.warn("Storage save error for game worlds:", err);
+    }
+
     saveGameWorldsFn({ data: config as unknown as Record<string, unknown> })
       .then(() => {
         window.dispatchEvent(new Event("game-worlds-changed"));

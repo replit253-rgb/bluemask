@@ -44,18 +44,24 @@ export const Route = createFileRoute("/accounts/")({
 
 function AccountsPage() {
   const { game, sort = "default", status = "all", q = "" } = Route.useSearch();
-  const [productList, setProductList] = useState<Product[]>(() => getStoredProducts());
+  const [productList, setProductList] = useState<Product[]>([]);
+  const [hasLoaded, setHasLoaded] = useState(false);
   const [searchTerm, setSearchTerm] = useState(q);
 
   useEffect(() => {
     getProductsFromDB().then((items) => {
-      if (items && items.length > 0) {
-        setProductList(items);
-      }
+      setProductList(items);
+      setHasLoaded(true);
     });
+
+    const handleProductsChange = () => {
+      getProductsFromDB().then((items) => setProductList(items));
+    };
+    window.addEventListener("products-changed", handleProductsChange);
+    return () => window.removeEventListener("products-changed", handleProductsChange);
   }, []);
 
-  const activeCatalog = productList.length > 0 ? productList : products;
+  const activeCatalog = hasLoaded ? productList : products;
 
   // Filter by game, status, search query
   let items = activeCatalog.filter((p) => {

@@ -55,6 +55,13 @@ export interface FAQ {
   answer: string;
 }
 
+const PRODUCTS_KEY = "rm_v3_products";
+const TOPUPS_KEY = "rm_v3_topups";
+const PAGES_KEY = "rm_v3_pages";
+const SERVICES_KEY = "rm_v3_services";
+const TESTIMONIALS_KEY = "rm_v3_testimonials";
+const FAQS_KEY = "rm_v3_faqs";
+
 const defaultPages: Record<string, PageContent> = {
   home: {
     slug: "home",
@@ -133,34 +140,61 @@ const defaultPages: Record<string, PageContent> = {
   },
 };
 
-// In-memory repositories backed strictly by PostgreSQL server functions
-let memoryProducts: Product[] = [...initialProducts];
-let memoryTopUps: TopUpPackage[] = [...initialTopUpPackages];
-let memoryServices: Service[] = [...initialServices];
-const memoryPages: Record<string, PageContent> = { ...defaultPages };
-let memoryTestimonials: Testimonial[] = initialTestimonials.map((t, idx) => ({
-  ...t,
-  id: t.id || `testi_${idx}_${Math.random().toString(36).slice(2, 6)}`,
-}));
-let memoryFaqs: FAQ[] = [];
+// Load initial state from persistent local cache or defaults
+function loadInitialState<T>(key: string, fallback: T): T {
+  if (typeof window === "undefined") return fallback;
+  try {
+    const raw = localStorage.getItem(key);
+    if (raw !== null) {
+      return JSON.parse(raw);
+    }
+  } catch (err) {
+    console.warn(`Failed to parse storage for ${key}:`, err);
+  }
+  return fallback;
+}
+
+function saveState<T>(key: string, value: T): void {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch (err) {
+    console.warn(`Failed to save storage for ${key}:`, err);
+  }
+}
+
+let memoryProducts: Product[] = loadInitialState(PRODUCTS_KEY, initialProducts);
+let memoryTopUps: TopUpPackage[] = loadInitialState(TOPUPS_KEY, initialTopUpPackages);
+let memoryServices: Service[] = loadInitialState(SERVICES_KEY, initialServices);
+const memoryPages: Record<string, PageContent> = loadInitialState(PAGES_KEY, defaultPages);
+let memoryTestimonials: Testimonial[] = loadInitialState(
+  TESTIMONIALS_KEY,
+  initialTestimonials.map((t, idx) => ({
+    ...t,
+    id: t.id || `testi_${idx}_${Math.random().toString(36).slice(2, 6)}`,
+  })),
+);
+let memoryFaqs: FAQ[] = loadInitialState(FAQS_KEY, []);
 
 export async function initDatabase(): Promise<void> {
   try {
     const data = await getProductsFn();
     if (Array.isArray(data) && data.length > 0) {
       memoryProducts = data as Product[];
+      saveState(PRODUCTS_KEY, memoryProducts);
     }
   } catch (err) {
     console.warn("PostgreSQL initDatabase error:", err);
   }
 }
 
-// --- Product Repository (PostgreSQL) ---
+// --- Product Repository ---
 export async function getProductsFromDB(): Promise<Product[]> {
   try {
     const data = await getProductsFn();
     if (Array.isArray(data) && data.length > 0) {
       memoryProducts = data as Product[];
+      saveState(PRODUCTS_KEY, memoryProducts);
       return memoryProducts;
     }
   } catch (err) {
@@ -171,6 +205,10 @@ export async function getProductsFromDB(): Promise<Product[]> {
 
 export async function saveProductToDB(product: Product): Promise<void> {
   memoryProducts = [product, ...memoryProducts.filter((p) => p.code !== product.code)];
+  saveState(PRODUCTS_KEY, memoryProducts);
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new Event("products-changed"));
+  }
   try {
     await saveProductFn({ data: product as unknown as Record<string, unknown> });
   } catch (err) {
@@ -180,6 +218,10 @@ export async function saveProductToDB(product: Product): Promise<void> {
 
 export async function deleteProductFromDB(code: string): Promise<void> {
   memoryProducts = memoryProducts.filter((p) => p.code !== code);
+  saveState(PRODUCTS_KEY, memoryProducts);
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new Event("products-changed"));
+  }
   try {
     await deleteProductFn({ data: { code } });
   } catch (err) {
@@ -187,12 +229,13 @@ export async function deleteProductFromDB(code: string): Promise<void> {
   }
 }
 
-// --- Top-Up Repository (PostgreSQL) ---
+// --- Top-Up Repository ---
 export async function getTopUpsFromDB(): Promise<TopUpPackage[]> {
   try {
     const data = await getTopupsFn();
     if (Array.isArray(data) && data.length > 0) {
       memoryTopUps = data.map(normalizeCategory);
+      saveState(TOPUPS_KEY, memoryTopUps);
       return memoryTopUps;
     }
   } catch (err) {
@@ -203,6 +246,10 @@ export async function getTopUpsFromDB(): Promise<TopUpPackage[]> {
 
 export async function saveTopUpToDB(topup: TopUpPackage): Promise<void> {
   memoryTopUps = [topup, ...memoryTopUps.filter((t) => t.code !== topup.code)];
+  saveState(TOPUPS_KEY, memoryTopUps);
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new Event("topups-changed"));
+  }
   try {
     await saveTopupFn({ data: topup as unknown as Record<string, unknown> });
   } catch (err) {
@@ -212,6 +259,10 @@ export async function saveTopUpToDB(topup: TopUpPackage): Promise<void> {
 
 export async function deleteTopUpFromDB(code: string): Promise<void> {
   memoryTopUps = memoryTopUps.filter((t) => t.code !== code);
+  saveState(TOPUPS_KEY, memoryTopUps);
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new Event("topups-changed"));
+  }
   try {
     await deleteTopupFn({ data: { code } });
   } catch (err) {
@@ -219,7 +270,7 @@ export async function deleteTopUpFromDB(code: string): Promise<void> {
   }
 }
 
-// --- Pages / CMS Repository (PostgreSQL) ---
+// --- Pages / CMS Repository ---
 export async function getPageFromDB(slug: string): Promise<PageContent> {
   const fallback = defaultPages[slug] || {
     slug,
@@ -234,6 +285,7 @@ export async function getPageFromDB(slug: string): Promise<PageContent> {
     const data = await getPageFn({ data: { slug } });
     if (data) {
       memoryPages[slug] = data;
+      saveState(PAGES_KEY, memoryPages);
       return data;
     }
   } catch (err) {
@@ -244,6 +296,10 @@ export async function getPageFromDB(slug: string): Promise<PageContent> {
 
 export async function savePageToDB(page: PageContent): Promise<void> {
   memoryPages[page.slug] = page;
+  saveState(PAGES_KEY, memoryPages);
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new Event("pages-changed"));
+  }
   try {
     await savePageFn({ data: page as unknown as Record<string, unknown> });
   } catch (err) {
@@ -251,7 +307,7 @@ export async function savePageToDB(page: PageContent): Promise<void> {
   }
 }
 
-// --- Services Repository (PostgreSQL) ---
+// --- Services Repository ---
 export async function getServicesFromDB(): Promise<Service[]> {
   return memoryServices;
 }
@@ -263,13 +319,21 @@ export async function saveServiceToDB(service: Service): Promise<void> {
   } else {
     memoryServices.push(service);
   }
+  saveState(SERVICES_KEY, memoryServices);
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new Event("services-changed"));
+  }
 }
 
 export async function deleteServiceFromDB(slug: string): Promise<void> {
   memoryServices = memoryServices.filter((s) => s.slug !== slug);
+  saveState(SERVICES_KEY, memoryServices);
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new Event("services-changed"));
+  }
 }
 
-// --- Testimonials Repository (PostgreSQL) ---
+// --- Testimonials Repository ---
 export async function getTestimonialsFromDB(): Promise<Testimonial[]> {
   return memoryTestimonials;
 }
@@ -284,10 +348,18 @@ export async function saveTestimonialToDB(testimonial: Testimonial): Promise<voi
   } else {
     memoryTestimonials = [testimonial, ...memoryTestimonials];
   }
+  saveState(TESTIMONIALS_KEY, memoryTestimonials);
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new Event("testimonials-changed"));
+  }
 }
 
 export async function deleteTestimonialFromDB(id: string): Promise<void> {
   memoryTestimonials = memoryTestimonials.filter((t) => t.id !== id);
+  saveState(TESTIMONIALS_KEY, memoryTestimonials);
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new Event("testimonials-changed"));
+  }
 }
 
 // --- Media Upload Repository ---
@@ -350,12 +422,13 @@ export async function uploadMultipleImages(files: FileList | File[]): Promise<st
   return results;
 }
 
-// --- FAQ Repository (PostgreSQL) ---
+// --- FAQ Repository ---
 export async function getFaqsFromDB(): Promise<FAQ[]> {
   try {
     const data = await getFaqsFn();
-    if (Array.isArray(data)) {
+    if (Array.isArray(data) && data.length > 0) {
       memoryFaqs = data;
+      saveState(FAQS_KEY, memoryFaqs);
       return data;
     }
   } catch (err) {
@@ -368,8 +441,10 @@ export async function saveFaqToDB(faq: FAQ): Promise<void> {
   const idx = memoryFaqs.findIndex((f) => f.id === faq.id);
   if (idx >= 0) memoryFaqs[idx] = faq;
   else memoryFaqs.push(faq);
+  saveState(FAQS_KEY, memoryFaqs);
 }
 
 export async function deleteFaqFromDB(id: string): Promise<void> {
   memoryFaqs = memoryFaqs.filter((f) => f.id !== id);
+  saveState(FAQS_KEY, memoryFaqs);
 }

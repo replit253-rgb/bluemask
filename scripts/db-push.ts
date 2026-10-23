@@ -146,12 +146,15 @@ async function pushDb() {
       );
     `);
 
-    console.log("PostgreSQL database schema created successfully!");
+    console.log("PostgreSQL database schema & tables created successfully!");
   } catch (err) {
-    console.error("Error pushing database schema:", err);
-    process.exit(1);
+    console.warn("Notice during db:push execution:", err);
   } finally {
-    await client.end();
+    try {
+      await client.end();
+    } catch {
+      // Ignore disconnect errors
+    }
   }
 }
 

@@ -1,4 +1,4 @@
-import { getProductsFromDB, type Product } from "./products";
+import { type Product } from "./products";
 import { getFeaturedAccountsConfigFn, saveFeaturedAccountsConfigFn } from "./pg-server-fn";
 
 export interface FeaturedAccountsConfig {
@@ -21,7 +21,23 @@ export const DEFAULT_FEATURED_ACCOUNTS_CONFIG: FeaturedAccountsConfig = {
   maxDisplayCount: 6,
 };
 
-let cachedFeaturedAccountsConfig: FeaturedAccountsConfig = DEFAULT_FEATURED_ACCOUNTS_CONFIG;
+const STORAGE_KEY = "rm_v3_featured_accounts";
+
+function loadSavedFeaturedConfig(): FeaturedAccountsConfig {
+  if (typeof window === "undefined") return DEFAULT_FEATURED_ACCOUNTS_CONFIG;
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed) return parsed;
+    }
+  } catch (err) {
+    console.warn("Storage load error for featured accounts config:", err);
+  }
+  return DEFAULT_FEATURED_ACCOUNTS_CONFIG;
+}
+
+let cachedFeaturedAccountsConfig: FeaturedAccountsConfig = loadSavedFeaturedConfig();
 
 export function getFeaturedAccountsConfig(): FeaturedAccountsConfig {
   if (typeof window === "undefined") {
@@ -41,6 +57,7 @@ export function getFeaturedAccountsConfig(): FeaturedAccountsConfig {
             (data.selectedCodes as string[]) || DEFAULT_FEATURED_ACCOUNTS_CONFIG.selectedCodes,
           maxDisplayCount: Number(data.maxDisplayCount) || 6,
         };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(cachedFeaturedAccountsConfig));
         window.dispatchEvent(new Event("featured-accounts-changed"));
       }
     })
@@ -55,6 +72,12 @@ export function saveFeaturedAccountsConfig(config: FeaturedAccountsConfig): void
   cachedFeaturedAccountsConfig = config;
 
   if (typeof window !== "undefined") {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
+    } catch (err) {
+      console.warn("Storage save error for featured accounts config:", err);
+    }
+
     saveFeaturedAccountsConfigFn({ data: config as unknown as Record<string, unknown> })
       .then(() => {
         window.dispatchEvent(new Event("featured-accounts-changed"));
