@@ -29,13 +29,16 @@ export async function queryPostgres(text: string, params?: unknown[]): Promise<p
     const pool = getPgPool();
     return await pool.query(text, params);
   } catch (err: any) {
-    if (
+    const isConnectionError =
       err?.code === "ECONNREFUSED" ||
       err?.code === "ENOTFOUND" ||
       err?.message?.includes("timeout") ||
-      err?.message?.includes("connection")
-    ) {
-      // Fallback to local JSON store
+      err?.message?.includes("connection");
+    const isLocalEnvironment =
+      process.env["NODE_ENV"] === "development" || process.env["NODE_ENV"] === "test";
+    const allowJsonFallback = isLocalEnvironment && process.env["JSON_DB_FALLBACK"] === "true";
+
+    if (isConnectionError && allowJsonFallback) {
       const result = await executeFallbackQuery(text, params);
       return result as pg.QueryResult;
     }

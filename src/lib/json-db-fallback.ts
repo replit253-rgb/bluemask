@@ -220,8 +220,7 @@ export function readStore(): StoreData {
     const parsed = JSON.parse(content);
     return { ...defaultStore, ...parsed };
   } catch (err) {
-    console.error("Failed to read store.json, returning default:", err);
-    return defaultStore;
+    throw new Error("Failed to read JSON database store.", { cause: err });
   }
 }
 
@@ -232,7 +231,7 @@ export function writeStore(data: StoreData) {
     }
     fs.writeFileSync(STORE_FILE, JSON.stringify(data, null, 2), "utf-8");
   } catch (err) {
-    console.error("Failed to write store.json:", err);
+    throw new Error("Failed to write JSON database store.", { cause: err });
   }
 }
 
