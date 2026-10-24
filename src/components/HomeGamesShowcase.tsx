@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { ArrowUpRight } from "lucide-react";
+import { defaultGameArtwork } from "@/lib/catalog";
 import {
   getHomeGamesConfig,
   DEFAULT_HOME_GAMES_CONFIG,
@@ -83,7 +84,7 @@ export function HomeGamesShowcase({
                   loading="lazy"
                   className="transition-transform duration-300 group-hover:scale-105"
                   onError={(e) => {
-                    (e.target as HTMLImageElement).src = "/assets/game-whiteout.jpg";
+                    e.currentTarget.src = defaultGameArtwork;
                   }}
                 />
               </div>

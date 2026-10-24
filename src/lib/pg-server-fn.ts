@@ -799,5 +799,8 @@ export const uploadImageFn = createServerFn({ method: "POST" })
 
     await fs.writeFile(filePath, buffer);
 
-    return { url: `/uploads/${safeName}` };
+    const publicSiteUrl = process.env["PUBLIC_SITE_URL"]?.replace(/\/+$/, "");
+    const uploadPath = `/uploads/${safeName}`;
+
+    return { url: publicSiteUrl ? `${publicSiteUrl}${uploadPath}` : uploadPath };
   });

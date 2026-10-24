@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { ArrowUpRight } from "lucide-react";
+import { defaultGameArtwork } from "@/lib/catalog";
 import {
   getGameWorldsConfig,
   DEFAULT_GAME_WORLDS_CONFIG,
@@ -90,8 +91,7 @@ export function AccountsForSaleWorlds({
                 height={720}
                 loading="lazy"
                 onError={(e) => {
-                  // Fallback if custom image fails to load
-                  (e.target as HTMLImageElement).src = "/assets/game-whiteout.jpg";
+                  e.currentTarget.src = defaultGameArtwork;
                 }}
               />
               <span className="bm-card-badge bm-mono">{g.number}</span>

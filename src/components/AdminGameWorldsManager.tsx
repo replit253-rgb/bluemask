@@ -20,6 +20,7 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { defaultGameArtwork } from "@/lib/catalog";
 import {
   DEFAULT_GAME_WORLDS_CONFIG,
   getGameWorldsConfig,
@@ -190,7 +191,7 @@ export function AdminGameWorldsManager() {
       slug: slug || `world-${Date.now()}`,
       name: newCard.name,
       genre: newCard.genre || "STRATEGY · SURVIVAL",
-      image: newCard.image || "/assets/game-whiteout.jpg",
+      image: newCard.image || defaultGameArtwork,
       imageAlt: newCard.imageAlt || `Artwork for ${newCard.name}`,
       number: newCard.number || `0${config.cards.length + 1}`,
       services:
@@ -422,7 +423,7 @@ export function AdminGameWorldsManager() {
                       alt={card.imageAlt}
                       className="w-full h-full object-cover"
                       onError={(e) => {
-                        (e.target as HTMLImageElement).src = "/assets/game-whiteout.jpg";
+                        e.currentTarget.src = defaultGameArtwork;
                       }}
                     />
                     <span className="absolute top-1 left-1 bg-black/80 text-red-400 font-mono text-[9px] px-1 py-0.2 rounded font-bold">

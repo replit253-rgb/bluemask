@@ -71,6 +71,8 @@ export const games = [
   },
 ] as const;
 
+export const defaultGameArtwork = games[0].image;
+
 export type Game = (typeof games)[number];
 export type GameSlug = Game["slug"];
 export type ServiceSlug =

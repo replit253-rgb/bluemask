@@ -19,6 +19,7 @@ import {
   Gamepad2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { defaultGameArtwork } from "@/lib/catalog";
 import {
   DEFAULT_HOME_GAMES_CONFIG,
   getHomeGamesConfig,
@@ -172,7 +173,7 @@ export function AdminHomeGamesManager() {
       slug: slug || `game-${Date.now()}`,
       name: newCard.name,
       genre: newCard.genre || "STRATEGY · SURVIVAL",
-      image: newCard.image || "/assets/game-whiteout.jpg",
+      image: newCard.image || defaultGameArtwork,
       imageAlt: newCard.imageAlt || `Artwork for ${newCard.name}`,
       actionText: newCard.actionText || "Explore accounts",
       linkUrl: `/accounts?game=${slug}`,
@@ -391,7 +392,7 @@ export function AdminHomeGamesManager() {
                       alt={card.imageAlt}
                       className="w-full h-full object-cover"
                       onError={(e) => {
-                        (e.target as HTMLImageElement).src = "/assets/game-whiteout.jpg";
+                        e.currentTarget.src = defaultGameArtwork;
                       }}
                     />
                   </div>
