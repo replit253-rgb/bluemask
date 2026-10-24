@@ -2,8 +2,7 @@ import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Search, SlidersHorizontal, ArrowUpDown, ArrowUpRight } from "lucide-react";
 import { games } from "@/lib/catalog";
-import { products, getEffectivePrice, type Product } from "@/lib/products";
-import { getStoredProducts } from "@/lib/admin-store";
+import { getEffectivePrice, type Product } from "@/lib/products";
 import { getProductsFromDB } from "@/lib/db";
 import { SiteFooter, SiteHeader } from "@/components/SiteChrome";
 import { ProductGrid } from "@/components/Products";
@@ -46,25 +45,37 @@ function AccountsPage() {
   const { game, sort = "default", status = "all", q = "" } = Route.useSearch();
   const [productList, setProductList] = useState<Product[]>([]);
   const [hasLoaded, setHasLoaded] = useState(false);
+  const [loadError, setLoadError] = useState(false);
   const [searchTerm, setSearchTerm] = useState(q);
 
   useEffect(() => {
-    getProductsFromDB().then((items) => {
-      setProductList(items);
-      setHasLoaded(true);
-    });
+    const loadProducts = () => {
+      setHasLoaded(false);
+      setLoadError(false);
+      void getProductsFromDB().then(
+        (items) => {
+          setProductList(items);
+          setHasLoaded(true);
+        },
+        (error: unknown) => {
+          console.error("Failed to load accounts from PostgreSQL:", error);
+          setProductList([]);
+          setHasLoaded(true);
+          setLoadError(true);
+        },
+      );
+    };
+    loadProducts();
 
     const handleProductsChange = () => {
-      getProductsFromDB().then((items) => setProductList(items));
+      loadProducts();
     };
     window.addEventListener("products-changed", handleProductsChange);
     return () => window.removeEventListener("products-changed", handleProductsChange);
   }, []);
 
-  const activeCatalog = hasLoaded ? productList : products;
-
   // Filter by game, status, search query
-  let items = activeCatalog.filter((p) => {
+  let items = productList.filter((p) => {
     if (game && p.game !== game) return false;
     if (status && status !== "all" && p.status !== status) return false;
     if (q && q.trim().length > 0) {
@@ -171,7 +182,9 @@ function AccountsPage() {
                 : "All Account Listings"}
             </h2>
             <p className="text-xs text-slate-400 mt-0.5">
-              Showing {items.length} verified accounts ready for instant Discord handover.
+              {hasLoaded
+                ? `Showing ${items.length} account listings.`
+                : "Loading account listings from PostgreSQL..."}
             </p>
           </div>
 
@@ -272,7 +285,15 @@ function AccountsPage() {
           </div>
         </div>
 
-        <ProductGrid items={items} />
+        {!hasLoaded ? (
+          <p className="bm-lead">Loading account listings...</p>
+        ) : loadError ? (
+          <p className="bm-lead text-red-400" role="alert">
+            Unable to load account listings from PostgreSQL. Please refresh and try again.
+          </p>
+        ) : (
+          <ProductGrid items={items} />
+        )}
       </section>
 
       <SiteFooter />

@@ -1,12 +1,9 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowUpRight, Check, Lock, ShieldCheck, Zap, Clock, Tag, Award } from "lucide-react";
-import { discordLink, games, services } from "@/lib/catalog";
-import { products, type Product } from "@/lib/products";
-import { getStoredProducts } from "@/lib/admin-store";
-import { getPageFromDB, getProductsFromDB, type PageContent } from "@/lib/db";
+import { games } from "@/lib/catalog";
+import { getFaqsFromDB, getPageFromDB, type FAQ, type PageContent } from "@/lib/db";
 import { SiteFooter, SiteHeader } from "@/components/SiteChrome";
-import { ProductGrid } from "@/components/Products";
 import { HomeTestimonials } from "@/components/Testimonials";
 import { ServiceCards } from "@/components/ServiceCards";
 import { HomeGamesShowcase } from "@/components/HomeGamesShowcase";
@@ -48,44 +45,18 @@ export const Route = createFileRoute("/")({
   component: Index,
 });
 
-const faqs = [
-  {
-    q: "How do I order an account?",
-    a: "Pick an account from the collection, then message RedMoon on Discord to confirm availability and complete your purchase. Every listing links straight to our Discord.",
-  },
-  {
-    q: "Is trading with RedMoon safe?",
-    a: "Yes. Every deal goes through our verified process — secure checkout, guided transfer, and an account guarantee so you're never left on your own.",
-  },
-  {
-    q: "What is the middleman service?",
-    a: "If you're trading with another player, RedMoon acts as the trusted middleman: we hold the account and the payment until both sides have delivered, then release them.",
-  },
-  {
-    q: "How fast are game top ups?",
-    a: "Top ups for Whiteout Survival, Kingshot, Rise of Kingdoms and Call of Dragons are processed as soon as your payment is confirmed — usually within minutes.",
-  },
-  {
-    q: "Can I sell my account here?",
-    a: "Absolutely. Contact RedMoon on Discord with your account details and we'll verify it, list it, and handle the sale for you.",
-  },
-];
-
 function Index() {
-  const [productList, setProductList] = useState<Product[]>([]);
   const [pageContent, setPageContent] = useState<PageContent | null>(null);
+  const [faqs, setFaqs] = useState<FAQ[]>([]);
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   useEffect(() => {
-    getProductsFromDB().then((items) => {
-      if (items && items.length > 0) {
-        setProductList(items);
-      }
-    });
     getPageFromDB("home").then((p) => setPageContent(p));
+    getFaqsFromDB().then(
+      (items) => setFaqs(items),
+      (error: unknown) => console.error("Failed to load FAQs from PostgreSQL:", error),
+    );
   }, []);
-
-  const activeCatalog = productList.length > 0 ? productList : products;
 
   return (
     <main className="bm">
@@ -319,16 +290,16 @@ function Index() {
         </div>
         <div className="max-w-3xl">
           {faqs.map((f, i) => (
-            <div key={f.q} className="border-b border-border/40 py-5">
+            <div key={f.id} className="border-b border-border/40 py-5">
               <button
                 className="flex w-full items-center justify-between text-left font-semibold text-foreground hover:text-primary transition-colors"
                 onClick={() => setOpenIndex(openIndex === i ? null : i)}
               >
-                {f.q}
+                {f.question}
                 <span className="ml-4 text-red-500">{openIndex === i ? "—" : "+"}</span>
               </button>
               {openIndex === i && (
-                <p className="mt-3 text-sm text-muted-foreground leading-relaxed">{f.a}</p>
+                <p className="mt-3 text-sm text-muted-foreground leading-relaxed">{f.answer}</p>
               )}
             </div>
           ))}

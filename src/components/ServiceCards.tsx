@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { ArrowUpRight, ShieldCheck, ShoppingBag, Zap, type LucideIcon } from "lucide-react";
-import { gamesForService, services as initialServices, type Service } from "@/lib/catalog";
+import { gamesForService, type Service } from "@/lib/catalog";
 import { getServicesFromDB } from "@/lib/db";
 
 const icons: Record<string, LucideIcon> = {
@@ -12,14 +12,12 @@ const icons: Record<string, LucideIcon> = {
 };
 
 export function ServiceCards() {
-  const [serviceList, setServiceList] = useState<Service[]>(initialServices);
+  const [serviceList, setServiceList] = useState<Service[]>([]);
 
   useEffect(() => {
-    getServicesFromDB().then((data) => {
-      if (data && data.length > 0) {
-        setServiceList(data);
-      }
-    });
+    void getServicesFromDB().then(setServiceList, (error: unknown) =>
+      console.error("Failed to load services from PostgreSQL:", error),
+    );
   }, []);
 
   return (

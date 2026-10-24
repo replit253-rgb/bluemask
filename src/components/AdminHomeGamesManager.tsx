@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
   Plus,
   Trash2,
@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
+  DEFAULT_HOME_GAMES_CONFIG,
   getHomeGamesConfig,
   saveHomeGamesConfig,
   resetHomeGamesToDefault,
@@ -39,7 +40,7 @@ const COMMON_GENRES = [
 ];
 
 export function AdminHomeGamesManager() {
-  const [config, setConfig] = useState<HomeGamesSectionConfig>(() => getHomeGamesConfig());
+  const [config, setConfig] = useState<HomeGamesSectionConfig>(DEFAULT_HOME_GAMES_CONFIG);
   const [previewDevice, setPreviewDevice] = useState<"desktop" | "tablet" | "mobile">("desktop");
   const [layoutMode, setLayoutMode] = useState<"split" | "stacked">("split");
 
@@ -69,18 +70,51 @@ export function AdminHomeGamesManager() {
     actionText: "Explore accounts",
   });
 
-  const handleReset = () => {
+  useEffect(() => {
+    let isMounted = true;
+    void getHomeGamesConfig().then(
+      (stored) => {
+        if (isMounted) setConfig(stored);
+      },
+      (error: unknown) => {
+        console.error("Failed to load home games from PostgreSQL:", error);
+        showNotice("Failed to load games from PostgreSQL.");
+      },
+    );
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const persistConfig = async (updated: HomeGamesSectionConfig, message?: string) => {
+    const previous = config;
+    setConfig(updated);
+    try {
+      await saveHomeGamesConfig(updated);
+      if (message) showNotice(message);
+    } catch (error) {
+      console.error("Failed to save home games to PostgreSQL:", error);
+      setConfig(previous);
+      showNotice("Failed to save games. Please try again.");
+    }
+  };
+
+  const handleReset = async () => {
     if (window.confirm("Reset 'Choose your Game' section back to default 4 games?")) {
-      const def = resetHomeGamesToDefault();
-      setConfig(def);
-      showNotice("Reset to default 4 games.");
+      try {
+        const def = await resetHomeGamesToDefault();
+        setConfig(def);
+        showNotice("Game section reset.");
+      } catch (error) {
+        console.error("Failed to reset home games in PostgreSQL:", error);
+        showNotice("Failed to reset games. Please try again.");
+      }
     }
   };
 
   const updateMeta = (key: "eyebrow" | "title" | "linkText" | "linkUrl", value: string) => {
     const updated = { ...config, [key]: value };
-    setConfig(updated);
-    saveHomeGamesConfig(updated);
+    void persistConfig(updated);
   };
 
   const moveCard = (index: number, direction: "up" | "down") => {
@@ -96,9 +130,7 @@ export function AdminHomeGamesManager() {
     }
 
     const updated = { ...config, cards: newCards };
-    setConfig(updated);
-    saveHomeGamesConfig(updated);
-    showNotice(`Moved card ${direction === "up" ? "up" : "down"}.`);
+    void persistConfig(updated, `Moved card ${direction === "up" ? "up" : "down"}.`);
   };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, isEdit: boolean) => {
@@ -147,8 +179,7 @@ export function AdminHomeGamesManager() {
     };
 
     const updated = { ...config, cards: [...config.cards, created] };
-    setConfig(updated);
-    saveHomeGamesConfig(updated);
+    void persistConfig(updated, `Added "${created.name}" to Choose your Game section!`);
     setIsAdding(false);
     setNewCard({
       name: "",
@@ -158,7 +189,6 @@ export function AdminHomeGamesManager() {
       imageAlt: "",
       actionText: "Explore accounts",
     });
-    showNotice(`Added "${created.name}" to Choose your Game section!`);
   };
 
   const handleUpdateCard = (e: React.FormEvent) => {
@@ -170,19 +200,15 @@ export function AdminHomeGamesManager() {
     );
 
     const updated = { ...config, cards: updatedCards };
-    setConfig(updated);
-    saveHomeGamesConfig(updated);
+    void persistConfig(updated, `Saved changes to "${editingCard.name}".`);
     setEditingCard(null);
-    showNotice(`Saved changes to "${editingCard.name}".`);
   };
 
   const handleDeleteCard = (id: string) => {
     const updatedCards = config.cards.filter((c) => c.id !== id && c.slug !== id);
     const updated = { ...config, cards: updatedCards };
-    setConfig(updated);
-    saveHomeGamesConfig(updated);
+    void persistConfig(updated, "Card deleted.");
     setConfirmDeleteId(null);
-    showNotice("Card deleted.");
   };
 
   return (

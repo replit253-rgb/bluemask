@@ -185,13 +185,16 @@ export async function deleteFaqFromDB(id: string): Promise<void> {
 // --- Store Settings Repository ---
 export async function getStoreSettingsFromDB(): Promise<StoreSettings> {
   const data = await getStoreSettingsFn();
-  // If keys are separate, we might need to reconstruct the object if the UI expects it
-  return data as unknown as StoreSettings;
+  return {
+    discordLink: typeof data.discordLink === "string" ? data.discordLink : "",
+    whatsapp: typeof data.whatsapp === "string" ? data.whatsapp : "",
+    discordUsers: Array.isArray(data.discordUsers) ? data.discordUsers : [],
+  };
 }
 
 export async function saveStoreSettingsToDB(settings: StoreSettings): Promise<void> {
-  // If settings is an object with discordLink, etc., we save them individually or as 'site_config'
   await saveStoreSettingsFn({ data: { key: "site_config", value: settings } });
+  if (typeof window !== "undefined") window.dispatchEvent(new Event("store-settings-changed"));
 }
 
 // --- Game Worlds Repository ---

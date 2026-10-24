@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { ArrowUpRight, Check } from "lucide-react";
-import { discordLink, findGame } from "@/lib/catalog";
+import { findGame } from "@/lib/catalog";
 import { formatCurrency, getEffectivePrice, orderMessage, type Product } from "@/lib/products";
 import { Pagination } from "./Pagination";
+import { useStoreSettings } from "@/hooks/use-store-settings";
 
 export function ProductCard({ p }: { p: Product }) {
   const game = findGame(p.game);
@@ -88,6 +89,7 @@ export function ProductGrid({ items }: { items: Product[] }) {
 /** Copy the order message, then open Discord. */
 export function OrderButton({ p }: { p: Product }) {
   const [copied, setCopied] = useState(false);
+  const { discordLink } = useStoreSettings();
   if (p.status === "terjual") {
     return (
       <a className="bm-pill bm-pill--ghost" href={discordLink} target="_blank" rel="noreferrer">

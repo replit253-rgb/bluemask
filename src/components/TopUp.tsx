@@ -12,8 +12,9 @@ import {
   Info,
   Copy,
 } from "lucide-react";
-import { discordLink, findGame } from "@/lib/catalog";
+import { findGame } from "@/lib/catalog";
 import { formatCurrency } from "@/lib/products";
+import { useStoreSettings } from "@/hooks/use-store-settings";
 import {
   topUpMessage,
   type TopUpPackage,
@@ -31,6 +32,7 @@ export function TopUpCard({
   onOpenDetail?: (pack: TopUpPackage) => void;
 }) {
   const [copied, setCopied] = useState(false);
+  const { discordLink } = useStoreSettings();
   const bgImg =
     p.image ||
     (p.popular
@@ -163,6 +165,7 @@ export function TopUpProductDetailModal({
   onClose: () => void;
 }) {
   const [copied, setCopied] = useState(false);
+  const { discordLink } = useStoreSettings();
   const game = findGame(pack.game);
   const bgImg =
     pack.image ||
@@ -351,10 +354,10 @@ export function TopUpProductDetailModal({
   );
 }
 
-export function TopUpGrid({ items, gameSlug }: { items: TopUpPackage[]; gameSlug?: string }) {
-  const [activeItems, setActiveItems] = useState<TopUpPackage[]>(items.map(enrichTopUpDetails));
+export function TopUpGrid({ gameSlug }: { gameSlug: string }) {
+  const [activeItems, setActiveItems] = useState<TopUpPackage[]>([]);
 
-  const detectedGame = gameSlug || items[0]?.game || "whiteout-survival";
+  const detectedGame = gameSlug;
 
   // Pre-configured menus for the game
   const defaultCategories = useMemo(
@@ -371,22 +374,19 @@ export function TopUpGrid({ items, gameSlug }: { items: TopUpPackage[]; gameSlug
   const perPage = 12;
 
   useEffect(() => {
-    getTopUpsFromDB().then((dbItems) => {
-      const enriched = dbItems.map(enrichTopUpDetails);
-      if (detectedGame) {
-        const filtered = enriched.filter((t) => t.game === detectedGame);
-        if (filtered.length > 0) {
-          setActiveItems(filtered);
-        } else {
-          setActiveItems(items.map(enrichTopUpDetails));
-        }
-      } else if (enriched.length > 0) {
-        setActiveItems(enriched);
-      } else {
-        setActiveItems(items.map(enrichTopUpDetails));
-      }
-    });
-  }, [items, detectedGame]);
+    void getTopUpsFromDB().then(
+      (dbItems) => {
+        const storedItems = dbItems.map(enrichTopUpDetails);
+        setActiveItems(
+          detectedGame ? storedItems.filter((item) => item.game === detectedGame) : storedItems,
+        );
+      },
+      (error: unknown) => {
+        console.error("Failed to load top-up packages from PostgreSQL:", error);
+        setActiveItems([]);
+      },
+    );
+  }, [detectedGame]);
 
   // Ensure current category is valid
   useEffect(() => {

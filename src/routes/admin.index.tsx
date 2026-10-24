@@ -119,7 +119,7 @@ export function AdminDashboardPage() {
   // Repositories
   const [products, setProducts] = useState<Product[]>([]);
   const [topups, setTopups] = useState<TopUpPackage[]>([]);
-  const [servicesList, setServicesList] = useState<Service[]>(defaultServices);
+  const [servicesList, setServicesList] = useState<Service[]>([]);
   const [settings, setSettings] = useState<StoreSettings>({
     discordLink: "",
     whatsapp: "",
@@ -224,17 +224,31 @@ export function AdminDashboardPage() {
       return;
     }
 
-    initDatabase().then(() => {
-      getProductsFromDB().then((p) => setProducts(p));
-      getTopUpsFromDB().then((t) => setTopups(t));
-      getServicesFromDB().then((s) => {
-        if (s && s.length > 0) setServicesList(s);
+    void initDatabase()
+      .then(() =>
+        Promise.all([
+          getProductsFromDB(),
+          getTopUpsFromDB(),
+          getServicesFromDB(),
+          getTestimonialsFromDB(),
+          getStoreSettings(),
+        ]),
+      )
+      .then(
+        ([loadedProducts, loadedTopUps, loadedServices, loadedTestimonials, loadedSettings]) => {
+          setProducts(loadedProducts);
+          setTopups(loadedTopUps);
+          setServicesList(loadedServices);
+          setTestimonialsList(loadedTestimonials);
+          setSettings(loadedSettings);
+        },
+      )
+      .catch((error: unknown) => {
+        console.error("Failed to load admin data from PostgreSQL:", error);
+        showNotification(
+          "Unable to load admin data from PostgreSQL. Check the database connection.",
+        );
       });
-      getTestimonialsFromDB().then((t) => {
-        if (t && t.length > 0) setTestimonialsList(t);
-      });
-    });
-    getStoreSettings().then((s) => setSettings(s));
   }, [navigate]);
 
   const showNotification = (msg: string) => {
@@ -836,21 +850,34 @@ export function AdminDashboardPage() {
 
   const handleResetServices = async () => {
     if (confirm("Reset services list back to original default presets?")) {
-      for (const s of defaultServices) {
-        await saveServiceToDB(s);
+      try {
+        for (const service of servicesList) {
+          await deleteServiceFromDB(service.slug);
+        }
+        for (const service of defaultServices) {
+          await saveServiceToDB(service);
+        }
+        setServicesList(defaultServices);
+        showNotification("Services reset to default presets in PostgreSQL.");
+      } catch (error) {
+        console.error("Failed to reset services in PostgreSQL:", error);
+        showNotification("Unable to reset services. Check the database connection.");
       }
-      setServicesList(defaultServices);
-      showNotification("Services reset to default preset list.");
     }
   };
 
   // -------------------------------------------------------------
   // SETTINGS
   // -------------------------------------------------------------
-  const handleSaveSettings = (e: React.FormEvent) => {
+  const handleSaveSettings = async (e: React.FormEvent) => {
     e.preventDefault();
-    saveStoreSettings(settings);
-    showNotification("Store contact channels updated.");
+    try {
+      await saveStoreSettings(settings);
+      showNotification("Store contact channels updated.");
+    } catch (error) {
+      console.error("Failed to save store settings to PostgreSQL:", error);
+      showNotification("Unable to save store settings. Check the database connection.");
+    }
   };
 
   // Filtered queries

@@ -10,20 +10,61 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ContactRouteImport } from './routes/contact'
 import { Route as GamesRouteImport } from './routes/games'
+import { Route as AccountsIndexRouteImport } from './routes/accounts.index'
+import { Route as AccountsCodeRouteImport } from './routes/accounts.$code'
+import { Route as AdminIndexRouteImport } from './routes/admin.index'
+import { Route as AdminCmsRouteImport } from './routes/admin.cms'
+import { Route as AdminLoginRouteImport } from './routes/admin.login'
 import { Route as AkunIndexRouteImport } from './routes/akun.index'
 import { Route as AkunCodeRouteImport } from './routes/akun.$code'
 import { Route as LayananIndexRouteImport } from './routes/layanan.index'
+import { Route as ServicesIndexRouteImport } from './routes/services.index'
+import { Route as TopUpCodeRouteImport } from './routes/top-up.$code'
 import { Route as LayananServiceGameRouteImport } from './routes/layanan.$service.$game'
+import { Route as ServicesServiceGameRouteImport } from './routes/services.$service.$game'
+import { Route as LayananServiceGameCodeRouteImport } from './routes/layanan.$service.$game.$code'
+import { Route as ServicesServiceGameCodeRouteImport } from './routes/services.$service.$game.$code'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ContactRoute = ContactRouteImport.update({
+  id: '/contact',
+  path: '/contact',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const GamesRoute = GamesRouteImport.update({
   id: '/games',
   path: '/games',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AccountsIndexRoute = AccountsIndexRouteImport.update({
+  id: '/accounts/',
+  path: '/accounts/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AccountsCodeRoute = AccountsCodeRouteImport.update({
+  id: '/accounts/$code',
+  path: '/accounts/$code',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/admin/',
+  path: '/admin/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminCmsRoute = AdminCmsRouteImport.update({
+  id: '/admin/cms',
+  path: '/admin/cms',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminLoginRoute = AdminLoginRouteImport.update({
+  id: '/admin/login',
+  path: '/admin/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AkunIndexRoute = AkunIndexRouteImport.update({
@@ -41,71 +82,171 @@ const LayananIndexRoute = LayananIndexRouteImport.update({
   path: '/layanan/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ServicesIndexRoute = ServicesIndexRouteImport.update({
+  id: '/services/',
+  path: '/services/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TopUpCodeRoute = TopUpCodeRouteImport.update({
+  id: '/top-up/$code',
+  path: '/top-up/$code',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LayananServiceGameRoute = LayananServiceGameRouteImport.update({
   id: '/layanan/$service/$game',
   path: '/layanan/$service/$game',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ServicesServiceGameRoute = ServicesServiceGameRouteImport.update({
+  id: '/services/$service/$game',
+  path: '/services/$service/$game',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LayananServiceGameCodeRoute = LayananServiceGameCodeRouteImport.update({
+  id: '/$code',
+  path: '/$code',
+  getParentRoute: () => LayananServiceGameRoute,
+} as any)
+const ServicesServiceGameCodeRoute = ServicesServiceGameCodeRouteImport.update({
+  id: '/$code',
+  path: '/$code',
+  getParentRoute: () => ServicesServiceGameRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/contact': typeof ContactRoute
   '/games': typeof GamesRoute
+  '/accounts/$code': typeof AccountsCodeRoute
+  '/admin/cms': typeof AdminCmsRoute
+  '/admin/login': typeof AdminLoginRoute
   '/akun/$code': typeof AkunCodeRoute
+  '/top-up/$code': typeof TopUpCodeRoute
+  '/accounts/': typeof AccountsIndexRoute
+  '/admin/': typeof AdminIndexRoute
   '/akun/': typeof AkunIndexRoute
   '/layanan/': typeof LayananIndexRoute
-  '/layanan/$service/$game': typeof LayananServiceGameRoute
+  '/services/': typeof ServicesIndexRoute
+  '/layanan/$service/$game': typeof LayananServiceGameRouteWithChildren
+  '/services/$service/$game': typeof ServicesServiceGameRouteWithChildren
+  '/layanan/$service/$game/$code': typeof LayananServiceGameCodeRoute
+  '/services/$service/$game/$code': typeof ServicesServiceGameCodeRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/contact': typeof ContactRoute
   '/games': typeof GamesRoute
+  '/accounts/$code': typeof AccountsCodeRoute
+  '/admin/cms': typeof AdminCmsRoute
+  '/admin/login': typeof AdminLoginRoute
   '/akun/$code': typeof AkunCodeRoute
+  '/top-up/$code': typeof TopUpCodeRoute
+  '/accounts': typeof AccountsIndexRoute
+  '/admin': typeof AdminIndexRoute
   '/akun': typeof AkunIndexRoute
   '/layanan': typeof LayananIndexRoute
-  '/layanan/$service/$game': typeof LayananServiceGameRoute
+  '/services': typeof ServicesIndexRoute
+  '/layanan/$service/$game': typeof LayananServiceGameRouteWithChildren
+  '/services/$service/$game': typeof ServicesServiceGameRouteWithChildren
+  '/layanan/$service/$game/$code': typeof LayananServiceGameCodeRoute
+  '/services/$service/$game/$code': typeof ServicesServiceGameCodeRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/contact': typeof ContactRoute
   '/games': typeof GamesRoute
+  '/accounts/$code': typeof AccountsCodeRoute
+  '/admin/cms': typeof AdminCmsRoute
+  '/admin/login': typeof AdminLoginRoute
   '/akun/$code': typeof AkunCodeRoute
+  '/top-up/$code': typeof TopUpCodeRoute
+  '/accounts/': typeof AccountsIndexRoute
+  '/admin/': typeof AdminIndexRoute
   '/akun/': typeof AkunIndexRoute
   '/layanan/': typeof LayananIndexRoute
-  '/layanan/$service/$game': typeof LayananServiceGameRoute
+  '/services/': typeof ServicesIndexRoute
+  '/layanan/$service/$game': typeof LayananServiceGameRouteWithChildren
+  '/services/$service/$game': typeof ServicesServiceGameRouteWithChildren
+  '/layanan/$service/$game/$code': typeof LayananServiceGameCodeRoute
+  '/services/$service/$game/$code': typeof ServicesServiceGameCodeRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/contact'
     | '/games'
+    | '/accounts/$code'
+    | '/admin/cms'
+    | '/admin/login'
     | '/akun/$code'
+    | '/top-up/$code'
+    | '/accounts/'
+    | '/admin/'
     | '/akun/'
     | '/layanan/'
+    | '/services/'
     | '/layanan/$service/$game'
+    | '/services/$service/$game'
+    | '/layanan/$service/$game/$code'
+    | '/services/$service/$game/$code'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/contact'
     | '/games'
+    | '/accounts/$code'
+    | '/admin/cms'
+    | '/admin/login'
     | '/akun/$code'
+    | '/top-up/$code'
+    | '/accounts'
+    | '/admin'
     | '/akun'
     | '/layanan'
+    | '/services'
     | '/layanan/$service/$game'
+    | '/services/$service/$game'
+    | '/layanan/$service/$game/$code'
+    | '/services/$service/$game/$code'
   id:
     | '__root__'
     | '/'
+    | '/contact'
     | '/games'
+    | '/accounts/$code'
+    | '/admin/cms'
+    | '/admin/login'
     | '/akun/$code'
+    | '/top-up/$code'
+    | '/accounts/'
+    | '/admin/'
     | '/akun/'
     | '/layanan/'
+    | '/services/'
     | '/layanan/$service/$game'
+    | '/services/$service/$game'
+    | '/layanan/$service/$game/$code'
+    | '/services/$service/$game/$code'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ContactRoute: typeof ContactRoute
   GamesRoute: typeof GamesRoute
+  AccountsCodeRoute: typeof AccountsCodeRoute
+  AdminCmsRoute: typeof AdminCmsRoute
+  AdminLoginRoute: typeof AdminLoginRoute
   AkunCodeRoute: typeof AkunCodeRoute
+  TopUpCodeRoute: typeof TopUpCodeRoute
+  AccountsIndexRoute: typeof AccountsIndexRoute
+  AdminIndexRoute: typeof AdminIndexRoute
   AkunIndexRoute: typeof AkunIndexRoute
   LayananIndexRoute: typeof LayananIndexRoute
-  LayananServiceGameRoute: typeof LayananServiceGameRoute
+  ServicesIndexRoute: typeof ServicesIndexRoute
+  LayananServiceGameRoute: typeof LayananServiceGameRouteWithChildren
+  ServicesServiceGameRoute: typeof ServicesServiceGameRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
@@ -117,11 +258,53 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/contact': {
+      id: '/contact'
+      path: '/contact'
+      fullPath: '/contact'
+      preLoaderRoute: typeof ContactRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/games': {
       id: '/games'
       path: '/games'
       fullPath: '/games'
       preLoaderRoute: typeof GamesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/accounts/': {
+      id: '/accounts/'
+      path: '/accounts'
+      fullPath: '/accounts/'
+      preLoaderRoute: typeof AccountsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/accounts/$code': {
+      id: '/accounts/$code'
+      path: '/accounts/$code'
+      fullPath: '/accounts/$code'
+      preLoaderRoute: typeof AccountsCodeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/': {
+      id: '/admin/'
+      path: '/admin'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/cms': {
+      id: '/admin/cms'
+      path: '/admin/cms'
+      fullPath: '/admin/cms'
+      preLoaderRoute: typeof AdminCmsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/login': {
+      id: '/admin/login'
+      path: '/admin/login'
+      fullPath: '/admin/login'
+      preLoaderRoute: typeof AdminLoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/akun/': {
@@ -145,6 +328,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayananIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/services/': {
+      id: '/services/'
+      path: '/services'
+      fullPath: '/services/'
+      preLoaderRoute: typeof ServicesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/top-up/$code': {
+      id: '/top-up/$code'
+      path: '/top-up/$code'
+      fullPath: '/top-up/$code'
+      preLoaderRoute: typeof TopUpCodeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/layanan/$service/$game': {
       id: '/layanan/$service/$game'
       path: '/layanan/$service/$game'
@@ -152,16 +349,68 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayananServiceGameRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/services/$service/$game': {
+      id: '/services/$service/$game'
+      path: '/services/$service/$game'
+      fullPath: '/services/$service/$game'
+      preLoaderRoute: typeof ServicesServiceGameRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/layanan/$service/$game/$code': {
+      id: '/layanan/$service/$game/$code'
+      path: '/$code'
+      fullPath: '/layanan/$service/$game/$code'
+      preLoaderRoute: typeof LayananServiceGameCodeRouteImport
+      parentRoute: typeof LayananServiceGameRoute
+    }
+    '/services/$service/$game/$code': {
+      id: '/services/$service/$game/$code'
+      path: '/$code'
+      fullPath: '/services/$service/$game/$code'
+      preLoaderRoute: typeof ServicesServiceGameCodeRouteImport
+      parentRoute: typeof ServicesServiceGameRoute
+    }
   }
 }
 
+interface LayananServiceGameRouteChildren {
+  LayananServiceGameCodeRoute: typeof LayananServiceGameCodeRoute
+}
+
+const LayananServiceGameRouteChildren: LayananServiceGameRouteChildren = {
+  LayananServiceGameCodeRoute: LayananServiceGameCodeRoute,
+}
+
+const LayananServiceGameRouteWithChildren =
+  LayananServiceGameRoute._addFileChildren(LayananServiceGameRouteChildren)
+
+interface ServicesServiceGameRouteChildren {
+  ServicesServiceGameCodeRoute: typeof ServicesServiceGameCodeRoute
+}
+
+const ServicesServiceGameRouteChildren: ServicesServiceGameRouteChildren = {
+  ServicesServiceGameCodeRoute: ServicesServiceGameCodeRoute,
+}
+
+const ServicesServiceGameRouteWithChildren =
+  ServicesServiceGameRoute._addFileChildren(ServicesServiceGameRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ContactRoute: ContactRoute,
   GamesRoute: GamesRoute,
+  AccountsCodeRoute: AccountsCodeRoute,
+  AdminCmsRoute: AdminCmsRoute,
+  AdminLoginRoute: AdminLoginRoute,
   AkunCodeRoute: AkunCodeRoute,
+  TopUpCodeRoute: TopUpCodeRoute,
+  AccountsIndexRoute: AccountsIndexRoute,
+  AdminIndexRoute: AdminIndexRoute,
   AkunIndexRoute: AkunIndexRoute,
   LayananIndexRoute: LayananIndexRoute,
-  LayananServiceGameRoute: LayananServiceGameRoute,
+  ServicesIndexRoute: ServicesIndexRoute,
+  LayananServiceGameRoute: LayananServiceGameRouteWithChildren,
+  ServicesServiceGameRoute: ServicesServiceGameRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

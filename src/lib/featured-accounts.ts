@@ -1,5 +1,5 @@
 import { type Product } from "./products";
-import { saveFeaturedAccountsConfigFn } from "./pg-server-fn";
+import { getFeaturedAccountsConfigFn, saveFeaturedAccountsConfigFn } from "./pg-server-fn";
 
 export interface FeaturedAccountsConfig {
   eyebrow: string;
@@ -17,32 +17,30 @@ export const DEFAULT_FEATURED_ACCOUNTS_CONFIG: FeaturedAccountsConfig = {
   linkText: "View all accounts",
   linkUrl: "/accounts",
   selectionMode: "auto",
-  selectedCodes: ["WOS-101", "WOS-102", "KS-201", "ROK-301", "ROK-302", "COD-401"],
+  selectedCodes: [],
   maxDisplayCount: 6,
 };
 
 let cachedFeaturedAccountsConfig: FeaturedAccountsConfig = DEFAULT_FEATURED_ACCOUNTS_CONFIG;
 
-export function getFeaturedAccountsConfig(): FeaturedAccountsConfig {
+export async function getFeaturedAccountsConfig(): Promise<FeaturedAccountsConfig> {
+  const stored = await getFeaturedAccountsConfigFn();
+  cachedFeaturedAccountsConfig = {
+    ...DEFAULT_FEATURED_ACCOUNTS_CONFIG,
+    ...(stored || {}),
+  };
   return cachedFeaturedAccountsConfig;
 }
 
-export function saveFeaturedAccountsConfig(config: FeaturedAccountsConfig): void {
+export async function saveFeaturedAccountsConfig(config: FeaturedAccountsConfig): Promise<void> {
+  await saveFeaturedAccountsConfigFn({ data: config as unknown as Record<string, unknown> });
   cachedFeaturedAccountsConfig = config;
-  if (typeof window !== "undefined") {
-    window.dispatchEvent(new Event("featured-accounts-changed"));
-  }
-  saveFeaturedAccountsConfigFn({ data: config as unknown as Record<string, unknown> }).catch(
-    (err) => {
-      console.warn("saveFeaturedAccountsConfig error:", err);
-    },
-  );
+  if (typeof window !== "undefined") window.dispatchEvent(new Event("featured-accounts-changed"));
 }
 
-export function resetFeaturedAccountsToDefault(): FeaturedAccountsConfig {
-  cachedFeaturedAccountsConfig = DEFAULT_FEATURED_ACCOUNTS_CONFIG;
-  saveFeaturedAccountsConfig(DEFAULT_FEATURED_ACCOUNTS_CONFIG);
-  return DEFAULT_FEATURED_ACCOUNTS_CONFIG;
+export async function resetFeaturedAccountsToDefault(): Promise<FeaturedAccountsConfig> {
+  await saveFeaturedAccountsConfig(DEFAULT_FEATURED_ACCOUNTS_CONFIG);
+  return cachedFeaturedAccountsConfig;
 }
 
 export async function getDisplayFeaturedProducts(

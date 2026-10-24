@@ -9,6 +9,13 @@ if (!connectionString) {
   process.exit(1);
 }
 
+if (process.env.SEED_DEMO_DATA !== "true") {
+  console.error(
+    "Demo seeding is disabled. Set SEED_DEMO_DATA=true to explicitly insert demo records.",
+  );
+  process.exit(1);
+}
+
 const initialProducts = [
   {
     code: "BM-WOS-01",

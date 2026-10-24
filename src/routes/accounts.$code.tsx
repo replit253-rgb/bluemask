@@ -1,17 +1,12 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { ArrowUpRight, BadgeCheck, Check, ShieldCheck } from "lucide-react";
-import { discordLink, findGame } from "@/lib/catalog";
-import {
-  findProduct,
-  formatCurrency,
-  getEffectivePrice,
-  productsForGame,
-  type Product,
-} from "@/lib/products";
+import { findGame } from "@/lib/catalog";
+import { formatCurrency, getEffectivePrice, type Product } from "@/lib/products";
 import { getProductsFromDB } from "@/lib/db";
 import { SiteFooter, SiteHeader } from "@/components/SiteChrome";
 import { OrderButton, ProductGrid } from "@/components/Products";
+import { useStoreSettings } from "@/hooks/use-store-settings";
 
 export const Route = createFileRoute("/accounts/$code")({
   loader: ({ params }) => {
@@ -19,12 +14,8 @@ export const Route = createFileRoute("/accounts/$code")({
   },
   head: ({ loaderData, params }) => {
     const code = loaderData?.code || params.code;
-    const p = findProduct(code);
-    const g = p && findGame(p.game);
-    const title = p && g ? `${g.name} ${p.title} — RedMoon` : `Account ${code} — RedMoon`;
-    const desc = p
-      ? `${p.title}. ${formatCurrency(p.price)}. Order safely through the RedMoon Discord.`
-      : "Gaming account details and verified middleman transfer at RedMoon.";
+    const title = `Account ${code} — RedMoon`;
+    const desc = "Gaming account details and verified middleman transfer at RedMoon.";
     return {
       meta: [
         { title },
@@ -78,17 +69,31 @@ const overviewFor = (p: Product, game: NonNullable<ReturnType<typeof findGame>>)
 
 function ProductPage() {
   const { code } = Route.useLoaderData();
-  const [product, setProduct] = useState<Product | undefined>(() => findProduct(code));
+  const [product, setProduct] = useState<Product | undefined>();
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [activeImage, setActiveImage] = useState<string | null>(null);
+  const { discordLink } = useStoreSettings();
 
   useEffect(() => {
     const fetchAndUpdate = () => {
-      getProductsFromDB().then((list) => {
-        const match = list.find((item) => item.code.toLowerCase() === code.toLowerCase());
-        if (match) {
-          setProduct(match);
-        }
-      });
+      setIsLoading(true);
+      setLoadError(false);
+      void getProductsFromDB().then(
+        (list) => {
+          setAllProducts(list);
+          setProduct(list.find((item) => item.code.toLowerCase() === code.toLowerCase()));
+          setIsLoading(false);
+        },
+        (error: unknown) => {
+          console.error("Failed to load account from PostgreSQL:", error);
+          setAllProducts([]);
+          setProduct(undefined);
+          setIsLoading(false);
+          setLoadError(true);
+        },
+      );
     };
     fetchAndUpdate();
 
@@ -101,6 +106,32 @@ function ProductPage() {
 
   // Sync active image with product image
   const displayImage = activeImage || p?.image || game?.image || "";
+
+  if (isLoading) {
+    return (
+      <main className="bm">
+        <SiteHeader />
+        <section className="bm-section text-center py-20">
+          <p className="bm-lead">Loading account details from PostgreSQL...</p>
+        </section>
+        <SiteFooter />
+      </main>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <main className="bm">
+        <SiteHeader />
+        <section className="bm-section text-center py-20">
+          <p className="bm-lead text-red-400" role="alert">
+            Unable to load this account from PostgreSQL. Please refresh and try again.
+          </p>
+        </section>
+        <SiteFooter />
+      </main>
+    );
+  }
 
   if (!p || !game) {
     return (
@@ -130,7 +161,7 @@ function ProductPage() {
     );
   }
 
-  const more = productsForGame(p.game).filter((x) => x.code !== p.code);
+  const more = allProducts.filter((item) => item.game === p.game && item.code !== p.code);
   const sold = p.status === "terjual";
   const allImages = [...(p.image ? [p.image] : [game.image]), ...(p.screenshots || [])].filter(
     Boolean,

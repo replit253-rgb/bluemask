@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { ArrowUpRight, ChevronDown, Menu, ShoppingCart, X } from "lucide-react";
-import { discordLink, games, gamesForService, services } from "@/lib/catalog";
+import { ArrowUpRight, Menu, ShoppingCart, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import logoAsset from "@/assets/logo.png";
+import { useStoreSettings } from "@/hooks/use-store-settings";
 
 export function SiteHeader() {
   const [open, setOpen] = useState(false);
+  const { discordLink } = useStoreSettings();
   return (
     <header className="bm-header relative">
       <Link to="/" className="bm-logo" aria-label="RedMoon, home">
@@ -119,6 +120,7 @@ export function SiteHeader() {
   );
 }
 export function SiteFooter() {
+  const { discordLink } = useStoreSettings();
   return (
     <footer className="bm-footer">
       <div className="bm-footer-top">

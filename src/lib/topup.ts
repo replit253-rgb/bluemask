@@ -471,29 +471,7 @@ export const normalizeCategory = (item: TopUpPackage): TopUpPackage => {
 };
 
 export const enrichTopUpDetails = (p: TopUpPackage): TopUpPackage => {
-  const norm = normalizeCategory(p);
-  const isWos = norm.game === "whiteout-survival";
-  const gameName = findGame(norm.game)?.name ?? (isWos ? "Whiteout Survival" : "Kingshot");
-
-  return {
-    ...norm,
-    description:
-      norm.description ||
-      `Official in-game ${norm.category || "top-up"} for ${gameName}. Direct delivery using your Player ID without password required. Safe, fast, and protected by reedmoon transaction warranty.`,
-    features:
-      norm.features && norm.features.length > 0
-        ? norm.features
-        : [
-            `Direct ${gameName} account delivery via Player ID`,
-            "100% safe — no account credentials or password needed",
-            "Official in-game receipt and transaction verification",
-            "Instant handover via Discord ticket in 5–15 minutes",
-          ],
-    instructions:
-      norm.instructions ||
-      "Order via Discord by sending your Player ID and Server/State. Our team will verify and deliver your package promptly.",
-    deliveryTime: norm.deliveryTime || "5 - 15 Minutes",
-  };
+  return normalizeCategory(p);
 };
 
 export const topUpForGame = (game: string) => {
@@ -506,7 +484,7 @@ export const topUpMessage = (p: TopUpPackage) => {
   return `Hi reedmoon, I'd like to top up ${gameName} [${p.category || "Top-Up"}] ${p.name} (${formatCurrency(p.price)}). Player ID: `;
 };
 
-/** Find a top up package by code with sync fallback */
+/** Find a package in the bundled reference catalog. Runtime pages must query PostgreSQL. */
 export const findTopUpPackage = (code: string): TopUpPackage | undefined => {
   const item = topUpPackages.find((p) => p.code.toLowerCase() === code.toLowerCase());
   return item ? enrichTopUpDetails(item) : undefined;

@@ -3,6 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { ArrowUpRight } from "lucide-react";
 import {
   getHomeGamesConfig,
+  DEFAULT_HOME_GAMES_CONFIG,
   type HomeGamesSectionConfig,
   type HomeGameCard,
 } from "@/lib/home-games";
@@ -19,7 +20,7 @@ export function HomeGamesShowcase({
   previewMode = false,
 }: HomeGamesShowcaseProps) {
   const [config, setConfig] = useState<HomeGamesSectionConfig>(
-    () => propConfig || getHomeGamesConfig(),
+    () => propConfig || DEFAULT_HOME_GAMES_CONFIG,
   );
 
   useEffect(() => {
@@ -28,16 +29,24 @@ export function HomeGamesShowcase({
       return;
     }
 
+    let isMounted = true;
     const handleUpdate = () => {
-      setConfig(getHomeGamesConfig());
+      void getHomeGamesConfig().then(
+        (data) => {
+          if (isMounted) setConfig(data);
+        },
+        (error: unknown) => {
+          console.error("Failed to load home games from PostgreSQL:", error);
+        },
+      );
     };
 
+    handleUpdate();
     window.addEventListener("home-games-changed", handleUpdate);
-    window.addEventListener("storage", handleUpdate);
 
     return () => {
+      isMounted = false;
       window.removeEventListener("home-games-changed", handleUpdate);
-      window.removeEventListener("storage", handleUpdate);
     };
   }, [propConfig]);
 

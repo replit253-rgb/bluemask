@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { ArrowUpRight } from "lucide-react";
-import { products, type Product } from "@/lib/products";
+import { type Product } from "@/lib/products";
 import { getProductsFromDB } from "@/lib/db";
 import {
   getFeaturedAccountsConfig,
@@ -12,30 +12,30 @@ import {
 import { ProductGrid } from "@/components/Products";
 
 export function FeaturedAccountsShowcase() {
-  const [config, setConfig] = useState<FeaturedAccountsConfig>(() => getFeaturedAccountsConfig());
-  const [, setAllProducts] = useState<Product[]>([]);
+  const [config, setConfig] = useState<FeaturedAccountsConfig>(DEFAULT_FEATURED_ACCOUNTS_CONFIG);
   const [displayItems, setDisplayItems] = useState<Product[]>([]);
 
-  const refreshData = async () => {
-    const currentConfig = getFeaturedAccountsConfig();
-    setConfig(currentConfig);
-
-    const itemsFromDB = await getProductsFromDB();
-    const activeProducts = itemsFromDB && itemsFromDB.length > 0 ? itemsFromDB : products;
-    setAllProducts(activeProducts);
-
-    const filtered = await getDisplayFeaturedProducts(activeProducts, currentConfig);
-    setDisplayItems(filtered);
-  };
-
   useEffect(() => {
-    refreshData();
+    let isMounted = true;
+    const refreshData = async () => {
+      const [currentConfig, itemsFromDB] = await Promise.all([
+        getFeaturedAccountsConfig(),
+        getProductsFromDB(),
+      ]);
+      if (!isMounted) return;
+      setConfig(currentConfig);
+      setDisplayItems(await getDisplayFeaturedProducts(itemsFromDB, currentConfig));
+    };
+    void refreshData().catch((error: unknown) => {
+      console.error("Failed to load featured accounts from PostgreSQL:", error);
+    });
 
     const handleConfigChange = () => refreshData();
     window.addEventListener("featured-accounts-changed", handleConfigChange);
     window.addEventListener("products-changed", handleConfigChange);
 
     return () => {
+      isMounted = false;
       window.removeEventListener("featured-accounts-changed", handleConfigChange);
       window.removeEventListener("products-changed", handleConfigChange);
     };

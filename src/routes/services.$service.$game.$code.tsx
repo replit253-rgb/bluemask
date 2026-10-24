@@ -14,41 +14,31 @@ import {
   CheckCircle2,
   Info,
 } from "lucide-react";
-import { discordLink, findGame, findService } from "@/lib/catalog";
+import { findGame } from "@/lib/catalog";
 import { formatCurrency } from "@/lib/products";
-import {
-  type TopUpPackage,
-  findTopUpPackage,
-  topUpForGame,
-  topUpMessage,
-  enrichTopUpDetails,
-} from "@/lib/topup";
-import { getTopUpsFromDB } from "@/lib/db";
+import { type TopUpPackage, topUpMessage, enrichTopUpDetails } from "@/lib/topup";
+import { getServicesFromDB, getTopUpsFromDB } from "@/lib/db";
 import { SiteFooter, SiteHeader } from "@/components/SiteChrome";
 import { TopUpCard } from "@/components/TopUp";
+import { useStoreSettings } from "@/hooks/use-store-settings";
 
 export const Route = createFileRoute("/services/$service/$game/$code")({
-  loader: ({ params }) => {
-    const service = findService(params.service);
+  loader: async ({ params }) => {
+    const serviceSlug = params.service === "jual-beli-akun" ? "buy-sell-accounts" : params.service;
+    const service = (await getServicesFromDB()).find((item) => item.slug === serviceSlug);
     const game = findGame(params.game);
     if (!service || !game) throw notFound();
     return {
-      serviceSlug: service.slug,
+      service,
       gameSlug: game.slug,
       code: params.code,
     };
   },
   head: ({ loaderData, params }) => {
     const code = loaderData?.code || params.code;
-    const item = findTopUpPackage(code);
-    const g = item ? findGame(item.game) : findGame(params.game);
-    const title =
-      item && g
-        ? `${item.name} (${g.name}) — Top Up RedMoon`
-        : `Top Up Pack ${code} — RedMoon Gaming Store`;
-    const desc =
-      item?.description ||
-      `Top up ${item?.name || code} for ${g?.name || "your game"} safely in USD via RedMoon Discord ticket.`;
+    const g = loaderData?.gameSlug ? findGame(loaderData.gameSlug) : findGame(params.game);
+    const title = `Top Up Pack ${code} — RedMoon Gaming Store`;
+    const desc = `Top up package ${code} for ${g?.name || "your game"} via RedMoon Discord ticket.`;
     const url = `/services/${params.service}/${params.game}/${params.code}`;
 
     return {
@@ -68,34 +58,58 @@ export const Route = createFileRoute("/services/$service/$game/$code")({
 });
 
 function TopUpDetailPage() {
-  const { serviceSlug, gameSlug, code } = Route.useLoaderData();
-  const service = findService(serviceSlug);
+  const { service, gameSlug, code } = Route.useLoaderData();
   const game = findGame(gameSlug);
 
-  const [pack, setPack] = useState<TopUpPackage | undefined>(() => findTopUpPackage(code));
-  const [allPacks, setAllPacks] = useState<TopUpPackage[]>(() =>
-    game ? topUpForGame(game.slug) : [],
-  );
+  const [pack, setPack] = useState<TopUpPackage | undefined>();
+  const [allPacks, setAllPacks] = useState<TopUpPackage[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [copiedTextOnly, setCopiedTextOnly] = useState(false);
+  const { discordLink } = useStoreSettings();
 
   useEffect(() => {
-    getTopUpsFromDB().then((list) => {
-      if (list && list.length > 0) {
+    setIsLoading(true);
+    setLoadError(null);
+    getTopUpsFromDB().then(
+      (list) => {
         const enriched = list.map(enrichTopUpDetails);
-        const match = enriched.find((item) => item.code.toLowerCase() === code.toLowerCase());
-        if (match) {
-          setPack(match);
-        }
-        if (game) {
-          const gameItems = enriched.filter((item) => item.game === game.slug);
-          if (gameItems.length > 0) {
-            setAllPacks(gameItems);
-          }
-        }
-      }
-    });
+        setPack(enriched.find((item) => item.code.toLowerCase() === code.toLowerCase()));
+        setAllPacks(game ? enriched.filter((item) => item.game === game.slug) : []);
+        setIsLoading(false);
+      },
+      (error: unknown) => {
+        console.error("Failed to load top-up package:", error);
+        setLoadError("Unable to load this package. Please refresh and try again.");
+        setIsLoading(false);
+      },
+    );
   }, [code, game]);
+
+  if (isLoading) {
+    return (
+      <main className="bm min-h-screen">
+        <SiteHeader />
+        <div className="max-w-4xl mx-auto px-4 py-20 text-center">
+          <p className="text-sm text-slate-400">Loading top-up package...</p>
+        </div>
+        <SiteFooter />
+      </main>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <main className="bm min-h-screen">
+        <SiteHeader />
+        <div className="max-w-4xl mx-auto px-4 py-20 text-center">
+          <p className="text-sm text-red-400">{loadError}</p>
+        </div>
+        <SiteFooter />
+      </main>
+    );
+  }
 
   if (!service || !game || !pack) {
     return (

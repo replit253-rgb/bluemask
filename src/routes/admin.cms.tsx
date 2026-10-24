@@ -50,30 +50,18 @@ function AdminCMSPage() {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const [activeSlug, setActiveSlug] = useState<string>("home");
-  const [pageData, setPageData] = useState<PageContent | null>({
-    slug: "home",
-    title: "RedMoon Gaming Store",
-    heroTitle: "RedMoon Gaming Store",
-    heroSubtitle: "Great accounts. Safer trades. More possibilities in every game.",
-    heroImage: "/assets/aistudio/bg_fe70fe49.jpg",
-    leadText: "Your trusted destination for game accounts and top-ups.",
-    announcement: "Flash Sale: All game accounts feature an automatic 20% discount!",
-    buttonText: "Browse Accounts",
-    buttonLink: "/accounts",
-    secondaryButtonText: "Explore Top Up",
-    secondaryButtonLink: "/games",
-    sectionTitle: "Featured Verified Accounts",
-    sectionSubtitle:
-      "Fully verified high-level strategy game accounts ready for secure instant transfer.",
-    updatedAt: new Date().toISOString(),
-  });
+  const [pageData, setPageData] = useState<PageContent | null>(null);
+  const [pageLoadError, setPageLoadError] = useState<string | null>(null);
 
   const [previewDevice, setPreviewDevice] = useState<"desktop" | "tablet" | "mobile">("desktop");
   const [isUploading, setIsUploading] = useState(false);
   const [savedNotice, setSavedNotice] = useState(false);
   const [faqs, setFaqs] = useState<FAQ[]>([]);
 
-  const loadFaqs = () => getFaqsFromDB().then(setFaqs);
+  const loadFaqs = () =>
+    getFaqsFromDB().then(setFaqs, (error: unknown) => {
+      console.error("Failed to load FAQs from PostgreSQL:", error);
+    });
 
   useEffect(() => {
     if (typeof window !== "undefined" && localStorage.getItem("bm_is_admin") !== "true") {
@@ -81,10 +69,15 @@ function AdminCMSPage() {
       return;
     }
 
-    getPageFromDB(activeSlug).then((data) => {
-      setPageData(data);
-    });
-    loadFaqs();
+    setPageLoadError(null);
+    void getPageFromDB(activeSlug).then(
+      (data) => setPageData(data),
+      (error: unknown) => {
+        console.error("Failed to load CMS page from PostgreSQL:", error);
+        setPageLoadError("Unable to load page content from PostgreSQL.");
+      },
+    );
+    void loadFaqs();
   }, [activeSlug, navigate]);
 
   const handleDeviceImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -108,9 +101,15 @@ function AdminCMSPage() {
     e.preventDefault();
     if (!pageData) return;
     const updated = { ...pageData, updatedAt: new Date().toISOString() };
-    await savePageToDB(updated);
-    setSavedNotice(true);
-    setTimeout(() => setSavedNotice(false), 3000);
+    try {
+      await savePageToDB(updated);
+      setSavedNotice(true);
+      setTimeout(() => setSavedNotice(false), 3000);
+      setPageLoadError(null);
+    } catch (error) {
+      console.error("Failed to save CMS page to PostgreSQL:", error);
+      setPageLoadError("Unable to save page content to PostgreSQL.");
+    }
   };
 
   const previewWidth =
@@ -214,7 +213,35 @@ function AdminCMSPage() {
           <AdminGameWorldsManager />
         ) : activeSlug === "choose_your_game" ? (
           <AdminHomeGamesManager />
-        ) : activeSlug !== "faq" && pageData ? (
+        ) : activeSlug !== "faq" && !pageData ? (
+          <div className="rounded-xl border border-border/60 bg-card/60 p-6">
+            {pageLoadError ? (
+              <p role="alert" className="text-sm text-red-300">
+                {pageLoadError}
+              </p>
+            ) : (
+              <>
+                <p className="text-sm text-muted-foreground mb-4">
+                  No page content exists in PostgreSQL for “{activeSlug}”.
+                </p>
+                <Button
+                  onClick={() =>
+                    setPageData({
+                      slug: activeSlug,
+                      title: "",
+                      heroTitle: "",
+                      heroSubtitle: "",
+                      heroImage: "",
+                      updatedAt: new Date().toISOString(),
+                    })
+                  }
+                >
+                  Create empty page
+                </Button>
+              </>
+            )}
+          </div>
+        ) : activeSlug !== "faq" ? (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             {/* Editor Panel (5 cols) */}
             <div className="lg:col-span-6 bg-card border border-border/80 rounded-2xl p-6 shadow-xl">
@@ -589,7 +616,11 @@ function AdminCMSPage() {
                     <p className="text-xs text-muted-foreground leading-relaxed">{f.answer}</p>
                   </div>
                   <Button
-                    onClick={() => deleteFaqFromDB(f.id).then(loadFaqs)}
+                    onClick={() => {
+                      void deleteFaqFromDB(f.id).then(loadFaqs, (error: unknown) => {
+                        console.error("Failed to delete FAQ from PostgreSQL:", error);
+                      });
+                    }}
                     variant="ghost"
                     size="sm"
                     className="text-rose-400 hover:text-rose-300 hover:bg-rose-950/30"
@@ -606,13 +637,17 @@ function AdminCMSPage() {
                 onSubmit={async (e) => {
                   e.preventDefault();
                   const formData = new FormData(e.currentTarget);
-                  await saveFaqToDB({
-                    id: Date.now().toString(),
-                    question: formData.get("q") as string,
-                    answer: formData.get("a") as string,
-                  });
-                  e.currentTarget.reset();
-                  loadFaqs();
+                  try {
+                    await saveFaqToDB({
+                      id: Date.now().toString(),
+                      question: String(formData.get("q") || ""),
+                      answer: String(formData.get("a") || ""),
+                    });
+                    e.currentTarget.reset();
+                    await loadFaqs();
+                  } catch (error) {
+                    console.error("Failed to save FAQ to PostgreSQL:", error);
+                  }
                 }}
                 className="space-y-4"
               >

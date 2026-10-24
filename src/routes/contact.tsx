@@ -1,9 +1,7 @@
-import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowUpRight, Check, MessageSquare, Phone, ShieldCheck } from "lucide-react";
-import { discordLink, discordUserLink, whatsappNumber, whatsappClean } from "@/lib/catalog";
-import { getStoreSettings } from "@/lib/admin-store";
+import { ArrowUpRight, Check, MessageSquare, ShieldCheck } from "lucide-react";
 import { SiteFooter, SiteHeader } from "@/components/SiteChrome";
+import { useStoreSettings } from "@/hooks/use-store-settings";
 
 export const Route = createFileRoute("/contact")({
   head: () => ({
@@ -37,25 +35,11 @@ const helpTopics = [
 ];
 
 function ContactPage() {
-  const [activeSettings, setActiveSettings] = useState({
-    discordLink: discordLink || "",
-    whatsapp: whatsappNumber || "",
-  });
-
-  useEffect(() => {
-    getStoreSettings().then((s) => {
-      if (s) {
-        setActiveSettings({
-          discordLink: s.discordLink || discordLink || "",
-          whatsapp: s.whatsapp || whatsappNumber || "",
-        });
-      }
-    });
-  }, []);
-
-  const rawWa = activeSettings.whatsapp || whatsappNumber || whatsappClean || "";
+  const activeSettings = useStoreSettings();
+  const rawWa = activeSettings.whatsapp;
   const cleanWa = rawWa.replace(/\D/g, "");
-  const rawDiscord = activeSettings.discordLink || discordLink || "";
+  const rawDiscord = activeSettings.discordLink;
+  const discordUser = activeSettings.discordUsers[0];
   const displayDiscord = rawDiscord.replace("https://", "");
 
   return (
@@ -104,42 +88,60 @@ function ContactPage() {
                 <strong style={{ minWidth: "140px", color: "var(--bm-ink-soft)" }}>
                   Discord User:
                 </strong>
-                <a
-                  href={discordUserLink}
-                  target="_blank"
-                  rel="noreferrer"
-                  style={{
-                    color: "var(--bm-glow)",
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: "6px",
-                    fontWeight: 600,
-                  }}
-                >
-                  <MessageSquare style={{ width: "16px", height: "16px" }} />
-                  bluemask22 <ArrowUpRight style={{ width: "14px", height: "14px" }} />
-                </a>
+                {discordUser ? (
+                  <a
+                    href={discordUser.link}
+                    target="_blank"
+                    rel="noreferrer"
+                    style={{
+                      color: "var(--bm-glow)",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "6px",
+                      fontWeight: 600,
+                    }}
+                  >
+                    <MessageSquare style={{ width: "16px", height: "16px" }} />
+                    {discordUser.name} <ArrowUpRight style={{ width: "14px", height: "14px" }} />
+                  </a>
+                ) : (
+                  <span>Not configured</span>
+                )}
               </li>
               <li style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                 <strong style={{ minWidth: "140px", color: "var(--bm-ink-soft)" }}>
                   Discord Server:
                 </strong>
-                <a
-                  href={rawDiscord}
-                  target="_blank"
-                  rel="noreferrer"
-                  style={{
-                    color: "var(--bm-glow)",
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: "6px",
-                    fontWeight: 600,
-                  }}
-                >
-                  <MessageSquare style={{ width: "16px", height: "16px" }} />
-                  {displayDiscord} <ArrowUpRight style={{ width: "14px", height: "14px" }} />
-                </a>
+                {rawDiscord ? (
+                  <a
+                    href={rawDiscord}
+                    target="_blank"
+                    rel="noreferrer"
+                    style={{
+                      color: "var(--bm-glow)",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "6px",
+                      fontWeight: 600,
+                    }}
+                  >
+                    <MessageSquare style={{ width: "16px", height: "16px" }} />
+                    {displayDiscord} <ArrowUpRight style={{ width: "14px", height: "14px" }} />
+                  </a>
+                ) : (
+                  <span>Not configured</span>
+                )}
               </li>
+              {rawWa && (
+                <li style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                  <strong style={{ minWidth: "140px", color: "var(--bm-ink-soft)" }}>
+                    WhatsApp:
+                  </strong>
+                  <a href={`https://wa.me/${cleanWa}`} target="_blank" rel="noreferrer">
+                    {rawWa} <ArrowUpRight style={{ width: "14px", height: "14px" }} />
+                  </a>
+                </li>
+              )}
 
               <li style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                 <strong style={{ minWidth: "140px", color: "var(--bm-ink-soft)" }}>

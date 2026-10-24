@@ -40,6 +40,8 @@ const ProductSchema = z.object({
   title: z.string().max(255),
   badge: z.string().max(100).optional().nullable(),
   price: z.number().min(0),
+  discountPercent: z.number().optional(),
+  hasDiscount: z.boolean().optional(),
   status: z.string().max(50).optional().nullable(),
   image: z.string().max(1000).optional().nullable(),
   screenshots: z.array(z.string().max(1000)).optional(),
@@ -59,6 +61,10 @@ const TopupSchema = z.object({
   category: z.string().max(100).optional().nullable(),
   popular: z.boolean().optional(),
   sort_order: z.number().optional(),
+  description: z.string().max(2000).optional().nullable(),
+  features: z.array(z.string().max(1000)).optional(),
+  instructions: z.string().max(2000).optional().nullable(),
+  deliveryTime: z.string().max(255).optional().nullable(),
 });
 
 const ServiceSchema = z.object({
@@ -74,6 +80,9 @@ const ServiceSchema = z.object({
   ),
   image: z.string().max(1000).optional().nullable(),
   sort_order: z.number().optional(),
+  gameSlugs: z.array(z.string().max(255)).optional(),
+  checklist: z.array(z.string().max(1000)).optional(),
+  fee: z.string().max(255).optional(),
 });
 
 const TestimonialSchema = z.object({
@@ -99,8 +108,15 @@ const PageSchema = z.object({
   heroTitle: z.string().max(255).optional().nullable(),
   heroSubtitle: z.string().max(500).optional().nullable(),
   heroImage: z.string().max(1000).optional().nullable(),
+  heroImageMobile: z.string().max(1000).optional().nullable(),
   leadText: z.string().max(2000).optional().nullable(),
   announcement: z.string().max(1000).optional().nullable(),
+  buttonText: z.string().max(255).optional().nullable(),
+  buttonLink: z.string().max(1000).optional().nullable(),
+  secondaryButtonText: z.string().max(255).optional().nullable(),
+  secondaryButtonLink: z.string().max(1000).optional().nullable(),
+  sectionTitle: z.string().max(255).optional().nullable(),
+  sectionSubtitle: z.string().max(1000).optional().nullable(),
 });
 
 const GameWorldCardSchema = z.object({
@@ -183,6 +199,8 @@ export const getProductsFn = createServerFn({ method: "GET" }).handler(async () 
     title: row.title as string,
     badge: row.badge,
     price: Number(row.price),
+    discountPercent: row.discount_percent ?? undefined,
+    hasDiscount: row.has_discount ?? false,
     status: row.status,
     image: row.image,
     screenshots: row.screenshots || [],
@@ -212,10 +230,11 @@ export const saveProductFn = createServerFn({ method: "POST" })
       highlights,
     } = data;
     const res = await queryPostgres(
-      `INSERT INTO products (code, game, title, badge, price, status, image, screenshots, description, server, stats, highlights)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+      `INSERT INTO products (code, game, title, badge, price, status, discount_percent, has_discount, image, screenshots, description, server, stats, highlights)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
        ON CONFLICT (code) DO UPDATE SET
          game = EXCLUDED.game, title = EXCLUDED.title, badge = EXCLUDED.badge, price = EXCLUDED.price,
+         discount_percent = EXCLUDED.discount_percent, has_discount = EXCLUDED.has_discount,
          status = EXCLUDED.status, image = EXCLUDED.image, screenshots = EXCLUDED.screenshots,
          description = EXCLUDED.description, server = EXCLUDED.server, stats = EXCLUDED.stats, highlights = EXCLUDED.highlights
        RETURNING *`,
@@ -226,6 +245,8 @@ export const saveProductFn = createServerFn({ method: "POST" })
         badge,
         price,
         status,
+        data.discountPercent,
+        data.hasDiscount ?? false,
         image,
         JSON.stringify(screenshots || []),
         description,
@@ -259,6 +280,10 @@ export const getTopupsFn = createServerFn({ method: "GET" }).handler(async () =>
     category: row.category,
     popular: row.popular,
     sort_order: row.sort_order,
+    description: row.description,
+    features: row.features || [],
+    instructions: row.instructions,
+    deliveryTime: row.delivery_time,
   }));
 });
 
@@ -266,15 +291,46 @@ export const saveTopupFn = createServerFn({ method: "POST" })
   .validator((data: unknown) => TopupSchema.parse(data))
   .handler(async ({ data }) => {
     const { queryPostgres } = await import("./pg-server");
-    const { code, game, name, detail, price, image, category, popular, sort_order } = data;
+    const {
+      code,
+      game,
+      name,
+      detail,
+      price,
+      image,
+      category,
+      popular,
+      sort_order,
+      description,
+      features,
+      instructions,
+      deliveryTime,
+    } = data;
     const res = await queryPostgres(
-      `INSERT INTO topups (code, game, name, detail, price, image, category, popular, sort_order)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+      `INSERT INTO topups (code, game, name, detail, price, image, category, popular, sort_order, description, features, instructions, delivery_time)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
        ON CONFLICT (code) DO UPDATE SET
          game = EXCLUDED.game, name = EXCLUDED.name, detail = EXCLUDED.detail, price = EXCLUDED.price, 
-         image = EXCLUDED.image, category = EXCLUDED.category, popular = EXCLUDED.popular, sort_order = EXCLUDED.sort_order
+         image = EXCLUDED.image, category = EXCLUDED.category, popular = EXCLUDED.popular,
+         sort_order = EXCLUDED.sort_order, description = EXCLUDED.description,
+         features = EXCLUDED.features, instructions = EXCLUDED.instructions,
+         delivery_time = EXCLUDED.delivery_time
        RETURNING *`,
-      [code, game, name, detail, price, image, category, popular || false, sort_order || 0],
+      [
+        code,
+        game,
+        name,
+        detail,
+        price,
+        image,
+        category,
+        popular || false,
+        sort_order || 0,
+        description,
+        features || [],
+        instructions,
+        deliveryTime,
+      ],
     );
     return res.rows[0];
   });
@@ -293,12 +349,15 @@ export const getServicesFn = createServerFn({ method: "GET" }).handler(async () 
   const res = await queryPostgres("SELECT * FROM services ORDER BY sort_order ASC");
   return res.rows.map((row) => ({
     slug: row.slug,
-    name: row.name,
-    tagline: row.tagline,
-    intro: row.intro,
+    name: row.name ?? row.title,
+    tagline: row.tagline ?? "",
+    intro: row.intro ?? row.description ?? "",
     steps: row.steps || [],
     image: row.image,
     sort_order: row.sort_order,
+    gameSlugs: row.game_slugs || undefined,
+    checklist: row.checklist || undefined,
+    fee: row.fee || undefined,
   }));
 });
 
@@ -306,15 +365,28 @@ export const saveServiceFn = createServerFn({ method: "POST" })
   .validator((data: unknown) => ServiceSchema.parse(data))
   .handler(async ({ data }) => {
     const { queryPostgres } = await import("./pg-server");
-    const { slug, name, tagline, intro, steps, image, sort_order } = data;
+    const { slug, name, tagline, intro, steps, image, sort_order, gameSlugs, checklist, fee } =
+      data;
     const res = await queryPostgres(
-      `INSERT INTO services (slug, name, tagline, intro, steps, image, sort_order)
-       VALUES ($1, $2, $3, $4, $5, $6, $7)
+      `INSERT INTO services (slug, name, tagline, intro, steps, image, sort_order, game_slugs, checklist, fee)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
        ON CONFLICT (slug) DO UPDATE SET
          name = EXCLUDED.name, tagline = EXCLUDED.tagline, intro = EXCLUDED.intro, 
-         steps = EXCLUDED.steps, image = EXCLUDED.image, sort_order = EXCLUDED.sort_order
+         steps = EXCLUDED.steps, image = EXCLUDED.image, sort_order = EXCLUDED.sort_order,
+         game_slugs = EXCLUDED.game_slugs, checklist = EXCLUDED.checklist, fee = EXCLUDED.fee
        RETURNING *`,
-      [slug, name, tagline, intro, JSON.stringify(steps), image, sort_order || 0],
+      [
+        slug,
+        name,
+        tagline,
+        intro,
+        JSON.stringify(steps),
+        image,
+        sort_order || 0,
+        gameSlugs || null,
+        checklist || null,
+        fee || null,
+      ],
     );
     return res.rows[0];
   });
@@ -407,10 +479,14 @@ export const getStoreSettingsFn = createServerFn({ method: "GET" }).handler(asyn
   const res = await queryPostgres("SELECT * FROM store_settings");
   const settings: Record<string, any> = {};
   res.rows.forEach((row) => {
-    if (PUBLIC_READ_KEYS.includes(row.key)) {
+    if (PUBLIC_READ_KEYS.includes(row.key) && row.key !== "site_config") {
       settings[row.key] = row.value;
     }
   });
+  const config = res.rows.find((row) => row.key === "site_config")?.value;
+  if (config && typeof config === "object" && !Array.isArray(config)) {
+    Object.assign(settings, config);
+  }
   return settings;
 });
 
@@ -447,8 +523,15 @@ export const getPageFn = createServerFn({ method: "GET" })
       heroTitle: row.hero_title,
       heroSubtitle: row.hero_subtitle,
       heroImage: row.hero_image,
+      heroImageMobile: row.hero_image_mobile,
       leadText: row.lead_text,
       announcement: row.announcement,
+      buttonText: row.button_text,
+      buttonLink: row.button_link,
+      secondaryButtonText: row.secondary_button_text,
+      secondaryButtonLink: row.secondary_button_link,
+      sectionTitle: row.section_title,
+      sectionSubtitle: row.section_subtitle,
       updatedAt: row.updated_at,
     };
   });
@@ -457,15 +540,51 @@ export const savePageFn = createServerFn({ method: "POST" })
   .validator((data: unknown) => PageSchema.parse(data))
   .handler(async ({ data }) => {
     const { queryPostgres } = await import("./pg-server");
-    const { slug, title, heroTitle, heroSubtitle, heroImage, leadText, announcement } = data;
+    const {
+      slug,
+      title,
+      heroTitle,
+      heroSubtitle,
+      heroImage,
+      heroImageMobile,
+      leadText,
+      announcement,
+      buttonText,
+      buttonLink,
+      secondaryButtonText,
+      secondaryButtonLink,
+      sectionTitle,
+      sectionSubtitle,
+    } = data;
     const res = await queryPostgres(
-      `INSERT INTO pages (slug, title, hero_title, hero_subtitle, hero_image, lead_text, announcement, updated_at)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())
+      `INSERT INTO pages (slug, title, hero_title, hero_subtitle, hero_image, hero_image_mobile, lead_text, announcement, button_text, button_link, secondary_button_text, secondary_button_link, section_title, section_subtitle, updated_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, NOW())
        ON CONFLICT (slug) DO UPDATE SET
          title = EXCLUDED.title, hero_title = EXCLUDED.hero_title, hero_subtitle = EXCLUDED.hero_subtitle,
-         hero_image = EXCLUDED.hero_image, lead_text = EXCLUDED.lead_text, announcement = EXCLUDED.announcement, updated_at = NOW()
+         hero_image = EXCLUDED.hero_image, hero_image_mobile = EXCLUDED.hero_image_mobile,
+         lead_text = EXCLUDED.lead_text, announcement = EXCLUDED.announcement,
+         button_text = EXCLUDED.button_text, button_link = EXCLUDED.button_link,
+         secondary_button_text = EXCLUDED.secondary_button_text,
+         secondary_button_link = EXCLUDED.secondary_button_link,
+         section_title = EXCLUDED.section_title, section_subtitle = EXCLUDED.section_subtitle,
+         updated_at = NOW()
        RETURNING *`,
-      [slug, title, heroTitle, heroSubtitle, heroImage, leadText, announcement],
+      [
+        slug,
+        title,
+        heroTitle,
+        heroSubtitle,
+        heroImage,
+        heroImageMobile,
+        leadText,
+        announcement,
+        buttonText,
+        buttonLink,
+        secondaryButtonText,
+        secondaryButtonLink,
+        sectionTitle,
+        sectionSubtitle,
+      ],
     );
     return res.rows[0];
   });

@@ -1,29 +1,28 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import { ArrowUpRight } from "lucide-react";
-import {
-  discordLink,
-  findGame,
-  findService,
-  gamesForService,
-  isServiceAvailable,
-  services,
-} from "@/lib/catalog";
+import { findGame, gamesForService, type Service } from "@/lib/catalog";
 import { Marquee, SiteFooter, SiteHeader } from "@/components/SiteChrome";
 import { ProductGrid } from "@/components/Products";
 import { TopUpGrid } from "@/components/TopUp";
-import { productsForGame } from "@/lib/products";
-import { topUpForGame } from "@/lib/topup";
+import type { Product } from "@/lib/products";
+import { getProductsFromDB, getServicesFromDB } from "@/lib/db";
+import { useStoreSettings } from "@/hooks/use-store-settings";
 
 export const Route = createFileRoute("/services/$service/$game")({
-  loader: ({ params }) => {
-    const service = findService(params.service);
+  loader: async ({ params }) => {
+    const serviceSlug = params.service === "jual-beli-akun" ? "buy-sell-accounts" : params.service;
+    const serviceList = await getServicesFromDB();
+    const service = serviceList.find((item) => item.slug === serviceSlug);
     const game = findGame(params.game);
-    if (!service || !game || !isServiceAvailable(service.slug, game.slug)) throw notFound();
-    return { serviceSlug: service.slug, gameSlug: game.slug };
+    if (!service || !game || (service.gameSlugs && !service.gameSlugs.includes(game.slug))) {
+      throw notFound();
+    }
+    return { service, game, serviceList };
   },
   head: ({ loaderData, params }) => {
-    const s = loaderData && findService(loaderData.serviceSlug);
-    const g = loaderData && findGame(loaderData.gameSlug);
+    const s = loaderData?.service;
+    const g = loaderData?.game;
     if (!s || !g)
       return {
         meta: [
@@ -59,20 +58,35 @@ export const Route = createFileRoute("/services/$service/$game")({
 });
 
 function ServicePage() {
-  const { serviceSlug, gameSlug } = Route.useLoaderData();
-  const service = findService(serviceSlug);
-  const game = findGame(gameSlug);
+  const { service, game, serviceList } = Route.useLoaderData();
+  const [products, setProducts] = useState<Product[]>([]);
+  const { discordLink } = useStoreSettings();
 
-  if (!service || !game) return null;
+  useEffect(() => {
+    let isMounted = true;
+    void getProductsFromDB().then(
+      (storedProducts) => {
+        if (isMounted) setProducts(storedProducts);
+      },
+      (error: unknown) => {
+        console.error("Failed to load accounts from PostgreSQL:", error);
+      },
+    );
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const isTopUp = service.slug === "top-up";
   const checklist = service.checklist ?? game.accountPoints;
   const serviceGames = gamesForService(service);
   const gameIndex = serviceGames.findIndex((g) => g.slug === game.slug) + 1;
+  const isAvailableForGame = (item: Service) =>
+    !item.gameSlugs || item.gameSlugs.includes(game.slug);
 
   const related = [
-    ...services
-      .filter((s) => s.slug !== service.slug && isServiceAvailable(s.slug, game.slug))
+    ...serviceList
+      .filter((item) => item.slug !== service.slug && isAvailableForGame(item))
       .map((s) => ({ s, g: game })),
     ...serviceGames.filter((g) => g.slug !== game.slug).map((g) => ({ s: service, g })),
   ];
@@ -115,7 +129,7 @@ function ServicePage() {
             <span className="bm-mono">(01) Prices</span>
             <h2>{game.name} top up packs.</h2>
           </div>
-          <TopUpGrid items={topUpForGame(game.slug)} gameSlug={game.slug} />
+          <TopUpGrid gameSlug={game.slug} />
         </section>
       )}
 
@@ -156,7 +170,7 @@ function ServicePage() {
             <span className="bm-mono">(03) Stock</span>
             <h2>Available {game.name} accounts.</h2>
           </div>
-          <ProductGrid items={productsForGame(game.slug)} />
+          <ProductGrid items={products.filter((product) => product.game === game.slug)} />
         </section>
       )}
 

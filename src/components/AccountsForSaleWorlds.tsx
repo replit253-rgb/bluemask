@@ -3,6 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { ArrowUpRight } from "lucide-react";
 import {
   getGameWorldsConfig,
+  DEFAULT_GAME_WORLDS_CONFIG,
   type GameWorldSectionConfig,
   type GameWorldCard,
 } from "@/lib/game-worlds";
@@ -42,7 +43,7 @@ export function AccountsForSaleWorlds({
   previewMode = false,
 }: AccountsForSaleWorldsProps) {
   const [config, setConfig] = useState<GameWorldSectionConfig>(
-    () => propConfig || getGameWorldsConfig(),
+    () => propConfig || DEFAULT_GAME_WORLDS_CONFIG,
   );
 
   useEffect(() => {
@@ -51,16 +52,24 @@ export function AccountsForSaleWorlds({
       return;
     }
 
+    let isMounted = true;
     const handleUpdate = () => {
-      setConfig(getGameWorldsConfig());
+      void getGameWorldsConfig().then(
+        (data) => {
+          if (isMounted) setConfig(data);
+        },
+        (error: unknown) => {
+          console.error("Failed to load game worlds from PostgreSQL:", error);
+        },
+      );
     };
 
+    handleUpdate();
     window.addEventListener("game-worlds-changed", handleUpdate);
-    window.addEventListener("storage", handleUpdate);
 
     return () => {
+      isMounted = false;
       window.removeEventListener("game-worlds-changed", handleUpdate);
-      window.removeEventListener("storage", handleUpdate);
     };
   }, [propConfig]);
 

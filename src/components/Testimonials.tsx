@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { findGame, testimonials as initialTestimonials, type Testimonial } from "@/lib/catalog";
+import { findGame, type Testimonial } from "@/lib/catalog";
 import { getTestimonialsFromDB } from "@/lib/db";
 
 function TestimonialCard({ t, featured = false }: { t: Testimonial; featured?: boolean }) {
@@ -34,12 +34,12 @@ export function TestimonialSection({
   serviceSlug: string;
   gameSlug: string;
 }) {
-  const [items, setItems] = useState<Testimonial[]>(initialTestimonials);
+  const [items, setItems] = useState<Testimonial[]>([]);
 
   useEffect(() => {
-    getTestimonialsFromDB().then((data) => {
-      if (data && data.length > 0) setItems(data);
-    });
+    void getTestimonialsFromDB().then(setItems, (error: unknown) =>
+      console.error("Failed to load testimonials from PostgreSQL:", error),
+    );
   }, []);
 
   const game = findGame(gameSlug);
@@ -70,13 +70,15 @@ export function TestimonialSection({
 
 /** Testimonial picks for the home page section. */
 export function HomeTestimonials() {
-  const [items, setItems] = useState<Testimonial[]>(initialTestimonials);
+  const [items, setItems] = useState<Testimonial[]>([]);
 
   useEffect(() => {
-    getTestimonialsFromDB().then((data) => {
-      if (data && data.length > 0) setItems(data);
-    });
+    void getTestimonialsFromDB().then(setItems, (error: unknown) =>
+      console.error("Failed to load testimonials from PostgreSQL:", error),
+    );
   }, []);
+
+  if (items.length === 0) return null;
 
   return <TestiCarousel items={items} />;
 }

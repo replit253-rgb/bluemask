@@ -16,9 +16,10 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { products, type Product } from "@/lib/products";
+import { type Product } from "@/lib/products";
 import { getProductsFromDB } from "@/lib/db";
 import {
+  DEFAULT_FEATURED_ACCOUNTS_CONFIG,
   getFeaturedAccountsConfig,
   saveFeaturedAccountsConfig,
   resetFeaturedAccountsToDefault,
@@ -27,7 +28,7 @@ import {
 import { FeaturedAccountsShowcase } from "@/components/FeaturedAccountsShowcase";
 
 export function AdminFeaturedAccountsManager() {
-  const [config, setConfig] = useState<FeaturedAccountsConfig>(() => getFeaturedAccountsConfig());
+  const [config, setConfig] = useState<FeaturedAccountsConfig>(DEFAULT_FEATURED_ACCOUNTS_CONFIG);
   const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedGameFilter, setSelectedGameFilter] = useState("all");
@@ -42,26 +43,51 @@ export function AdminFeaturedAccountsManager() {
   };
 
   useEffect(() => {
-    getProductsFromDB().then((items) => {
-      if (items && items.length > 0) {
+    let isMounted = true;
+    void Promise.all([getProductsFromDB(), getFeaturedAccountsConfig()]).then(
+      ([items, storedConfig]) => {
+        if (!isMounted) return;
         setAllProducts(items);
-      } else {
-        setAllProducts(products);
-      }
-    });
+        setConfig(storedConfig);
+      },
+      (error: unknown) => {
+        console.error("Failed to load featured accounts from PostgreSQL:", error);
+        showNotice("Failed to load featured accounts from PostgreSQL.");
+      },
+    );
+    return () => {
+      isMounted = false;
+    };
   }, []);
+
+  const persistConfig = async (updated: FeaturedAccountsConfig, message?: string) => {
+    const previous = config;
+    setConfig(updated);
+    try {
+      await saveFeaturedAccountsConfig(updated);
+      if (message) showNotice(message);
+    } catch (error) {
+      console.error("Failed to save featured accounts to PostgreSQL:", error);
+      setConfig(previous);
+      showNotice("Failed to save featured accounts. Please try again.");
+    }
+  };
 
   const updateMeta = (key: keyof FeaturedAccountsConfig, value: unknown) => {
     const updated = { ...config, [key]: value };
-    setConfig(updated);
-    saveFeaturedAccountsConfig(updated);
+    void persistConfig(updated);
   };
 
-  const handleReset = () => {
+  const handleReset = async () => {
     if (window.confirm("Reset 'Account for Sale' section settings to default?")) {
-      const def = resetFeaturedAccountsToDefault();
-      setConfig(def);
-      showNotice("Reset component settings to default.");
+      try {
+        const def = await resetFeaturedAccountsToDefault();
+        setConfig(def);
+        showNotice("Featured account settings reset.");
+      } catch (error) {
+        console.error("Failed to reset featured accounts in PostgreSQL:", error);
+        showNotice("Failed to reset featured accounts. Please try again.");
+      }
     }
   };
 
@@ -69,17 +95,13 @@ export function AdminFeaturedAccountsManager() {
     if (config.selectedCodes.includes(code)) return;
     const updatedCodes = [...config.selectedCodes, code];
     const updated = { ...config, selectedCodes: updatedCodes, selectionMode: "manual" as const };
-    setConfig(updated);
-    saveFeaturedAccountsConfig(updated);
-    showNotice(`Added card ${code} to homepage component.`);
+    void persistConfig(updated, `Added card ${code} to homepage component.`);
   };
 
   const removeCardFromFeatured = (code: string) => {
     const updatedCodes = config.selectedCodes.filter((c) => c !== code);
     const updated = { ...config, selectedCodes: updatedCodes };
-    setConfig(updated);
-    saveFeaturedAccountsConfig(updated);
-    showNotice(`Removed card ${code} from homepage component.`);
+    void persistConfig(updated, `Removed card ${code} from homepage component.`);
   };
 
   const moveCard = (index: number, direction: "up" | "down") => {
@@ -95,9 +117,7 @@ export function AdminFeaturedAccountsManager() {
     }
 
     const updated = { ...config, selectedCodes: newCodes };
-    setConfig(updated);
-    saveFeaturedAccountsConfig(updated);
-    showNotice(`Reordered card position.`);
+    void persistConfig(updated, "Featured accounts reordered.");
   };
 
   const gamesList = Array.from(new Set(allProducts.map((p) => p.game)));

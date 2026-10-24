@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
+  DEFAULT_GAME_WORLDS_CONFIG,
   getGameWorldsConfig,
   saveGameWorldsConfig,
   resetGameWorldsToDefault,
@@ -42,7 +43,7 @@ const COMMON_GENRES = [
 const STANDARD_SERVICES = ["Middleman", "Buy & Sell Accounts", "Top Up"];
 
 export function AdminGameWorldsManager() {
-  const [config, setConfig] = useState<GameWorldSectionConfig>(() => getGameWorldsConfig());
+  const [config, setConfig] = useState<GameWorldSectionConfig>(DEFAULT_GAME_WORLDS_CONFIG);
   const [previewDevice, setPreviewDevice] = useState<"desktop" | "tablet" | "mobile">("desktop");
   const [layoutMode, setLayoutMode] = useState<"split" | "stacked">("split");
 
@@ -67,6 +68,35 @@ export function AdminGameWorldsManager() {
   const [customServiceAdd, setCustomServiceAdd] = useState("");
   const [customServiceEdit, setCustomServiceEdit] = useState("");
 
+  useEffect(() => {
+    let isMounted = true;
+    void getGameWorldsConfig().then(
+      (stored) => {
+        if (isMounted) setConfig(stored);
+      },
+      (error: unknown) => {
+        console.error("Failed to load game worlds from PostgreSQL:", error);
+        showNotice("Failed to load game worlds from PostgreSQL.");
+      },
+    );
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const persistConfig = async (updated: GameWorldSectionConfig, message?: string) => {
+    const previous = config;
+    setConfig(updated);
+    try {
+      await saveGameWorldsConfig(updated);
+      if (message) showNotice(message);
+    } catch (error) {
+      console.error("Failed to save game worlds to PostgreSQL:", error);
+      setConfig(previous);
+      showNotice("Failed to save game worlds. Please try again.");
+    }
+  };
+
   const [newCard, setNewCard] = useState<Partial<GameWorldCard>>({
     number: `0${config.cards.length + 1}`,
     name: "",
@@ -79,23 +109,26 @@ export function AdminGameWorldsManager() {
 
   // Keep saved when config changes
   const handleSaveAll = () => {
-    saveGameWorldsConfig(config);
-    showNotice("All changes saved successfully! Public pages updated.");
+    void persistConfig(config, "All changes saved successfully! Public pages updated.");
   };
 
-  const handleReset = () => {
+  const handleReset = async () => {
     if (window.confirm("Reset 'Accounts for Sale' component back to default 4 worlds?")) {
-      const def = resetGameWorldsToDefault();
-      setConfig(def);
-      showNotice("Component reset to default 4 game worlds.");
+      try {
+        const def = await resetGameWorldsToDefault();
+        setConfig(def);
+        showNotice("Component reset.");
+      } catch (error) {
+        console.error("Failed to reset game worlds in PostgreSQL:", error);
+        showNotice("Failed to reset game worlds. Please try again.");
+      }
     }
   };
 
   // Real-time title/eyebrow/subtitle updates
   const updateSectionMeta = (key: "eyebrow" | "title" | "subtitle", value: string) => {
     const updated = { ...config, [key]: value };
-    setConfig(updated);
-    saveGameWorldsConfig(updated);
+    void persistConfig(updated);
   };
 
   // Reorder cards
@@ -113,9 +146,7 @@ export function AdminGameWorldsManager() {
 
     // Optional: auto-adjust numbers like 01, 02 if desired
     const updated = { ...config, cards: newCards };
-    setConfig(updated);
-    saveGameWorldsConfig(updated);
-    showNotice(`Moved card ${direction === "up" ? "up" : "down"}.`);
+    void persistConfig(updated, `Moved card ${direction === "up" ? "up" : "down"}.`);
   };
 
   // Upload handlers
@@ -169,8 +200,7 @@ export function AdminGameWorldsManager() {
     };
 
     const updated = { ...config, cards: [...config.cards, created] };
-    setConfig(updated);
-    saveGameWorldsConfig(updated);
+    void persistConfig(updated, `Added "${created.name}" card to Accounts for Sale!`);
     setIsAdding(false);
     setNewCard({
       number: `0${updated.cards.length + 1}`,
@@ -181,7 +211,6 @@ export function AdminGameWorldsManager() {
       imageAlt: "",
       services: ["Middleman", "Buy & Sell Accounts"],
     });
-    showNotice(`Added "${created.name}" card to Accounts for Sale!`);
   };
 
   // Update Card
@@ -194,20 +223,16 @@ export function AdminGameWorldsManager() {
     );
 
     const updated = { ...config, cards: updatedCards };
-    setConfig(updated);
-    saveGameWorldsConfig(updated);
+    void persistConfig(updated, `Saved changes to "${editingCard.name}".`);
     setEditingCard(null);
-    showNotice(`Saved changes to "${editingCard.name}".`);
   };
 
   // Delete Card
   const handleDeleteCard = (id: string) => {
     const updatedCards = config.cards.filter((c) => c.id !== id && c.slug !== id);
     const updated = { ...config, cards: updatedCards };
-    setConfig(updated);
-    saveGameWorldsConfig(updated);
+    void persistConfig(updated, "Card deleted.");
     setConfirmDeleteId(null);
-    showNotice("Card deleted.");
   };
 
   // Toggle service tag in New
