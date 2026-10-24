@@ -58,7 +58,10 @@ async function pushDb() {
         description TEXT,
         features TEXT[],
         instructions TEXT,
-        delivery_time VARCHAR(255)
+        delivery_time VARCHAR(255),
+        has_discount BOOLEAN NOT NULL DEFAULT FALSE,
+        discount_percent INTEGER,
+        diamonds INTEGER
       );
     `);
 
@@ -187,7 +190,10 @@ async function pushDb() {
         ADD COLUMN IF NOT EXISTS description TEXT,
         ADD COLUMN IF NOT EXISTS features TEXT[],
         ADD COLUMN IF NOT EXISTS instructions TEXT,
-        ADD COLUMN IF NOT EXISTS delivery_time VARCHAR(255);
+        ADD COLUMN IF NOT EXISTS delivery_time VARCHAR(255),
+        ADD COLUMN IF NOT EXISTS has_discount BOOLEAN NOT NULL DEFAULT FALSE,
+        ADD COLUMN IF NOT EXISTS discount_percent INTEGER,
+        ADD COLUMN IF NOT EXISTS diamonds INTEGER;
       ALTER TABLE products
         ADD COLUMN IF NOT EXISTS discount_percent INTEGER,
         ADD COLUMN IF NOT EXISTS has_discount BOOLEAN NOT NULL DEFAULT FALSE;

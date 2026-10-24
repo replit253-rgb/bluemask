@@ -65,6 +65,9 @@ const TopupSchema = z.object({
   features: z.array(z.string().max(1000)).optional(),
   instructions: z.string().max(2000).optional().nullable(),
   deliveryTime: z.string().max(255).optional().nullable(),
+  hasDiscount: z.boolean().optional(),
+  discountPercent: z.number().int().min(1).max(99).optional().nullable(),
+  diamonds: z.number().int().min(0).optional().nullable(),
 });
 
 const ServiceSchema = z.object({
@@ -287,6 +290,9 @@ export const getTopupsFn = createServerFn({ method: "GET" }).handler(async () =>
     features: row.features || [],
     instructions: row.instructions,
     deliveryTime: row.delivery_time,
+    hasDiscount: row.has_discount ?? false,
+    discountPercent: row.discount_percent ?? undefined,
+    diamonds: row.diamonds ?? undefined,
   }));
 });
 
@@ -308,16 +314,20 @@ export const saveTopupFn = createServerFn({ method: "POST" })
       features,
       instructions,
       deliveryTime,
+      hasDiscount,
+      discountPercent,
+      diamonds,
     } = data;
     const res = await queryPostgres(
-      `INSERT INTO topups (code, game, name, detail, price, image, category, popular, sort_order, description, features, instructions, delivery_time)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+      `INSERT INTO topups (code, game, name, detail, price, image, category, popular, sort_order, description, features, instructions, delivery_time, has_discount, discount_percent, diamonds)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
        ON CONFLICT (code) DO UPDATE SET
          game = EXCLUDED.game, name = EXCLUDED.name, detail = EXCLUDED.detail, price = EXCLUDED.price, 
          image = EXCLUDED.image, category = EXCLUDED.category, popular = EXCLUDED.popular,
          sort_order = EXCLUDED.sort_order, description = EXCLUDED.description,
          features = EXCLUDED.features, instructions = EXCLUDED.instructions,
-         delivery_time = EXCLUDED.delivery_time
+         delivery_time = EXCLUDED.delivery_time, has_discount = EXCLUDED.has_discount,
+         discount_percent = EXCLUDED.discount_percent, diamonds = EXCLUDED.diamonds
        RETURNING *`,
       [
         code,
@@ -333,6 +343,9 @@ export const saveTopupFn = createServerFn({ method: "POST" })
         features || [],
         instructions,
         deliveryTime,
+        hasDiscount || false,
+        hasDiscount ? discountPercent : null,
+        diamonds ?? null,
       ],
     );
     return res.rows[0];
@@ -443,6 +456,69 @@ export const deleteTestimonialFn = createServerFn({ method: "POST" })
     const { queryPostgres } = await import("./pg-server");
     const res = await queryPostgres("DELETE FROM testimonials WHERE id = $1", [data.id]);
     return { rowCount: res.rowCount };
+  });
+
+// --- Admin credentials ---
+const AdminLoginSchema = z.object({
+  username: z.string().max(255),
+  password: z.string().min(1).max(128),
+});
+
+const ChangeAdminPasswordSchema = z
+  .object({
+    currentPassword: z.string().min(1).max(128),
+    newPassword: z.string().min(8).max(128),
+  })
+  .refine((data) => data.currentPassword !== data.newPassword, {
+    message: "New password must differ from current password",
+    path: ["newPassword"],
+  });
+
+export const verifyAdminLoginFn = createServerFn({ method: "POST" })
+  .validator((data: unknown) => AdminLoginSchema.parse(data))
+  .handler(async ({ data }) => {
+    const { queryPostgres } = await import("./pg-server");
+    const { isLegacyAdminPassword, verifyAdminPassword } = await import("./admin-auth");
+    const validUsername = ["admin", "admin@gmail.com"].includes(data.username.trim().toLowerCase());
+    if (!validUsername) return { authenticated: false };
+
+    const result = await queryPostgres("SELECT value FROM store_settings WHERE key = $1", [
+      "admin_password_hash",
+    ]);
+    const stored = result.rows[0]?.value;
+    const authenticated =
+      stored && typeof stored === "object" && !Array.isArray(stored)
+        ? verifyAdminPassword(data.password, stored)
+        : isLegacyAdminPassword(data.password);
+    return { authenticated };
+  });
+
+export const changeAdminPasswordFn = createServerFn({ method: "POST" })
+  .validator((data: unknown) => ChangeAdminPasswordSchema.parse(data))
+  .handler(async ({ data }) => {
+    const { queryPostgres } = await import("./pg-server");
+    const { hashAdminPassword, isLegacyAdminPassword, verifyAdminPassword } =
+      await import("./admin-auth");
+    const result = await queryPostgres("SELECT value FROM store_settings WHERE key = $1", [
+      "admin_password_hash",
+    ]);
+    const stored = result.rows[0]?.value;
+    const currentPasswordValid =
+      stored && typeof stored === "object" && !Array.isArray(stored)
+        ? verifyAdminPassword(data.currentPassword, stored)
+        : isLegacyAdminPassword(data.currentPassword);
+
+    if (!currentPasswordValid) {
+      throw new Error("Current password is incorrect.");
+    }
+
+    const passwordHash = hashAdminPassword(data.newPassword);
+    await queryPostgres(
+      `INSERT INTO store_settings (key, value) VALUES ($1, $2)
+       ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value`,
+      ["admin_password_hash", JSON.stringify(passwordHash)],
+    );
+    return { success: true };
   });
 
 // --- FAQs ---

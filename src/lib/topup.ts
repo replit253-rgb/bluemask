@@ -15,6 +15,18 @@ export type TopUpPackage = {
   instructions?: string | undefined; // Instruksi top-up
   deliveryTime?: string | undefined; // Estimasi waktu pengiriman (e.g. "5 - 15 Minutes")
   sort_order?: number | undefined;
+  hasDiscount?: boolean | undefined;
+  discountPercent?: number | undefined;
+  diamonds?: number | undefined;
+};
+
+export const getTopUpEffectivePrice = (pack: TopUpPackage) => {
+  if (pack.hasDiscount && typeof pack.discountPercent === "number" && pack.discountPercent > 0) {
+    return pack.price > 0
+      ? Math.max(1, Math.round(pack.price * (1 - pack.discountPercent / 100)))
+      : pack.price;
+  }
+  return pack.price;
 };
 
 export const GAME_TOPUP_CATEGORIES: Record<string, string[]> = {
@@ -481,7 +493,7 @@ export const topUpForGame = (game: string) => {
 /** Message copied to the clipboard before opening Discord. */
 export const topUpMessage = (p: TopUpPackage) => {
   const gameName = findGame(p.game)?.name ?? p.game;
-  return `Hi reedmoon, I'd like to top up ${gameName} [${p.category || "Top-Up"}] ${p.name} (${formatCurrency(p.price)}). Player ID: `;
+  return `Hi reedmoon, I'd like to top up ${gameName} [${p.category || "Top-Up"}] ${p.name} (${formatCurrency(getTopUpEffectivePrice(p))}). Player ID: `;
 };
 
 /** Find a package in the bundled reference catalog. Runtime pages must query PostgreSQL. */

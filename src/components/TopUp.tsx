@@ -20,6 +20,7 @@ import {
   type TopUpPackage,
   GAME_TOPUP_CATEGORIES,
   enrichTopUpDetails,
+  getTopUpEffectivePrice,
 } from "@/lib/topup";
 import { getTopUpsFromDB } from "@/lib/db";
 import { Pagination } from "./Pagination";
@@ -33,6 +34,12 @@ export function TopUpCard({
 }) {
   const [copied, setCopied] = useState(false);
   const { discordLink } = useStoreSettings();
+  const diamondImage =
+    p.game === "kingshot"
+      ? "/diamond-1.png"
+      : p.game === "whiteout-survival"
+        ? "/diamond-2.png"
+        : undefined;
 
   return (
     <div
@@ -93,6 +100,12 @@ export function TopUpCard({
         <p className="text-[10px] sm:text-[11px] text-slate-400 line-clamp-2 min-h-[26px] leading-relaxed">
           {p.detail}
         </p>
+        {typeof p.diamonds === "number" && p.diamonds > 0 && diamondImage && (
+          <div className="inline-flex items-center justify-center gap-1.5 text-[11px] font-bold text-cyan-100">
+            <img src={diamondImage} alt="" className="h-4 w-4 object-contain" />
+            <span>{p.diamonds.toLocaleString("en-US")} Diamonds</span>
+          </div>
+        )}
       </div>
 
       {/* Quick Action row: View Detail link */}
@@ -116,10 +129,26 @@ export function TopUpCard({
       <div className="pt-2 border-t border-red-950/60 flex items-center justify-between gap-2">
         <div>
           <span className="text-[9px] uppercase font-mono text-slate-400 block -mb-0.5">Price</span>
-          <strong className="text-sm sm:text-base font-black text-white tabular-nums tracking-tight">
-            {formatCurrency(p.price)}
-          </strong>
+          {p.hasDiscount && p.discountPercent ? (
+            <div className="flex flex-col">
+              <strong className="text-sm sm:text-base font-black text-white tabular-nums tracking-tight">
+                {formatCurrency(getTopUpEffectivePrice(p))}
+              </strong>
+              <span className="text-[10px] text-slate-400 line-through tabular-nums">
+                {formatCurrency(p.price)}
+              </span>
+            </div>
+          ) : (
+            <strong className="text-sm sm:text-base font-black text-white tabular-nums tracking-tight">
+              {formatCurrency(p.price)}
+            </strong>
+          )}
         </div>
+        {p.hasDiscount && p.discountPercent && (
+          <span className="absolute top-2 left-2 z-10 rounded-full bg-rose-600 px-2 py-1 text-[10px] font-black text-white">
+            {p.discountPercent}% OFF
+          </span>
+        )}
 
         <a
           href={discordLink}
@@ -166,6 +195,12 @@ export function TopUpProductDetailModal({
   const [copied, setCopied] = useState(false);
   const { discordLink } = useStoreSettings();
   const game = findGame(pack.game);
+  const diamondImage =
+    pack.game === "kingshot"
+      ? "/diamond-1.png"
+      : pack.game === "whiteout-survival"
+        ? "/diamond-2.png"
+        : undefined;
 
   const handleOrder = () => {
     navigator.clipboard
@@ -231,6 +266,16 @@ export function TopUpProductDetailModal({
 
               {/* Quick Spec Tags */}
               <div className="w-full space-y-2">
+                {typeof pack.diamonds === "number" && pack.diamonds > 0 && diamondImage && (
+                  <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#14060a] border border-red-950/80 text-xs text-slate-300">
+                    <img src={diamondImage} alt="" className="w-4 h-4 object-contain" />
+                    <span>Diamonds received</span>
+                    <strong className="text-white ml-auto">
+                      {" "}
+                      {pack.diamonds.toLocaleString("en-US")}
+                    </strong>
+                  </div>
+                )}
                 <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#14060a] border border-red-950/80 text-xs text-slate-300">
                   <Clock className="w-4 h-4 text-red-400 shrink-0" />
                   <span>Delivery: </span>
@@ -260,11 +305,23 @@ export function TopUpProductDetailModal({
               <div className="p-3.5 rounded-xl bg-[#1a080d] border border-red-500/30 flex items-center justify-between">
                 <div>
                   <span className="text-[10px] uppercase font-mono text-slate-400 block">
-                    Fixed Price (USD)
+                    {pack.hasDiscount ? "Discounted Price (USD)" : "Fixed Price (USD)"}
                   </span>
-                  <span className="text-2xl font-black text-white tabular-nums">
-                    {formatCurrency(pack.price)}
-                  </span>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-2xl font-black text-white tabular-nums">
+                      {formatCurrency(getTopUpEffectivePrice(pack))}
+                    </span>
+                    {pack.hasDiscount && pack.discountPercent && (
+                      <>
+                        <span className="text-xs font-bold text-rose-400">
+                          {pack.discountPercent}% OFF
+                        </span>
+                        <span className="text-sm text-slate-400 line-through tabular-nums">
+                          {formatCurrency(pack.price)}
+                        </span>
+                      </>
+                    )}
+                  </div>
                 </div>
                 <span className="px-2.5 py-1 rounded text-xs font-semibold bg-emerald-950 text-emerald-400 border border-emerald-500/30">
                   Verified In Stock

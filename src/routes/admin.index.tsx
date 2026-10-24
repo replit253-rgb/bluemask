@@ -47,6 +47,7 @@ import {
   getTestimonialsFromDB,
   saveTestimonialToDB,
   deleteTestimonialFromDB,
+  changeAdminPassword,
   uploadImageFile,
   uploadMultipleImages,
   initDatabase,
@@ -63,7 +64,12 @@ import {
   type Service,
   type Testimonial,
 } from "@/lib/catalog";
-import { type TopUpPackage, normalizeCategory, GAME_TOPUP_CATEGORIES } from "@/lib/topup";
+import {
+  type TopUpPackage,
+  normalizeCategory,
+  GAME_TOPUP_CATEGORIES,
+  getTopUpEffectivePrice,
+} from "@/lib/topup";
 import { TopUpProductDetailModal } from "@/components/TopUp";
 
 export const Route = createFileRoute("/admin/")({
@@ -125,6 +131,10 @@ export function AdminDashboardPage() {
     whatsapp: "",
     discordUsers: [],
   });
+  const [currentAdminPassword, setCurrentAdminPassword] = useState("");
+  const [newAdminPassword, setNewAdminPassword] = useState("");
+  const [confirmAdminPassword, setConfirmAdminPassword] = useState("");
+  const [isChangingAdminPassword, setIsChangingAdminPassword] = useState(false);
 
   // Filters & Search
   const [accountSearch, setAccountSearch] = useState("");
@@ -134,6 +144,10 @@ export function AdminDashboardPage() {
   const [topupSearch, setTopupSearch] = useState("");
   const [topupGameFilter, setTopupGameFilter] = useState<string>("all");
   const [topupCategoryFilter, setTopupCategoryFilter] = useState<string>("all");
+  const [topUpDiscountScope, setTopUpDiscountScope] = useState<"all" | "selected">("all");
+  const [topUpDiscountPercent, setTopUpDiscountPercent] = useState(10);
+  const [selectedTopUpCodes, setSelectedTopUpCodes] = useState<Set<string>>(new Set());
+  const [isSavingTopUpDiscount, setIsSavingTopUpDiscount] = useState(false);
 
   // Account Modals State
   const [isAddingProduct, setIsAddingProduct] = useState(false);
@@ -183,6 +197,7 @@ export function AdminDashboardPage() {
     ],
     instructions: "Provide your Player ID and State / Kingdom number in your Discord ticket.",
     deliveryTime: "5 - 15 Minutes",
+    diamonds: undefined,
   });
 
   // Services / Middleware Modals State
@@ -743,6 +758,7 @@ export function AdminDashboardPage() {
       features: (newTopUp.features || []).filter((f) => f.trim().length > 0),
       instructions: newTopUp.instructions?.trim() || undefined,
       deliveryTime: newTopUp.deliveryTime?.trim() || "5 - 15 Minutes",
+      diamonds: newTopUp.diamonds,
     };
 
     await saveTopUpToDB(item);
@@ -765,6 +781,7 @@ export function AdminDashboardPage() {
       ],
       instructions: "Provide your Player ID and State / Kingdom number in your Discord ticket.",
       deliveryTime: "5 - 15 Minutes",
+      diamonds: undefined,
     });
     showNotification(`Top-up pack ${item.code} created and saved.`);
   };
@@ -785,8 +802,71 @@ export function AdminDashboardPage() {
   const executeDeleteTopUp = async (code: string) => {
     await deleteTopUpFromDB(code);
     setTopups(topups.filter((t) => t.code !== code));
+    setSelectedTopUpCodes((selected) => {
+      const next = new Set(selected);
+      next.delete(code);
+      return next;
+    });
     setConfirmDeleteTopUp(null);
     showNotification(`Top-up pack ${code} removed from database.`);
+  };
+
+  const handleApplyTopUpDiscount = async (enabled: boolean) => {
+    const targetCodes =
+      topUpDiscountScope === "all"
+        ? topups.map((topUp) => topUp.code)
+        : Array.from(selectedTopUpCodes);
+    const targets = topups.filter((topUp) => targetCodes.includes(topUp.code));
+
+    if (targets.length === 0) {
+      showNotification("Select at least one top-up package first.");
+      return;
+    }
+    if (
+      enabled &&
+      (!Number.isInteger(topUpDiscountPercent) ||
+        topUpDiscountPercent < 1 ||
+        topUpDiscountPercent > 99)
+    ) {
+      showNotification("Enter a discount percentage from 1 to 99.");
+      return;
+    }
+
+    setIsSavingTopUpDiscount(true);
+    let savedCount = 0;
+    let updatedTopUps = [...topups];
+    try {
+      for (const topUp of targets) {
+        const updated: TopUpPackage = {
+          ...topUp,
+          hasDiscount: enabled,
+          discountPercent: enabled ? topUpDiscountPercent : undefined,
+        };
+        await saveTopUpToDB(updated);
+        updatedTopUps = updatedTopUps.map((current) =>
+          current.code === updated.code ? updated : current,
+        );
+        savedCount += 1;
+        setTopups(updatedTopUps);
+      }
+      showNotification(
+        enabled
+          ? `${topUpDiscountPercent}% discount applied to ${savedCount} top-up package(s).`
+          : `Discount removed from ${savedCount} top-up package(s).`,
+      );
+    } catch (error) {
+      console.error("Failed to apply top-up discounts:", error);
+      try {
+        setTopups(await getTopUpsFromDB());
+      } catch (reloadError) {
+        console.error("Failed to reload top-up packages after discount update:", reloadError);
+      }
+      showNotification(
+        `Discount update stopped after ${savedCount} of ${targets.length} package(s). Check the database connection.`,
+      );
+    } finally {
+      setIsSavingTopUpDiscount(false);
+    }
   };
 
   // -------------------------------------------------------------
@@ -877,6 +957,36 @@ export function AdminDashboardPage() {
     } catch (error) {
       console.error("Failed to save store settings to PostgreSQL:", error);
       showNotification("Unable to save store settings. Check the database connection.");
+    }
+  };
+
+  const handleChangeAdminPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newAdminPassword !== confirmAdminPassword) {
+      showNotification("New password and confirmation do not match.");
+      return;
+    }
+    if (newAdminPassword.length < 8) {
+      showNotification("New password must be at least 8 characters.");
+      return;
+    }
+
+    setIsChangingAdminPassword(true);
+    try {
+      await changeAdminPassword(currentAdminPassword, newAdminPassword);
+      setCurrentAdminPassword("");
+      setNewAdminPassword("");
+      setConfirmAdminPassword("");
+      showNotification("Admin password changed. Use the new password next time you sign in.");
+    } catch (error) {
+      console.error("Failed to change admin password:", error);
+      showNotification(
+        error instanceof Error && error.message.includes("Current password")
+          ? "Current password is incorrect."
+          : "Unable to change admin password. Check the database connection.",
+      );
+    } finally {
+      setIsChangingAdminPassword(false);
     }
   };
 
@@ -1474,6 +1584,78 @@ export function AdminDashboardPage() {
                 <Button onClick={() => setIsAddingProduct(true)} className="bm-btn bm-btn-primary">
                   <Plus className="w-4 h-4 mr-1.5" /> Add New Account
                 </Button>
+              </div>
+
+              <div className="rounded-xl border border-rose-500/30 bg-rose-950/10 p-4 space-y-4">
+                <div>
+                  <h3 className="text-sm font-bold text-foreground">Top-Up Discounts</h3>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Apply or remove discounts for top-up packages only. Account listings are not
+                    affected.
+                  </p>
+                </div>
+                <div className="flex flex-col lg:flex-row lg:items-end gap-4">
+                  <fieldset className="flex flex-wrap gap-4 text-xs">
+                    <legend className="sr-only">Discount target</legend>
+                    <label className="inline-flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="topup-discount-scope"
+                        checked={topUpDiscountScope === "all"}
+                        onChange={() => setTopUpDiscountScope("all")}
+                      />
+                      All top-up packages ({topups.length})
+                    </label>
+                    <label className="inline-flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="topup-discount-scope"
+                        checked={topUpDiscountScope === "selected"}
+                        onChange={() => setTopUpDiscountScope("selected")}
+                      />
+                      Selected packages ({selectedTopUpCodes.size})
+                    </label>
+                  </fieldset>
+                  <div className="flex flex-wrap items-end gap-2 lg:ml-auto">
+                    <label className="text-xs text-muted-foreground">
+                      Discount percentage
+                      <span className="mt-1 flex items-center gap-1">
+                        <input
+                          type="number"
+                          min={1}
+                          max={99}
+                          step={1}
+                          value={topUpDiscountPercent}
+                          onChange={(e) => setTopUpDiscountPercent(Number(e.target.value))}
+                          className="w-24 bg-secondary/40 border border-border rounded-lg px-3 py-2 text-sm text-foreground"
+                        />
+                        %
+                      </span>
+                    </label>
+                    <Button
+                      type="button"
+                      disabled={isSavingTopUpDiscount}
+                      onClick={() => void handleApplyTopUpDiscount(true)}
+                      className="bg-rose-600 hover:bg-rose-500 text-white"
+                    >
+                      Apply discount
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      disabled={isSavingTopUpDiscount}
+                      onClick={() => void handleApplyTopUpDiscount(false)}
+                    >
+                      Remove discount
+                    </Button>
+                  </div>
+                </div>
+                {topUpDiscountScope === "selected" && (
+                  <p className="text-xs text-amber-300">
+                    Select packages using the checkboxes in the table below. Selection is maintained
+                    while you filter the list.
+                  </p>
+                )}
               </div>
 
               {/* Filter and Search Bar */}
@@ -2634,6 +2816,25 @@ export function AdminDashboardPage() {
                           className="w-full bg-secondary/30 border border-border rounded-lg px-3 py-2 text-xs tabular-nums"
                         />
                       </div>
+                      <div>
+                        <label className="text-[11px] font-semibold text-muted-foreground uppercase block mb-1.5">
+                          Diamonds received (optional)
+                        </label>
+                        <input
+                          type="number"
+                          min={0}
+                          step={1}
+                          value={newTopUp.diamonds ?? ""}
+                          onChange={(e) =>
+                            setNewTopUp({
+                              ...newTopUp,
+                              diamonds: e.target.value === "" ? undefined : Number(e.target.value),
+                            })
+                          }
+                          placeholder="e.g. 500"
+                          className="w-full bg-secondary/30 border border-border rounded-lg px-3 py-2 text-xs tabular-nums"
+                        />
+                      </div>
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -2918,6 +3119,25 @@ export function AdminDashboardPage() {
                           className="w-full bg-secondary/30 border border-border rounded-lg px-3 py-2 text-xs tabular-nums"
                         />
                       </div>
+                      <div>
+                        <label className="text-[11px] font-semibold text-muted-foreground uppercase block mb-1.5">
+                          Diamonds received (optional)
+                        </label>
+                        <input
+                          type="number"
+                          min={0}
+                          step={1}
+                          value={editingTopUp.diamonds ?? ""}
+                          onChange={(e) =>
+                            setEditingTopUp({
+                              ...editingTopUp,
+                              diamonds: e.target.value === "" ? undefined : Number(e.target.value),
+                            })
+                          }
+                          placeholder="e.g. 500"
+                          className="w-full bg-secondary/30 border border-border rounded-lg px-3 py-2 text-xs tabular-nums"
+                        />
+                      </div>
 
                       <div className="flex items-center gap-2 pt-6">
                         <input
@@ -3139,9 +3359,32 @@ export function AdminDashboardPage() {
                   <table className="w-full text-left text-sm">
                     <thead className="bg-secondary/40 text-xs font-semibold text-muted-foreground uppercase border-b border-border/40">
                       <tr>
+                        <th className="p-3.5">
+                          <input
+                            type="checkbox"
+                            aria-label="Select all visible top-up packages"
+                            checked={
+                              filteredTopUps.length > 0 &&
+                              filteredTopUps.every((topUp) => selectedTopUpCodes.has(topUp.code))
+                            }
+                            onChange={(e) => {
+                              const checked = e.target.checked;
+                              setSelectedTopUpCodes((selected) => {
+                                const next = new Set(selected);
+                                for (const topUp of filteredTopUps) {
+                                  if (checked) next.add(topUp.code);
+                                  else next.delete(topUp.code);
+                                }
+                                return next;
+                              });
+                            }}
+                            className="h-4 w-4 accent-rose-500"
+                          />
+                        </th>
                         <th className="p-3.5">Code & Pack</th>
                         <th className="p-3.5">Game</th>
                         <th className="p-3.5">Menu / Category</th>
+                        <th className="p-3.5">Diamonds</th>
                         <th className="p-3.5">Price</th>
                         <th className="p-3.5">Popular</th>
                         <th className="p-3.5 text-right">Actions</th>
@@ -3152,6 +3395,22 @@ export function AdminDashboardPage() {
                         const game = findGame(t.game);
                         return (
                           <tr key={t.code} className="hover:bg-secondary/20 transition-colors">
+                            <td className="p-3.5">
+                              <input
+                                type="checkbox"
+                                aria-label={`Select ${t.name}`}
+                                checked={selectedTopUpCodes.has(t.code)}
+                                onChange={(e) =>
+                                  setSelectedTopUpCodes((selected) => {
+                                    const next = new Set(selected);
+                                    if (e.target.checked) next.add(t.code);
+                                    else next.delete(t.code);
+                                    return next;
+                                  })
+                                }
+                                className="h-4 w-4 accent-rose-500"
+                              />
+                            </td>
                             <td className="p-3.5">
                               <div className="flex items-center gap-3">
                                 {t.image ? (
@@ -3192,7 +3451,24 @@ export function AdminDashboardPage() {
                               </span>
                             </td>
                             <td className="p-3.5 text-xs font-semibold tabular-nums text-foreground whitespace-nowrap">
-                              {formatCurrency(t.price)}
+                              {typeof t.diamonds === "number" && t.diamonds > 0
+                                ? t.diamonds.toLocaleString()
+                                : "—"}
+                            </td>
+                            <td className="p-3.5 text-xs font-semibold tabular-nums text-foreground whitespace-nowrap">
+                              {t.hasDiscount && t.discountPercent ? (
+                                <div>
+                                  <span>{formatCurrency(getTopUpEffectivePrice(t))}</span>
+                                  <span className="ml-1.5 text-[10px] text-rose-400">
+                                    -{t.discountPercent}%
+                                  </span>
+                                  <span className="ml-1.5 text-[10px] text-muted-foreground line-through">
+                                    {formatCurrency(t.price)}
+                                  </span>
+                                </div>
+                              ) : (
+                                formatCurrency(t.price)
+                              )}
                             </td>
                             <td className="p-3.5 whitespace-nowrap">
                               {t.popular && (
@@ -4214,6 +4490,81 @@ export function AdminDashboardPage() {
                     Save Store Channels
                   </Button>
                 </div>
+              </form>
+
+              <form
+                onSubmit={handleChangeAdminPassword}
+                className="p-6 rounded-xl border border-border/60 bg-card/60 space-y-4"
+              >
+                <div>
+                  <h3 className="text-lg font-bold text-foreground">Change Admin Password</h3>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Verify your current password and choose a new password with at least 8
+                    characters.
+                  </p>
+                </div>
+                <div>
+                  <label
+                    htmlFor="current-admin-password"
+                    className="text-xs font-semibold text-muted-foreground uppercase block mb-1.5"
+                  >
+                    Current password
+                  </label>
+                  <input
+                    id="current-admin-password"
+                    type="password"
+                    value={currentAdminPassword}
+                    onChange={(e) => setCurrentAdminPassword(e.target.value)}
+                    autoComplete="current-password"
+                    required
+                    className="w-full bg-secondary/40 border border-border rounded-lg p-2.5 text-sm"
+                  />
+                </div>
+                <div>
+                  <label
+                    htmlFor="new-admin-password"
+                    className="text-xs font-semibold text-muted-foreground uppercase block mb-1.5"
+                  >
+                    New password
+                  </label>
+                  <input
+                    id="new-admin-password"
+                    type="password"
+                    value={newAdminPassword}
+                    onChange={(e) => setNewAdminPassword(e.target.value)}
+                    autoComplete="new-password"
+                    minLength={8}
+                    maxLength={128}
+                    required
+                    className="w-full bg-secondary/40 border border-border rounded-lg p-2.5 text-sm"
+                  />
+                </div>
+                <div>
+                  <label
+                    htmlFor="confirm-admin-password"
+                    className="text-xs font-semibold text-muted-foreground uppercase block mb-1.5"
+                  >
+                    Confirm new password
+                  </label>
+                  <input
+                    id="confirm-admin-password"
+                    type="password"
+                    value={confirmAdminPassword}
+                    onChange={(e) => setConfirmAdminPassword(e.target.value)}
+                    autoComplete="new-password"
+                    minLength={8}
+                    maxLength={128}
+                    required
+                    className="w-full bg-secondary/40 border border-border rounded-lg p-2.5 text-sm"
+                  />
+                </div>
+                <Button
+                  type="submit"
+                  disabled={isChangingAdminPassword}
+                  className="bm-btn bm-btn-primary"
+                >
+                  {isChangingAdminPassword ? "Updating..." : "Update Admin Password"}
+                </Button>
               </form>
             </div>
           )}

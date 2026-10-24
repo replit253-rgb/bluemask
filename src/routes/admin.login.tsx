@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useState, type FormEvent } from "react";
 import { Shield, ArrowRight, Lock, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { verifyAdminLogin } from "@/lib/db";
 
 export const Route = createFileRoute("/admin/login")({
   head: () => ({
@@ -19,23 +20,24 @@ function AdminLoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
-  const handleLogin = (e: FormEvent) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleLogin = async (e: FormEvent) => {
     e.preventDefault();
-    const normalizedUser = username.trim().toLowerCase();
-    const trimmedPass = password.trim().toLowerCase();
-
-    const isValidUser = normalizedUser === "admin" || normalizedUser === "admin@gmail.com";
-    const isValidPass =
-      trimmedPass === "redmoon" ||
-      trimmedPass === "reedmoon" ||
-      trimmedPass === "bluemask" ||
-      trimmedPass === "123admin123";
-
-    if (isValidUser && isValidPass) {
-      localStorage.setItem("bm_is_admin", "true");
-      navigate({ to: "/admin" });
-    } else {
-      setError("Invalid username or password. Check your credentials.");
+    setIsSubmitting(true);
+    setError("");
+    try {
+      if (await verifyAdminLogin(username, password)) {
+        localStorage.setItem("bm_is_admin", "true");
+        await navigate({ to: "/admin" });
+      } else {
+        setError("Invalid username or password. Check your credentials.");
+      }
+    } catch (loginError) {
+      console.error("Admin login verification failed:", loginError);
+      setError("Unable to verify credentials. Please try again.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -100,8 +102,13 @@ function AdminLoginPage() {
               </div>
             </div>
 
-            <Button type="submit" className="bm-btn bm-btn-primary w-full mt-4 justify-center">
-              Sign In <ArrowRight className="w-4 h-4 ml-1.5" />
+            <Button
+              type="submit"
+              disabled={isSubmitting}
+              className="bm-btn bm-btn-primary w-full mt-4 justify-center"
+            >
+              {isSubmitting ? "Verifying..." : "Sign In"}{" "}
+              {!isSubmitting && <ArrowRight className="w-4 h-4 ml-1.5" />}
             </Button>
           </form>
 

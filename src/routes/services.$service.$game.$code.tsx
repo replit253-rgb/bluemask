@@ -16,7 +16,12 @@ import {
 } from "lucide-react";
 import { findGame } from "@/lib/catalog";
 import { formatCurrency } from "@/lib/products";
-import { type TopUpPackage, topUpMessage, enrichTopUpDetails } from "@/lib/topup";
+import {
+  type TopUpPackage,
+  topUpMessage,
+  enrichTopUpDetails,
+  getTopUpEffectivePrice,
+} from "@/lib/topup";
 import { getServicesFromDB, getTopUpsFromDB } from "@/lib/db";
 import { SiteFooter, SiteHeader } from "@/components/SiteChrome";
 import { TopUpCard } from "@/components/TopUp";
@@ -268,15 +273,26 @@ function TopUpDetailPage() {
             <div className="p-5 rounded-2xl bg-gradient-to-r from-red-950/60 via-[#18050b] to-red-950/40 border border-red-500/40 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <span className="text-[11px] font-mono uppercase tracking-wider text-slate-400 block mb-0.5">
-                  Official Price (USD)
+                  {pack.hasDiscount ? "Discounted Price (USD)" : "Official Price (USD)"}
                 </span>
                 <div className="flex items-baseline gap-2">
                   <span className="text-3xl sm:text-4xl font-black text-white tabular-nums tracking-tight">
-                    {formatCurrency(pack.price)}
+                    {formatCurrency(getTopUpEffectivePrice(pack))}
                   </span>
-                  <span className="text-xs text-emerald-400 font-semibold bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-500/30">
-                    Fair Price Guarantee
-                  </span>
+                  {pack.hasDiscount && pack.discountPercent ? (
+                    <>
+                      <span className="text-xs text-rose-300 font-bold">
+                        {pack.discountPercent}% OFF
+                      </span>
+                      <span className="text-sm text-slate-400 line-through tabular-nums">
+                        {formatCurrency(pack.price)}
+                      </span>
+                    </>
+                  ) : (
+                    <span className="text-xs text-emerald-400 font-semibold bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-500/30">
+                      Fair Price Guarantee
+                    </span>
+                  )}
                 </div>
               </div>
 

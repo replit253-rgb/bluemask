@@ -21,7 +21,7 @@ import { TopUpCard, TopUpGrid } from "@/components/TopUp";
 
 describe("top-up package images", () => {
   it("shows the image saved for the package", () => {
-    render(
+    const { container } = render(
       <TopUpCard
         p={{
           code: "TEST-1",
@@ -55,6 +55,42 @@ describe("top-up package images", () => {
 
     expect(screen.queryByRole("img")).not.toBeInTheDocument();
     expect(screen.getByLabelText("No package image")).toBeInTheDocument();
+  });
+
+  it("shows the admin-provided diamond quantity with the game's public icon", () => {
+    const { container } = render(
+      <TopUpCard
+        p={{
+          code: "TEST-DIAMONDS",
+          game: "kingshot",
+          name: "Diamond pack",
+          detail: "Test detail",
+          price: 5,
+          diamonds: 12500,
+        }}
+      />,
+    );
+
+    expect(screen.getByText("12,500 Diamonds")).toBeInTheDocument();
+    expect(container.querySelector('img[src="/diamond-1.png"]')).toBeInTheDocument();
+  });
+
+  it("uses the Whiteout Survival diamond icon", () => {
+    const { container } = render(
+      <TopUpCard
+        p={{
+          code: "TEST-WOS-DIAMONDS",
+          game: "whiteout-survival",
+          name: "Whiteout diamond pack",
+          detail: "Test detail",
+          price: 5,
+          diamonds: 8000,
+        }}
+      />,
+    );
+
+    expect(screen.getByText("8,000 Diamonds")).toBeInTheDocument();
+    expect(container.querySelector('img[src="/diamond-2.png"]')).toBeInTheDocument();
   });
 
   it("opens package details in place without navigating away from the top-up list", async () => {

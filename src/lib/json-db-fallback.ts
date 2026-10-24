@@ -274,8 +274,42 @@ export async function executeFallbackQuery(
       return { rows: store.topups || [], rowCount: store.topups?.length || 0 };
     }
     if (lowerText.startsWith("insert")) {
-      const [code, game, name, detail, price, image, category, popular, sort_order] = params;
-      const newItem = { code, game, name, detail, price, image, category, popular, sort_order };
+      const [
+        code,
+        game,
+        name,
+        detail,
+        price,
+        image,
+        category,
+        popular,
+        sort_order,
+        description,
+        features,
+        instructions,
+        delivery_time,
+        has_discount,
+        discount_percent,
+        diamonds,
+      ] = params;
+      const newItem = {
+        code,
+        game,
+        name,
+        detail,
+        price,
+        image,
+        category,
+        popular,
+        sort_order,
+        description,
+        features,
+        instructions,
+        delivery_time,
+        has_discount,
+        discount_percent,
+        diamonds,
+      };
       const index = store.topups.findIndex((t) => t.code === code);
       if (index >= 0) {
         store.topups[index] = newItem;

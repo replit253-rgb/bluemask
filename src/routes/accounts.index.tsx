@@ -1,12 +1,15 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Search, SlidersHorizontal, ArrowUpDown, ArrowUpRight } from "lucide-react";
-import { games } from "@/lib/catalog";
 import { getEffectivePrice, type Product } from "@/lib/products";
 import { getProductsFromDB } from "@/lib/db";
 import { SiteFooter, SiteHeader } from "@/components/SiteChrome";
 import { ProductGrid } from "@/components/Products";
-import { getGameWorldsConfig, type GameWorldCard } from "@/lib/game-worlds";
+import {
+  DEFAULT_GAME_WORLDS_CONFIG,
+  getGameWorldsConfig,
+  type GameWorldCard,
+} from "@/lib/game-worlds";
 
 type SearchParams = {
   game?: string | undefined;
@@ -22,6 +25,31 @@ export const Route = createFileRoute("/accounts/")({
     status: typeof s["status"] === "string" ? s["status"] : undefined,
     q: typeof s["q"] === "string" ? s["q"] : undefined,
   }),
+  loader: async () => {
+    const [productsResult, gameWorldsResult] = await Promise.allSettled([
+      getProductsFromDB(),
+      getGameWorldsConfig(),
+    ]);
+    const products: Product[] = productsResult.status === "fulfilled" ? productsResult.value : [];
+    const gameCards: GameWorldCard[] =
+      gameWorldsResult.status === "fulfilled"
+        ? gameWorldsResult.value.cards
+        : DEFAULT_GAME_WORLDS_CONFIG.cards;
+
+    if (productsResult.status === "rejected") {
+      console.error("Failed to load account listings from PostgreSQL:", productsResult.reason);
+    }
+    if (gameWorldsResult.status === "rejected") {
+      console.error("Failed to load account game cards from PostgreSQL:", gameWorldsResult.reason);
+    }
+
+    return {
+      products,
+      productsLoadError: productsResult.status === "rejected",
+      gameCards,
+      gameWorldsLoadError: gameWorldsResult.status === "rejected",
+    };
+  },
   head: () => ({
     meta: [
       { title: "Accounts for Sale — RedMoon Gaming Store" },
@@ -44,76 +72,11 @@ export const Route = createFileRoute("/accounts/")({
 
 function AccountsPage() {
   const { game, sort = "default", status = "all", q = "" } = Route.useSearch();
-  const [productList, setProductList] = useState<Product[]>([]);
-  const [hasLoaded, setHasLoaded] = useState(false);
-  const [loadError, setLoadError] = useState(false);
+  const { products, productsLoadError, gameCards, gameWorldsLoadError } = Route.useLoaderData();
   const [searchTerm, setSearchTerm] = useState(q);
-  const [gameCards, setGameCards] = useState<GameWorldCard[]>(() =>
-    games.map((g) => ({
-      id: g.slug,
-      slug: g.slug,
-      name: g.name,
-      genre: g.genre,
-      image: g.image,
-      imageAlt: g.imageAlt,
-      number: g.number,
-      services: [],
-      accountPoints: [...g.accountPoints],
-    })),
-  );
-  const [gameCardsError, setGameCardsError] = useState(false);
-
-  useEffect(() => {
-    const loadProducts = () => {
-      setHasLoaded(false);
-      setLoadError(false);
-      void getProductsFromDB().then(
-        (items) => {
-          setProductList(items);
-          setHasLoaded(true);
-        },
-        (error: unknown) => {
-          console.error("Failed to load accounts from PostgreSQL:", error);
-          setProductList([]);
-          setHasLoaded(true);
-          setLoadError(true);
-        },
-      );
-    };
-    loadProducts();
-
-    const handleProductsChange = () => {
-      loadProducts();
-    };
-    window.addEventListener("products-changed", handleProductsChange);
-    return () => window.removeEventListener("products-changed", handleProductsChange);
-  }, []);
-
-  useEffect(() => {
-    let isMounted = true;
-    const loadGameCards = () => {
-      setGameCardsError(false);
-      void getGameWorldsConfig().then(
-        (config) => {
-          if (isMounted) setGameCards(config.cards);
-        },
-        (error: unknown) => {
-          console.error("Failed to load account game cards from PostgreSQL:", error);
-          if (isMounted) setGameCardsError(true);
-        },
-      );
-    };
-
-    loadGameCards();
-    window.addEventListener("game-worlds-changed", loadGameCards);
-    return () => {
-      isMounted = false;
-      window.removeEventListener("game-worlds-changed", loadGameCards);
-    };
-  }, []);
 
   // Filter by game, status, search query
-  let items = productList.filter((p) => {
+  let items = products.filter((p) => {
     if (game && p.game !== game) return false;
     if (status && status !== "all" && p.status !== status) return false;
     if (q && q.trim().length > 0) {
@@ -160,7 +123,7 @@ function AccountsPage() {
             </h2>
           </div>
 
-          {gameCardsError && (
+          {gameWorldsLoadError && (
             <p className="mb-4 text-sm text-red-400" role="alert">
               Unable to load the game selector from PostgreSQL. Showing the default game cards.
             </p>
@@ -221,9 +184,9 @@ function AccountsPage() {
                 : "All Account Listings"}
             </h2>
             <p className="text-xs text-slate-400 mt-0.5">
-              {hasLoaded
-                ? `Showing ${items.length} account listings.`
-                : "Loading account listings from PostgreSQL..."}
+              {productsLoadError
+                ? "Account listings could not be loaded."
+                : `Showing ${items.length} account listings.`}
             </p>
           </div>
 
@@ -324,9 +287,7 @@ function AccountsPage() {
           </div>
         </div>
 
-        {!hasLoaded ? (
-          <p className="bm-lead">Loading account listings...</p>
-        ) : loadError ? (
+        {productsLoadError ? (
           <p className="bm-lead text-red-400" role="alert">
             Unable to load account listings from PostgreSQL. Please refresh and try again.
           </p>

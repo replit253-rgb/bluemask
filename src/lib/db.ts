@@ -18,6 +18,8 @@ import {
   deleteTestimonialFn,
   getStoreSettingsFn,
   saveStoreSettingsFn,
+  verifyAdminLoginFn,
+  changeAdminPasswordFn,
   getGameWorldsFn,
   saveGameWorldsFn,
   getHomeGamesFn,
@@ -91,6 +93,18 @@ export async function saveTopUpToDB(topup: TopUpPackage): Promise<void> {
 
 export async function deleteTopUpFromDB(code: string): Promise<void> {
   await deleteTopupFn({ data: { code } });
+}
+
+export async function verifyAdminLogin(username: string, password: string): Promise<boolean> {
+  const result = await verifyAdminLoginFn({ data: { username, password } });
+  return result.authenticated;
+}
+
+export async function changeAdminPassword(
+  currentPassword: string,
+  newPassword: string,
+): Promise<void> {
+  await changeAdminPasswordFn({ data: { currentPassword, newPassword } });
 }
 
 // --- Pages / CMS Repository ---
