@@ -2,13 +2,8 @@ import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowUpRight, Check, Lock, ShieldCheck, Zap, Clock, Tag, Award } from "lucide-react";
 import { games, type Testimonial } from "@/lib/catalog";
-import {
-  getFaqsFromDB,
-  getPageFromDB,
-  getTestimonialsFromDB,
-  type FAQ,
-  type PageContent,
-} from "@/lib/db";
+import type { FAQ } from "@/lib/db";
+import { getFaqsFromDB, getPageFromDB, getTestimonialsFromDB, type PageContent } from "@/lib/db";
 import { SiteFooter, SiteHeader } from "@/components/SiteChrome";
 import { HomeTestimonials } from "@/components/Testimonials";
 import { ServiceCards } from "@/components/ServiceCards";
@@ -18,12 +13,30 @@ import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/")({
   loader: async () => {
-    try {
-      return { testimonials: await getTestimonialsFromDB(), testimonialLoadError: false };
-    } catch (error) {
-      console.error("Failed to load homepage testimonials from PostgreSQL:", error);
-      return { testimonials: [] as Testimonial[], testimonialLoadError: true };
+    const [testimonialsResult, faqsResult] = await Promise.allSettled([
+      getTestimonialsFromDB(),
+      getFaqsFromDB(),
+    ]);
+    const testimonials: Testimonial[] =
+      testimonialsResult.status === "fulfilled" ? testimonialsResult.value : [];
+    const faqs: FAQ[] = faqsResult.status === "fulfilled" ? faqsResult.value : [];
+
+    if (testimonialsResult.status === "rejected") {
+      console.error(
+        "Failed to load homepage testimonials from PostgreSQL:",
+        testimonialsResult.reason,
+      );
     }
+    if (faqsResult.status === "rejected") {
+      console.error("Failed to load homepage FAQs from PostgreSQL:", faqsResult.reason);
+    }
+
+    return {
+      testimonials,
+      testimonialLoadError: testimonialsResult.status === "rejected",
+      faqs,
+      faqLoadError: faqsResult.status === "rejected",
+    };
   },
   head: () => ({
     meta: [
@@ -60,17 +73,12 @@ export const Route = createFileRoute("/")({
 });
 
 function Index() {
-  const { testimonials, testimonialLoadError } = Route.useLoaderData();
+  const { testimonials, testimonialLoadError, faqs, faqLoadError } = Route.useLoaderData();
   const [pageContent, setPageContent] = useState<PageContent | null>(null);
-  const [faqs, setFaqs] = useState<FAQ[]>([]);
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   useEffect(() => {
     getPageFromDB("home").then((p) => setPageContent(p));
-    getFaqsFromDB().then(
-      (items) => setFaqs(items),
-      (error: unknown) => console.error("Failed to load FAQs from PostgreSQL:", error),
-    );
   }, []);
 
   return (
@@ -304,20 +312,26 @@ function Index() {
           </div>
         </div>
         <div className="max-w-3xl">
-          {faqs.map((f, i) => (
-            <div key={f.id} className="border-b border-border/40 py-5">
-              <button
-                className="flex w-full items-center justify-between text-left font-semibold text-foreground hover:text-primary transition-colors"
-                onClick={() => setOpenIndex(openIndex === i ? null : i)}
-              >
-                {f.question}
-                <span className="ml-4 text-red-500">{openIndex === i ? "—" : "+"}</span>
-              </button>
-              {openIndex === i && (
-                <p className="mt-3 text-sm text-muted-foreground leading-relaxed">{f.answer}</p>
-              )}
-            </div>
-          ))}
+          {faqLoadError ? (
+            <p className="text-sm text-red-400" role="alert">
+              FAQs are temporarily unavailable. Please try again later.
+            </p>
+          ) : (
+            faqs.map((f, i) => (
+              <div key={f.id} className="border-b border-border/40 py-5">
+                <button
+                  className="flex w-full items-center justify-between text-left font-semibold text-foreground hover:text-primary transition-colors"
+                  onClick={() => setOpenIndex(openIndex === i ? null : i)}
+                >
+                  {f.question}
+                  <span className="ml-4 text-red-500">{openIndex === i ? "—" : "+"}</span>
+                </button>
+                {openIndex === i && (
+                  <p className="mt-3 text-sm text-muted-foreground leading-relaxed">{f.answer}</p>
+                )}
+              </div>
+            ))
+          )}
         </div>
       </section>
 
