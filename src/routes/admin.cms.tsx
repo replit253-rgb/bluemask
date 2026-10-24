@@ -50,7 +50,7 @@ function AdminCMSPage() {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const [activeSlug, setActiveSlug] = useState<string>("home");
-  const [pageData, setPageData] = useState<PageContent>({
+  const [pageData, setPageData] = useState<PageContent | null>({
     slug: "home",
     title: "RedMoon Gaming Store",
     heroTitle: "RedMoon Gaming Store",
@@ -94,7 +94,9 @@ function AdminCMSPage() {
     try {
       setIsUploading(true);
       const dataUrl = await uploadImageFile(file);
-      setPageData((prev) => ({ ...prev, heroImage: dataUrl }));
+      if (pageData) {
+        setPageData((prev) => (prev ? { ...prev, heroImage: dataUrl } : null));
+      }
     } catch (err) {
       console.warn("Upload error:", err);
     } finally {
@@ -104,6 +106,7 @@ function AdminCMSPage() {
 
   const handleSavePage = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!pageData) return;
     const updated = { ...pageData, updatedAt: new Date().toISOString() };
     await savePageToDB(updated);
     setSavedNotice(true);
@@ -211,7 +214,7 @@ function AdminCMSPage() {
           <AdminGameWorldsManager />
         ) : activeSlug === "choose_your_game" ? (
           <AdminHomeGamesManager />
-        ) : activeSlug !== "faq" ? (
+        ) : activeSlug !== "faq" && pageData ? (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             {/* Editor Panel (5 cols) */}
             <div className="lg:col-span-6 bg-card border border-border/80 rounded-2xl p-6 shadow-xl">

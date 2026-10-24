@@ -105,8 +105,11 @@ export function AdminGameWorldsManager() {
     if (targetIndex < 0 || targetIndex >= newCards.length) return;
 
     const temp = newCards[index];
-    newCards[index] = newCards[targetIndex];
-    newCards[targetIndex] = temp;
+    const target = newCards[targetIndex];
+    if (temp && target) {
+      newCards[index] = target;
+      newCards[targetIndex] = temp;
+    }
 
     // Optional: auto-adjust numbers like 01, 02 if desired
     const updated = { ...config, cards: newCards };

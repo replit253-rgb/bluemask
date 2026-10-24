@@ -148,7 +148,16 @@ async function seedDatabase() {
       for (const p of initialProducts) {
         await client.query(
           `INSERT INTO products (code, game, title, badge, price, status, stats, highlights) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
-          [p.code, p.game, p.title, p.badge, p.price, p.status, JSON.stringify(p.stats), JSON.stringify(p.highlights)]
+          [
+            p.code,
+            p.game,
+            p.title,
+            p.badge,
+            p.price,
+            p.status,
+            JSON.stringify(p.stats),
+            JSON.stringify(p.highlights),
+          ],
         );
       }
       console.log(`Seeded ${initialProducts.length} products.`);
@@ -159,7 +168,7 @@ async function seedDatabase() {
       for (const t of initialTopups) {
         await client.query(
           `INSERT INTO topups (code, game, name, detail, price, category, popular, image, sort_order) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
-          [t.code, t.game, t.name, t.detail, t.price, t.category, t.popular, t.image, t.sort_order]
+          [t.code, t.game, t.name, t.detail, t.price, t.category, t.popular, t.image, t.sort_order],
         );
       }
       console.log(`Seeded ${initialTopups.length} topups.`);
@@ -170,7 +179,7 @@ async function seedDatabase() {
       for (const s of initialServices) {
         await client.query(
           `INSERT INTO services (slug, name, tagline, intro, steps, sort_order) VALUES ($1, $2, $3, $4, $5, $6)`,
-          [s.slug, s.name, s.tagline, s.intro, JSON.stringify(s.steps), s.sort_order]
+          [s.slug, s.name, s.tagline, s.intro, JSON.stringify(s.steps), s.sort_order],
         );
       }
       console.log(`Seeded ${initialServices.length} services.`);
@@ -183,7 +192,7 @@ async function seedDatabase() {
         // Ensure unique timestamps for sorting proof
         await client.query(
           `INSERT INTO testimonials (id, service, game, name, role, quote, date, image, created_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW() + interval '${i} minutes')`,
-          [t.id, t.service, t.game, t.name, t.role, t.quote, t.date, t.image]
+          [t.id, t.service, t.game, t.name, t.role, t.quote, t.date, t.image],
         );
       }
       console.log(`Seeded ${initialTestimonials.length} testimonials.`);
@@ -192,7 +201,11 @@ async function seedDatabase() {
     // FAQs
     if (await checkTable("faqs")) {
       for (const f of initialFAQs) {
-        await client.query(`INSERT INTO faqs (id, question, answer) VALUES ($1, $2, $3)`, [f.id, f.question, f.answer]);
+        await client.query(`INSERT INTO faqs (id, question, answer) VALUES ($1, $2, $3)`, [
+          f.id,
+          f.question,
+          f.answer,
+        ]);
       }
     }
 
@@ -201,7 +214,15 @@ async function seedDatabase() {
       for (const p of initialPages) {
         await client.query(
           `INSERT INTO pages (slug, title, hero_title, hero_subtitle, hero_image, lead_text, announcement) VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-          [p.slug, p.title, p.hero_title, p.hero_subtitle, p.hero_image, p.lead_text, p.announcement]
+          [
+            p.slug,
+            p.title,
+            p.hero_title,
+            p.hero_subtitle,
+            p.hero_image,
+            p.lead_text,
+            p.announcement,
+          ],
         );
       }
     }
@@ -211,10 +232,16 @@ async function seedDatabase() {
       const defaultSettings = [
         { key: "discordLink", value: "https://discord.gg/WHRzebh8pz" },
         { key: "whatsapp", value: "+62 821-2780-6072" },
-        { key: "discordUsers", value: [{ name: "bluemask22", link: "https://discord.com/users/980636376691249152" }] }
+        {
+          key: "discordUsers",
+          value: [{ name: "bluemask22", link: "https://discord.com/users/980636376691249152" }],
+        },
       ];
       for (const s of defaultSettings) {
-        await client.query(`INSERT INTO store_settings (key, value) VALUES ($1, $2)`, [s.key, JSON.stringify(s.value)]);
+        await client.query(`INSERT INTO store_settings (key, value) VALUES ($1, $2)`, [
+          s.key,
+          JSON.stringify(s.value),
+        ]);
       }
     }
 

@@ -1,12 +1,12 @@
 import { type Product } from "./products";
 import { type TopUpPackage } from "./topup";
-import { 
-  getProductsFromDB, 
-  saveProductToDB, 
-  getTopUpsFromDB, 
+import {
+  getProductsFromDB,
+  saveProductToDB,
+  getTopUpsFromDB,
   saveTopUpToDB,
   getStoreSettingsFromDB,
-  saveStoreSettingsToDB
+  saveStoreSettingsToDB,
 } from "./db";
 
 export type DiscordUser = { name: string; link: string };

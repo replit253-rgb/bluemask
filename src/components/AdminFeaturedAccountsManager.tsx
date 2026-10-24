@@ -88,8 +88,11 @@ export function AdminFeaturedAccountsManager() {
     if (targetIndex < 0 || targetIndex >= newCodes.length) return;
 
     const temp = newCodes[index];
-    newCodes[index] = newCodes[targetIndex];
-    newCodes[targetIndex] = temp;
+    const target = newCodes[targetIndex];
+    if (temp !== undefined && target !== undefined) {
+      newCodes[index] = target;
+      newCodes[targetIndex] = temp;
+    }
 
     const updated = { ...config, selectedCodes: newCodes };
     setConfig(updated);

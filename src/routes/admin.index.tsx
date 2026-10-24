@@ -120,7 +120,11 @@ export function AdminDashboardPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [topups, setTopups] = useState<TopUpPackage[]>([]);
   const [servicesList, setServicesList] = useState<Service[]>(defaultServices);
-  const [settings, setSettings] = useState<StoreSettings>({ discordLink: "", whatsapp: "", discordUsers: [] });
+  const [settings, setSettings] = useState<StoreSettings>({
+    discordLink: "",
+    whatsapp: "",
+    discordUsers: [],
+  });
 
   // Filters & Search
   const [accountSearch, setAccountSearch] = useState("");
@@ -143,9 +147,9 @@ export function AdminDashboardPage() {
     badge: "Ready",
     price: 100,
     status: "tersedia",
-    server: "",
-    description: "",
-    image: "",
+    server: undefined,
+    description: undefined,
+    image: undefined,
     screenshots: [],
     stats: [
       { label: "Level", value: "Max" },
@@ -230,7 +234,7 @@ export function AdminDashboardPage() {
         if (t && t.length > 0) setTestimonialsList(t);
       });
     });
-      getStoreSettings().then((s) => setSettings(s));
+    getStoreSettings().then((s) => setSettings(s));
   }, [navigate]);
 
   const showNotification = (msg: string) => {
@@ -393,7 +397,7 @@ export function AdminDashboardPage() {
     service: "middleman",
     quote: "",
     date: "Oct 2026",
-    image: "",
+    image: undefined,
   });
 
   const fileTestimonialAddRef = useRef<HTMLInputElement | null>(null);
@@ -442,6 +446,7 @@ export function AdminDashboardPage() {
       quote: newTestimonial.quote.trim(),
       date: newTestimonial.date?.trim() || "Oct 2026",
       image: newTestimonial.image || undefined,
+      created_at: undefined,
     };
 
     await saveTestimonialToDB(item);
@@ -454,7 +459,7 @@ export function AdminDashboardPage() {
       service: "middleman",
       quote: "",
       date: "Oct 2026",
-      image: "",
+      image: undefined,
     });
     showNotification(`Testimonial from ${item.name} added and published.`);
   };
@@ -525,10 +530,6 @@ export function AdminDashboardPage() {
       description: "",
       image: "",
       screenshots: [],
-      stats: [
-        { label: "Level", value: "Max" },
-        { label: "Power", value: "50M" },
-      ],
       highlights: ["Clean account credentials", "Safe middleman transaction"],
     });
     showNotification(`Account ${item.code} created and saved to database.`);
@@ -595,13 +596,20 @@ export function AdminDashboardPage() {
     if (isEdit) {
       if (!editingProduct) return;
       const updated = [...editingProduct.stats];
-      updated[index] = { ...updated[index], [key]: val };
-      setEditingProduct({ ...editingProduct, stats: updated });
+      const target = updated[index];
+      if (target) {
+        updated[index] = { ...target, [key]: val };
+        setEditingProduct({ ...editingProduct, stats: updated });
+      }
     } else {
       setNewProduct((prev) => {
         const stats = [...(prev.stats || [])];
-        stats[index] = { ...stats[index], [key]: val };
-        return { ...prev, stats };
+        const target = stats[index];
+        if (target) {
+          stats[index] = { ...target, [key]: val };
+          return { ...prev, stats };
+        }
+        return prev;
       });
     }
   };
@@ -4121,8 +4129,11 @@ export function AdminDashboardPage() {
                           value={user.name}
                           onChange={(e) => {
                             const newUsers = [...settings.discordUsers];
-                            newUsers[idx].name = e.target.value;
-                            setSettings({ ...settings, discordUsers: newUsers });
+                            const u = newUsers[idx];
+                            if (u) {
+                              u.name = e.target.value;
+                              setSettings({ ...settings, discordUsers: newUsers });
+                            }
                           }}
                           placeholder="Name (e.g. bluemask22)"
                           className="flex-1 bg-secondary/40 border border-border rounded-lg p-2 text-xs"
@@ -4132,8 +4143,11 @@ export function AdminDashboardPage() {
                           value={user.link}
                           onChange={(e) => {
                             const newUsers = [...settings.discordUsers];
-                            newUsers[idx].link = e.target.value;
-                            setSettings({ ...settings, discordUsers: newUsers });
+                            const u = newUsers[idx];
+                            if (u) {
+                              u.link = e.target.value;
+                              setSettings({ ...settings, discordUsers: newUsers });
+                            }
                           }}
                           placeholder="Link"
                           className="flex-1 bg-secondary/40 border border-border rounded-lg p-2 text-xs"
@@ -4155,7 +4169,12 @@ export function AdminDashboardPage() {
                       type="button"
                       variant="outline"
                       size="sm"
-                      onClick={() => setSettings({ ...settings, discordUsers: [...settings.discordUsers, { name: "", link: "" }] })}
+                      onClick={() =>
+                        setSettings({
+                          ...settings,
+                          discordUsers: [...settings.discordUsers, { name: "", link: "" }],
+                        })
+                      }
                       className="text-xs"
                     >
                       <Plus className="w-3.5 h-3.5 mr-1" /> Add Discord User

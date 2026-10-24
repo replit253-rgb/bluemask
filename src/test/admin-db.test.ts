@@ -7,6 +7,7 @@ import {
   saveTopUpToDB,
   getPageFromDB,
   savePageToDB,
+  type PageContent,
 } from "@/lib/db";
 import type { Product } from "@/lib/products";
 
@@ -51,10 +52,11 @@ describe("Admin Database & CMS Repository", () => {
 
   it("saves and retrieves CMS pages with custom hero images", async () => {
     const home = await getPageFromDB("home");
+    if (!home) throw new Error("Home page not found");
     expect(home.slug).toBe("home");
     expect(home.heroTitle).toBeDefined();
 
-    const modified = {
+    const modified: PageContent = {
       ...home,
       heroTitle: "Updated Hero Title Test",
       heroImage: "/custom/uploaded/image.jpg",
@@ -62,6 +64,7 @@ describe("Admin Database & CMS Repository", () => {
     await savePageToDB(modified);
 
     const reloaded = await getPageFromDB("home");
+    if (!reloaded) throw new Error("Reloaded home page not found");
     expect(reloaded.heroTitle).toBe("Updated Hero Title Test");
     expect(reloaded.heroImage).toBe("/custom/uploaded/image.jpg");
   });

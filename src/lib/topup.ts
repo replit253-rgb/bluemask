@@ -7,13 +7,14 @@ export type TopUpPackage = {
   name: string;
   detail: string;
   price: number;
-  popular?: boolean;
-  image?: string;
-  category?: string; // e.g. "Pack ID Top Up", "Frost Star Pack", "Kingdom Star Pack"
-  description?: string; // Detail deskripsi produk
-  features?: string[]; // Fitur / item yang didapat (bullet points)
-  instructions?: string; // Instruksi top-up
-  deliveryTime?: string; // Estimasi waktu pengiriman (e.g. "5 - 15 Minutes")
+  popular?: boolean | undefined;
+  image?: string | undefined;
+  category?: string | undefined; // e.g. "Pack ID Top Up", "Frost Star Pack", "Kingdom Star Pack"
+  description?: string | undefined; // Detail deskripsi produk
+  features?: string[] | undefined; // Fitur / item yang didapat (bullet points)
+  instructions?: string | undefined; // Instruksi top-up
+  deliveryTime?: string | undefined; // Estimasi waktu pengiriman (e.g. "5 - 15 Minutes")
+  sort_order?: number | undefined;
 };
 
 export const GAME_TOPUP_CATEGORIES: Record<string, string[]> = {

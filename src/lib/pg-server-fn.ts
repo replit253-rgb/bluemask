@@ -1,8 +1,26 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
-const PUBLIC_READ_KEYS = ["discordLink", "discordUsers", "whatsapp", "game_worlds_header", "home_games_header", "featured_accounts_config", "site_config"];
-const WRITABLE_KEYS = ["discordLink", "discordUsers", "whatsapp", "game_worlds_header", "home_games_header", "featured_accounts_config", "site_config"];
+const PUBLIC_READ_KEYS = [
+  "discordLink",
+  "discordUsers",
+  "whatsapp",
+  "game_worlds_header",
+  "home_games_header",
+  "featured_accounts_config",
+  "site_config",
+];
+
+const WRITABLE_KEYS = [
+  "discordLink",
+  "discordUsers",
+  "whatsapp",
+  "game_worlds_header",
+  "home_games_header",
+  "featured_accounts_config",
+  "site_config",
+  "admin_notification_email",
+];
 
 // --- Schemas ---
 const StoreKeyEnum = z.enum([
@@ -12,7 +30,8 @@ const StoreKeyEnum = z.enum([
   "game_worlds_header",
   "home_games_header",
   "featured_accounts_config",
-  "site_config"
+  "site_config",
+  "admin_notification_email",
 ]);
 
 const ProductSchema = z.object({
@@ -47,10 +66,12 @@ const ServiceSchema = z.object({
   name: z.string().max(255),
   tagline: z.string().max(255),
   intro: z.string().max(2000),
-  steps: z.array(z.object({ 
-    title: z.string().max(255), 
-    text: z.string().max(1000) 
-  })),
+  steps: z.array(
+    z.object({
+      title: z.string().max(255),
+      text: z.string().max(1000),
+    }),
+  ),
   image: z.string().max(1000).optional().nullable(),
   sort_order: z.number().optional(),
 });
@@ -126,14 +147,18 @@ const FeaturedAccountsConfigSchema = z.object({
   title: z.string().max(255).optional().nullable(),
   subtitle: z.string().max(500).optional().nullable(),
   description: z.string().max(2000).optional().nullable(),
-  items: z.array(z.object({
-    id: z.string().max(255),
-    name: z.string().max(255),
-    image: z.string().max(1000).optional().nullable(),
-    price: z.number().optional(),
-    badge: z.string().max(100).optional().nullable(),
-    highlights: z.array(z.string()).optional(),
-  })).optional(),
+  items: z
+    .array(
+      z.object({
+        id: z.string().max(255),
+        name: z.string().max(255),
+        image: z.string().max(1000).optional().nullable(),
+        price: z.number().optional(),
+        badge: z.string().max(100).optional().nullable(),
+        highlights: z.array(z.string()).optional(),
+      }),
+    )
+    .optional(),
 });
 
 const DeleteIdSchema = z.object({
@@ -172,7 +197,20 @@ export const saveProductFn = createServerFn({ method: "POST" })
   .validator((data: unknown) => ProductSchema.parse(data))
   .handler(async ({ data }) => {
     const { queryPostgres } = await import("./pg-server");
-    const { code, game, title, badge, price, status, image, screenshots, description, server, stats, highlights } = data;
+    const {
+      code,
+      game,
+      title,
+      badge,
+      price,
+      status,
+      image,
+      screenshots,
+      description,
+      server,
+      stats,
+      highlights,
+    } = data;
     const res = await queryPostgres(
       `INSERT INTO products (code, game, title, badge, price, status, image, screenshots, description, server, stats, highlights)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
@@ -182,12 +220,19 @@ export const saveProductFn = createServerFn({ method: "POST" })
          description = EXCLUDED.description, server = EXCLUDED.server, stats = EXCLUDED.stats, highlights = EXCLUDED.highlights
        RETURNING *`,
       [
-        code, game, title, badge, price, status, image, 
-        JSON.stringify(screenshots || []), 
-        description, server, 
-        JSON.stringify(stats || {}), 
-        JSON.stringify(highlights || [])
-      ]
+        code,
+        game,
+        title,
+        badge,
+        price,
+        status,
+        image,
+        JSON.stringify(screenshots || []),
+        description,
+        server,
+        JSON.stringify(stats || {}),
+        JSON.stringify(highlights || []),
+      ],
     );
     return res.rows[0];
   });
@@ -229,7 +274,7 @@ export const saveTopupFn = createServerFn({ method: "POST" })
          game = EXCLUDED.game, name = EXCLUDED.name, detail = EXCLUDED.detail, price = EXCLUDED.price, 
          image = EXCLUDED.image, category = EXCLUDED.category, popular = EXCLUDED.popular, sort_order = EXCLUDED.sort_order
        RETURNING *`,
-      [code, game, name, detail, price, image, category, popular || false, sort_order || 0]
+      [code, game, name, detail, price, image, category, popular || false, sort_order || 0],
     );
     return res.rows[0];
   });
@@ -246,14 +291,14 @@ export const deleteTopupFn = createServerFn({ method: "POST" })
 export const getServicesFn = createServerFn({ method: "GET" }).handler(async () => {
   const { queryPostgres } = await import("./pg-server");
   const res = await queryPostgres("SELECT * FROM services ORDER BY sort_order ASC");
-  return res.rows.map(row => ({
+  return res.rows.map((row) => ({
     slug: row.slug,
     name: row.name,
     tagline: row.tagline,
     intro: row.intro,
     steps: row.steps || [],
     image: row.image,
-    sort_order: row.sort_order
+    sort_order: row.sort_order,
   }));
 });
 
@@ -269,7 +314,7 @@ export const saveServiceFn = createServerFn({ method: "POST" })
          name = EXCLUDED.name, tagline = EXCLUDED.tagline, intro = EXCLUDED.intro, 
          steps = EXCLUDED.steps, image = EXCLUDED.image, sort_order = EXCLUDED.sort_order
        RETURNING *`,
-      [slug, name, tagline, intro, JSON.stringify(steps), image, sort_order || 0]
+      [slug, name, tagline, intro, JSON.stringify(steps), image, sort_order || 0],
     );
     return res.rows[0];
   });
@@ -286,7 +331,7 @@ export const deleteServiceFn = createServerFn({ method: "POST" })
 export const getTestimonialsFn = createServerFn({ method: "GET" }).handler(async () => {
   const { queryPostgres } = await import("./pg-server");
   const res = await queryPostgres("SELECT * FROM testimonials ORDER BY created_at DESC");
-  return res.rows.map(row => ({
+  return res.rows.map((row) => ({
     id: row.id,
     service: row.service,
     game: row.game,
@@ -295,7 +340,7 @@ export const getTestimonialsFn = createServerFn({ method: "GET" }).handler(async
     quote: row.quote,
     date: row.date,
     image: row.image,
-    created_at: row.created_at
+    created_at: row.created_at,
   }));
 });
 
@@ -309,9 +354,10 @@ export const saveTestimonialFn = createServerFn({ method: "POST" })
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW())
        ON CONFLICT (id) DO UPDATE SET
          service = EXCLUDED.service, game = EXCLUDED.game, name = EXCLUDED.name, 
-         role = EXCLUDED.role, quote = EXCLUDED.quote, date = EXCLUDED.date, image = EXCLUDED.image
+         role = EXCLUDED.role, quote = EXCLUDED.quote, date = EXCLUDED.date, image = EXCLUDED.image,
+         created_at = COALESCE(testimonials.created_at, NOW())
        RETURNING *`,
-      [id, service, game, name, role, quote, date, image]
+      [id, service, game, name, role, quote, date, image],
     );
     return res.rows[0];
   });
@@ -342,7 +388,7 @@ export const saveFaqFn = createServerFn({ method: "POST" })
        ON CONFLICT (id) DO UPDATE SET
          question = EXCLUDED.question, answer = EXCLUDED.answer
        RETURNING *`,
-      [id, question, answer]
+      [id, question, answer],
     );
     return res.rows[0];
   });
@@ -360,7 +406,7 @@ export const getStoreSettingsFn = createServerFn({ method: "GET" }).handler(asyn
   const { queryPostgres } = await import("./pg-server");
   const res = await queryPostgres("SELECT * FROM store_settings");
   const settings: Record<string, any> = {};
-  res.rows.forEach(row => {
+  res.rows.forEach((row) => {
     if (PUBLIC_READ_KEYS.includes(row.key)) {
       settings[row.key] = row.value;
     }
@@ -382,7 +428,7 @@ export const saveStoreSettingsFn = createServerFn({ method: "POST" })
       `INSERT INTO store_settings (key, value) VALUES ($1, $2)
        ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value
        RETURNING *`,
-      [data.key, JSON.stringify(data.value)]
+      [data.key, JSON.stringify(data.value)],
     );
     return res.rows[0];
   });
@@ -419,7 +465,7 @@ export const savePageFn = createServerFn({ method: "POST" })
          title = EXCLUDED.title, hero_title = EXCLUDED.hero_title, hero_subtitle = EXCLUDED.hero_subtitle,
          hero_image = EXCLUDED.hero_image, lead_text = EXCLUDED.lead_text, announcement = EXCLUDED.announcement, updated_at = NOW()
        RETURNING *`,
-      [slug, title, heroTitle, heroSubtitle, heroImage, leadText, announcement]
+      [slug, title, heroTitle, heroSubtitle, heroImage, leadText, announcement],
     );
     return res.rows[0];
   });
@@ -428,7 +474,9 @@ export const savePageFn = createServerFn({ method: "POST" })
 export const getGameWorldsFn = createServerFn({ method: "GET" }).handler(async () => {
   const { queryPostgres } = await import("./pg-server");
   const res = await queryPostgres("SELECT * FROM game_worlds ORDER BY sort_order ASC, id ASC");
-  const settingsRes = await queryPostgres("SELECT value FROM store_settings WHERE key = 'game_worlds_header'");
+  const settingsRes = await queryPostgres(
+    "SELECT value FROM store_settings WHERE key = 'game_worlds_header'",
+  );
   const header = settingsRes.rows[0]?.value || {};
   return {
     ...header,
@@ -452,32 +500,40 @@ export const saveGameWorldsFn = createServerFn({ method: "POST" })
     const { getPgPool } = await import("./pg-server");
     const pool = getPgPool();
     const client = await pool.connect();
-    
+
     try {
       await client.query("BEGIN");
       const { eyebrow, title, subtitle, cards } = data;
-      
+
       await client.query(
         `INSERT INTO store_settings (key, value) VALUES ('game_worlds_header', $1) 
          ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value`,
-        [JSON.stringify({ eyebrow, title, subtitle })]
+        [JSON.stringify({ eyebrow, title, subtitle })],
       );
-      
+
       await client.query("DELETE FROM game_worlds");
-      
+
       if (Array.isArray(cards)) {
         for (const card of cards) {
           await client.query(
             `INSERT INTO game_worlds (id, slug, name, genre, image, image_alt, number_code, services, account_points, sort_order) 
              VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
             [
-              card.id, card.slug, card.name, card.genre, card.image, card.imageAlt, 
-              card.number, JSON.stringify(card.services || {}), JSON.stringify(card.accountPoints || {}), card.sort_order || 0
-            ]
+              card.id,
+              card.slug,
+              card.name,
+              card.genre,
+              card.image,
+              card.imageAlt,
+              card.number,
+              JSON.stringify(card.services || {}),
+              JSON.stringify(card.accountPoints || {}),
+              card.sort_order || 0,
+            ],
           );
         }
       }
-      
+
       await client.query("COMMIT");
       return { success: true };
     } catch (e) {
@@ -491,7 +547,9 @@ export const saveGameWorldsFn = createServerFn({ method: "POST" })
 export const getHomeGamesFn = createServerFn({ method: "GET" }).handler(async () => {
   const { queryPostgres } = await import("./pg-server");
   const res = await queryPostgres("SELECT * FROM home_games ORDER BY sort_order ASC, id ASC");
-  const settingsRes = await queryPostgres("SELECT value FROM store_settings WHERE key = 'home_games_header'");
+  const settingsRes = await queryPostgres(
+    "SELECT value FROM store_settings WHERE key = 'home_games_header'",
+  );
   const header = settingsRes.rows[0]?.value || {};
   return {
     ...header,
@@ -514,29 +572,39 @@ export const saveHomeGamesFn = createServerFn({ method: "POST" })
     const { getPgPool } = await import("./pg-server");
     const pool = getPgPool();
     const client = await pool.connect();
-    
+
     try {
       await client.query("BEGIN");
       const { eyebrow, title, linkText, linkUrl, cards } = data;
-      
+
       await client.query(
         `INSERT INTO store_settings (key, value) VALUES ('home_games_header', $1) 
          ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value`,
-        [JSON.stringify({ eyebrow, title, linkText, linkUrl })]
+        [JSON.stringify({ eyebrow, title, linkText, linkUrl })],
       );
-      
+
       await client.query("DELETE FROM home_games");
-      
+
       if (Array.isArray(cards)) {
         for (const card of cards) {
           await client.query(
             `INSERT INTO home_games (id, slug, name, genre, image, image_alt, action_text, link_url, sort_order) 
              VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
-            [card.id, card.slug, card.name, card.genre, card.image, card.imageAlt, card.actionText, card.linkUrl, card.sort_order || 0]
+            [
+              card.id,
+              card.slug,
+              card.name,
+              card.genre,
+              card.image,
+              card.imageAlt,
+              card.actionText,
+              card.linkUrl,
+              card.sort_order || 0,
+            ],
           );
         }
       }
-      
+
       await client.query("COMMIT");
       return { success: true };
     } catch (e) {
@@ -549,7 +617,9 @@ export const saveHomeGamesFn = createServerFn({ method: "POST" })
 
 export const getFeaturedAccountsConfigFn = createServerFn({ method: "GET" }).handler(async () => {
   const { queryPostgres } = await import("./pg-server");
-  const res = await queryPostgres("SELECT value FROM store_settings WHERE key = 'featured_accounts_config'");
+  const res = await queryPostgres(
+    "SELECT value FROM store_settings WHERE key = 'featured_accounts_config'",
+  );
   return res.rows.length > 0 ? res.rows[0].value : null;
 });
 
@@ -560,7 +630,7 @@ export const saveFeaturedAccountsConfigFn = createServerFn({ method: "POST" })
     await queryPostgres(
       `INSERT INTO store_settings (key, value) VALUES ('featured_accounts_config', $1) 
        ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value`,
-      [JSON.stringify(data)]
+      [JSON.stringify(data)],
     );
     return { success: true };
   });
@@ -580,15 +650,17 @@ export const uploadImageFn = createServerFn({ method: "POST" })
 
     // Generic prefix removal
     const base64Data = data.base64.replace(/^data:[^;]+;base64,/, "");
-    
+
     // 5MB Size limit check before Buffer.from
-    const sizeInBytes = (base64Data.length * 3) / 4 - (base64Data.endsWith("==") ? 2 : base64Data.endsWith("=") ? 1 : 0);
+    const sizeInBytes =
+      (base64Data.length * 3) / 4 -
+      (base64Data.endsWith("==") ? 2 : base64Data.endsWith("=") ? 1 : 0);
     if (sizeInBytes > 5 * 1024 * 1024) {
       throw new Error("File size exceeds 5MB limit");
     }
 
     const buffer = Buffer.from(base64Data, "base64");
-    
+
     // Magic Bytes Check
     const hex = buffer.slice(0, 4).toString("hex").toUpperCase();
     let ext = "";

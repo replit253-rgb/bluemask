@@ -89,8 +89,11 @@ export function AdminHomeGamesManager() {
     if (targetIndex < 0 || targetIndex >= newCards.length) return;
 
     const temp = newCards[index];
-    newCards[index] = newCards[targetIndex];
-    newCards[targetIndex] = temp;
+    const target = newCards[targetIndex];
+    if (temp && target) {
+      newCards[index] = target;
+      newCards[targetIndex] = temp;
+    }
 
     const updated = { ...config, cards: newCards };
     setConfig(updated);

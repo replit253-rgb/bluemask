@@ -83,11 +83,12 @@ export type Service = {
   intro: string;
   steps: { title: string; text: string }[];
   /** Games served. Empty means all games. */
-  gameSlugs?: GameSlug[];
+  gameSlugs?: GameSlug[] | undefined;
   /** What the customer needs to prepare. Falls back to the game's account info. */
-  checklist?: string[];
-  image?: string;
-  fee?: string;
+  checklist?: string[] | undefined;
+  image?: string | undefined;
+  fee?: string | undefined;
+  sort_order?: number | undefined;
 };
 
 export const services: Service[] = [
@@ -172,14 +173,15 @@ export const isServiceAvailable = (serviceSlug: string, gameSlug: string) => {
 };
 
 export type Testimonial = {
-  id?: string;
+  id?: string | undefined;
   service: Service["slug"];
   game: Game["slug"] | "all";
   name: string;
   role: "Buyer" | "Seller";
   quote: string;
   date: string;
-  image?: string;
+  image?: string | undefined;
+  created_at?: string | undefined;
 };
 
 export const testimonials: Testimonial[] = [

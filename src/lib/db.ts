@@ -35,15 +35,15 @@ export interface PageContent {
   heroTitle: string;
   heroSubtitle: string;
   heroImage: string;
-  heroImageMobile?: string;
-  leadText?: string;
-  announcement?: string;
-  buttonText?: string;
-  buttonLink?: string;
-  secondaryButtonText?: string;
-  secondaryButtonLink?: string;
-  sectionTitle?: string;
-  sectionSubtitle?: string;
+  heroImageMobile?: string | undefined;
+  leadText?: string | undefined;
+  announcement?: string | undefined;
+  buttonText?: string | undefined;
+  buttonLink?: string | undefined;
+  secondaryButtonText?: string | undefined;
+  secondaryButtonLink?: string | undefined;
+  sectionTitle?: string | undefined;
+  sectionSubtitle?: string | undefined;
   updatedAt: string;
 }
 
@@ -191,7 +191,7 @@ export async function getStoreSettingsFromDB(): Promise<StoreSettings> {
 
 export async function saveStoreSettingsToDB(settings: StoreSettings): Promise<void> {
   // If settings is an object with discordLink, etc., we save them individually or as 'site_config'
-  await saveStoreSettingsFn({ data: { key: 'site_config', value: settings } });
+  await saveStoreSettingsFn({ data: { key: "site_config", value: settings } });
 }
 
 // --- Game Worlds Repository ---

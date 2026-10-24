@@ -12,6 +12,7 @@ import {
   Zap,
   Headphones,
   CheckCircle2,
+  Info,
 } from "lucide-react";
 import { discordLink, findGame, findService } from "@/lib/catalog";
 import { formatCurrency } from "@/lib/products";

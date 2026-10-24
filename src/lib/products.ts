@@ -7,14 +7,14 @@ export type Product = {
   badge: string;
   price: number;
   status: "tersedia" | "terjual";
-  image?: string;
-  screenshots?: string[];
-  description?: string;
-  server?: string;
+  image?: string | undefined;
+  screenshots?: string[] | undefined;
+  description?: string | undefined;
+  server?: string | undefined;
   stats: { label: string; value: string }[];
   highlights: string[];
-  discountPercent?: number; // e.g. 20
-  hasDiscount?: boolean; // whether discount is enabled
+  discountPercent?: number | undefined; // e.g. 20
+  hasDiscount?: boolean | undefined; // whether discount is enabled
 };
 
 export const getEffectivePrice = (p: Product) => {

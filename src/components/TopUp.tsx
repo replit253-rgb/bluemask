@@ -366,7 +366,7 @@ export function TopUpGrid({ items, gameSlug }: { items: TopUpPackage[]; gameSlug
     [detectedGame],
   );
 
-  const [activeCategory, setActiveCategory] = useState<string>(defaultCategories[0]);
+  const [activeCategory, setActiveCategory] = useState<string>(() => defaultCategories[0] || "all");
   const [page, setPage] = useState(1);
   const perPage = 12;
 
@@ -395,7 +395,7 @@ export function TopUpGrid({ items, gameSlug }: { items: TopUpPackage[]; gameSlug
       !defaultCategories.includes(activeCategory) &&
       activeCategory !== "all"
     ) {
-      setActiveCategory(defaultCategories[0]);
+      setActiveCategory(defaultCategories[0] || "all");
     }
   }, [detectedGame, defaultCategories, activeCategory]);
 
@@ -440,7 +440,8 @@ export function TopUpGrid({ items, gameSlug }: { items: TopUpPackage[]; gameSlug
         <button
           type="button"
           onClick={() => {
-            setActiveCategory(activeCategory === "all" ? defaultCategories[0] : "all");
+            const next = activeCategory === "all" ? defaultCategories[0] || "all" : "all";
+            setActiveCategory(next);
             setPage(1);
           }}
           className="text-xs text-slate-400 hover:text-white underline underline-offset-4 self-center sm:self-auto cursor-pointer"
