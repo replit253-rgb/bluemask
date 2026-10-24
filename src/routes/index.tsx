@@ -1,8 +1,14 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowUpRight, Check, Lock, ShieldCheck, Zap, Clock, Tag, Award } from "lucide-react";
-import { games } from "@/lib/catalog";
-import { getFaqsFromDB, getPageFromDB, type FAQ, type PageContent } from "@/lib/db";
+import { games, type Testimonial } from "@/lib/catalog";
+import {
+  getFaqsFromDB,
+  getPageFromDB,
+  getTestimonialsFromDB,
+  type FAQ,
+  type PageContent,
+} from "@/lib/db";
 import { SiteFooter, SiteHeader } from "@/components/SiteChrome";
 import { HomeTestimonials } from "@/components/Testimonials";
 import { ServiceCards } from "@/components/ServiceCards";
@@ -11,6 +17,14 @@ import { FeaturedAccountsShowcase } from "@/components/FeaturedAccountsShowcase"
 import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/")({
+  loader: async () => {
+    try {
+      return { testimonials: await getTestimonialsFromDB(), testimonialLoadError: false };
+    } catch (error) {
+      console.error("Failed to load homepage testimonials from PostgreSQL:", error);
+      return { testimonials: [] as Testimonial[], testimonialLoadError: true };
+    }
+  },
   head: () => ({
     meta: [
       { title: "RedMoon — Game Accounts, Middleman & Top Up Terpercaya" },
@@ -46,6 +60,7 @@ export const Route = createFileRoute("/")({
 });
 
 function Index() {
+  const { testimonials, testimonialLoadError } = Route.useLoaderData();
   const [pageContent, setPageContent] = useState<PageContent | null>(null);
   const [faqs, setFaqs] = useState<FAQ[]>([]);
   const [openIndex, setOpenIndex] = useState<number | null>(null);
@@ -275,7 +290,7 @@ function Index() {
             <h2 className="text-2xl md:text-3xl font-bold mt-1">From Players Who Traded With Us</h2>
           </div>
         </div>
-        <HomeTestimonials />
+        <HomeTestimonials initialItems={testimonials} loadError={testimonialLoadError} />
       </section>
 
       {/* FAQ Section */}

@@ -36,7 +36,7 @@ export function TopUpCard({
 
   return (
     <div
-      className={`group relative flex flex-col justify-between rounded-xl p-3 sm:p-4 transition-all duration-300 border text-foreground ${
+      className={`group relative flex flex-col justify-between overflow-hidden rounded-xl p-3 sm:p-4 transition-all duration-300 border text-foreground ${
         p.popular
           ? "bg-[#18050b] border-red-500/50 shadow-lg shadow-red-950/40 hover:border-red-400 hover:shadow-red-500/20"
           : "bg-[#0c0407] border-red-950/60 hover:border-red-500/40 hover:bg-[#14060a]"
@@ -44,12 +44,12 @@ export function TopUpCard({
     >
       {/* Popular Badge */}
       {p.popular && (
-        <div className="absolute -top-2 right-2.5 px-2 py-0.5 rounded-full bg-gradient-to-r from-amber-500 to-amber-600 text-amber-950 text-[9px] font-extrabold uppercase tracking-wider shadow">
+        <div className="absolute top-2 right-2.5 z-10 px-2 py-0.5 rounded-full bg-gradient-to-r from-amber-500 to-amber-600 text-amber-950 text-[9px] font-extrabold uppercase tracking-wider shadow">
           Best Seller
         </div>
       )}
 
-      {/* Center Image / Pack Visual */}
+      {/* Package image */}
       <Link
         to="/services/$service/$game/$code"
         params={{ service: "top-up", game: p.game, code: p.code }}
@@ -59,15 +59,15 @@ export function TopUpCard({
             onOpenDetail(p);
           }
         }}
-        className="flex flex-col items-center justify-center pt-1 pb-2 cursor-pointer w-full group/img"
+        className="-mx-3 -mt-3 mb-3 block cursor-pointer sm:-mx-4 sm:-mt-4 group/img"
         title={`View ${p.name} details`}
       >
-        <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center p-1 transition-transform duration-300 group-hover/img:scale-105">
+        <div className="relative flex aspect-[4/3] w-full items-center justify-center overflow-hidden bg-[#18050b]">
           {p.image ? (
             <img
               src={p.image}
               alt={p.name}
-              className="w-full h-full object-contain rounded-lg drop-shadow-[0_4px_12px_rgba(220,38,38,0.35)]"
+              className="h-full w-full object-cover transition-transform duration-300 group-hover/img:scale-105"
             />
           ) : (
             <Package className="w-10 h-10 text-red-400/70" aria-label="No package image" />

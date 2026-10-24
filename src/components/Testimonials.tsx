@@ -69,14 +69,33 @@ export function TestimonialSection({
 }
 
 /** Testimonial picks for the home page section. */
-export function HomeTestimonials() {
-  const [items, setItems] = useState<Testimonial[]>([]);
+export function HomeTestimonials({
+  initialItems,
+  loadError = false,
+}: {
+  initialItems?: Testimonial[];
+  loadError?: boolean;
+}) {
+  const [items, setItems] = useState<Testimonial[]>(initialItems ?? []);
 
   useEffect(() => {
+    if (initialItems) {
+      setItems(initialItems);
+      return;
+    }
+
     void getTestimonialsFromDB().then(setItems, (error: unknown) =>
       console.error("Failed to load testimonials from PostgreSQL:", error),
     );
-  }, []);
+  }, [initialItems]);
+
+  if (loadError) {
+    return (
+      <p className="text-sm text-red-400" role="alert">
+        Reviews are temporarily unavailable. Please try again later.
+      </p>
+    );
+  }
 
   if (items.length === 0) return null;
 

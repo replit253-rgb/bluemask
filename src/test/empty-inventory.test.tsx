@@ -37,4 +37,25 @@ describe("empty database inventories", () => {
     await waitFor(() => expect(getTestimonialsFromDB).toHaveBeenCalled());
     expect(container.querySelector(".bm-testi-card")).toBeNull();
   });
+
+  it("renders reviews loaded by the homepage route", () => {
+    render(
+      <HomeTestimonials
+        initialItems={[
+          {
+            id: "seed-review-middleman-whiteout-survival-daffa",
+            service: "middleman",
+            game: "whiteout-survival",
+            name: "Daffa",
+            role: "Buyer",
+            quote: "My account transfer was completed safely.",
+            date: "Oct 2026",
+          },
+        ]}
+      />,
+    );
+
+    expect(screen.getAllByText("My account transfer was completed safely.")).toHaveLength(2);
+    expect(getTestimonialsFromDB).not.toHaveBeenCalled();
+  });
 });
