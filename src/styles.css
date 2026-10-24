@@ -397,7 +397,7 @@ html {
   margin-bottom: 22px;
 }
 .bm-hero-title span {
-  display: block;
+  display: inline;
 }
 .bm-lead {
   font-size: 16px;

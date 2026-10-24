@@ -162,6 +162,19 @@ const HomeGamesDataSchema = z.object({
   cards: z.array(HomeGameCardSchema),
 });
 
+const TrustSafetyCardSchema = z.object({
+  id: z.string().min(1).max(255),
+  title: z.string().max(255),
+  description: z.string().max(2000),
+  icon: z.enum(["shield", "lock", "zap"]),
+});
+
+const TrustSafetyDataSchema = z.object({
+  eyebrow: z.string().max(255),
+  title: z.string().max(255),
+  cards: z.array(TrustSafetyCardSchema).max(20),
+});
+
 const FeaturedAccountsConfigSchema = z.object({
   title: z.string().max(255).optional().nullable(),
   subtitle: z.string().max(500).optional().nullable(),
@@ -812,6 +825,26 @@ export const saveHomeGamesFn = createServerFn({ method: "POST" })
     } finally {
       client.release();
     }
+  });
+
+export const getTrustSafetyFn = createServerFn({ method: "GET" }).handler(async () => {
+  const { queryPostgres } = await import("./pg-server");
+  const result = await queryPostgres("SELECT value FROM store_settings WHERE key = $1", [
+    "trust_safety_config",
+  ]);
+  return result.rows[0]?.value ?? null;
+});
+
+export const saveTrustSafetyFn = createServerFn({ method: "POST" })
+  .validator((data: unknown) => TrustSafetyDataSchema.parse(data))
+  .handler(async ({ data }) => {
+    const { queryPostgres } = await import("./pg-server");
+    await queryPostgres(
+      `INSERT INTO store_settings (key, value) VALUES ($1, $2)
+       ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value`,
+      ["trust_safety_config", JSON.stringify(data)],
+    );
+    return { success: true };
   });
 
 export const getFeaturedAccountsConfigFn = createServerFn({ method: "GET" }).handler(async () => {

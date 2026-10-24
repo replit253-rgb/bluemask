@@ -1,43 +1,28 @@
-import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
-import { useState, useEffect, useRef } from "react";
-import {
-  Upload,
-  Eye,
-  Save,
-  Monitor,
-  Tablet,
-  Smartphone,
-  ArrowLeft,
-  Check,
-  Layers,
-  HelpCircle,
-  Sparkles,
-  Gamepad2,
-} from "lucide-react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { ArrowLeft, Gamepad2, HelpCircle, ShieldCheck, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SiteFooter, SiteHeader } from "@/components/SiteChrome";
-import { ServiceCards } from "@/components/ServiceCards";
 import { AdminGameWorldsManager } from "@/components/AdminGameWorldsManager";
 import { AdminHomeGamesManager } from "@/components/AdminHomeGamesManager";
 import { AdminFeaturedAccountsManager } from "@/components/AdminFeaturedAccountsManager";
-import {
-  getPageFromDB,
-  savePageToDB,
-  uploadImageFile,
-  getFaqsFromDB,
-  saveFaqToDB,
-  deleteFaqFromDB,
-  type PageContent,
-  type FAQ,
-} from "@/lib/db";
+import { AdminTrustSafetyManager } from "@/components/AdminTrustSafetyManager";
+import { getFaqsFromDB, saveFaqToDB, deleteFaqFromDB, type FAQ } from "@/lib/db";
+
+type CmsTab =
+  | "featured_account_cards"
+  | "accounts_for_sale_worlds"
+  | "choose_your_game"
+  | "trust_safety"
+  | "faq";
 
 export const Route = createFileRoute("/admin/cms")({
   head: () => ({
     meta: [
-      { title: "CMS & Component Manager — RedMoon" },
+      { title: "Storefront Component Manager — RedMoon" },
       {
         name: "description",
-        content: "Manage the home page, shared game and account components, and FAQs.",
+        content: "Manage shared storefront components and FAQs.",
       },
     ],
   }),
@@ -46,16 +31,7 @@ export const Route = createFileRoute("/admin/cms")({
 
 function AdminCMSPage() {
   const navigate = useNavigate();
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
-
-  const [activeSlug, setActiveSlug] = useState<string>("home");
-  const [pageData, setPageData] = useState<PageContent | null>(null);
-  const [pageLoadError, setPageLoadError] = useState<string | null>(null);
-  const [isPageLoading, setIsPageLoading] = useState(true);
-
-  const [previewDevice, setPreviewDevice] = useState<"desktop" | "tablet" | "mobile">("desktop");
-  const [isUploading, setIsUploading] = useState(false);
-  const [savedNotice, setSavedNotice] = useState(false);
+  const [activeTab, setActiveTab] = useState<CmsTab>("featured_account_cards");
   const [faqs, setFaqs] = useState<FAQ[]>([]);
 
   const loadFaqs = () =>
@@ -68,585 +44,104 @@ function AdminCMSPage() {
       navigate({ to: "/admin/login" });
       return;
     }
-
-    if (activeSlug !== "home") {
-      setPageData(null);
-      setIsPageLoading(false);
-      if (activeSlug === "faq") void loadFaqs();
-      return;
-    }
-
-    let isCurrent = true;
-    setPageData(null);
-    setPageLoadError(null);
-    setIsPageLoading(true);
-    void getPageFromDB(activeSlug).then(
-      (data) => {
-        if (!isCurrent) return;
-        setPageData(data);
-        setIsPageLoading(false);
-      },
-      (error: unknown) => {
-        console.error("Failed to load CMS page from PostgreSQL:", error);
-        if (!isCurrent) return;
-        setPageData(null);
-        setPageLoadError("Unable to load page content from PostgreSQL.");
-        setIsPageLoading(false);
-      },
-    );
     void loadFaqs();
+  }, [navigate]);
 
-    return () => {
-      isCurrent = false;
-    };
-  }, [activeSlug, navigate]);
-
-  const handleDeviceImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    try {
-      setIsUploading(true);
-      const dataUrl = await uploadImageFile(file);
-      if (pageData) {
-        setPageData((prev) => (prev ? { ...prev, heroImage: dataUrl } : null));
-      }
-    } catch (err) {
-      console.warn("Upload error:", err);
-    } finally {
-      setIsUploading(false);
-    }
-  };
-
-  const handleSavePage = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!pageData) return;
-    const updated = { ...pageData, updatedAt: new Date().toISOString() };
-    try {
-      await savePageToDB(updated);
-      setSavedNotice(true);
-      setTimeout(() => setSavedNotice(false), 3000);
-      setPageLoadError(null);
-    } catch (error) {
-      console.error("Failed to save CMS page to PostgreSQL:", error);
-      setPageLoadError("Unable to save page content to PostgreSQL.");
-    }
-  };
-
-  const previewWidth =
-    previewDevice === "desktop" ? "100%" : previewDevice === "tablet" ? "768px" : "375px";
-
-  const getPageUrl = () => {
-    return "/";
-  };
+  const tabs: { id: CmsTab; label: string; icon: typeof Sparkles }[] = [
+    {
+      id: "featured_account_cards",
+      label: "Account for Sale Cards (Home)",
+      icon: Sparkles,
+    },
+    {
+      id: "accounts_for_sale_worlds",
+      label: "Account List (Accounts)",
+      icon: Sparkles,
+    },
+    {
+      id: "choose_your_game",
+      label: "Choose your Game",
+      icon: Gamepad2,
+    },
+    { id: "trust_safety", label: "Trust & Safety", icon: ShieldCheck },
+    { id: "faq", label: "FAQ Management", icon: HelpCircle },
+  ];
 
   return (
     <main className="bm min-h-screen bg-background text-foreground flex flex-col">
       <SiteHeader />
 
-      {/* Top Header */}
       <section className="border-b border-border/40 bg-card/50 py-6 px-4 md:px-8">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <div>
-            <div className="flex items-center gap-2 mb-2">
-              <Link
-                to="/admin"
-                className="text-sky-400 hover:text-sky-300 inline-flex items-center gap-1.5 text-xs font-semibold"
-              >
-                <ArrowLeft className="w-4 h-4" /> Back to Admin Panel
-              </Link>
-            </div>
-            <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight">
-              CMS Component & Page Manager
-            </h1>
-            <p className="text-sm text-muted-foreground mt-1">
-              Edit the home page content and shared storefront components. Inventory, top-ups, and
-              services are managed in the{" "}
-              <Link to="/admin" className="text-sky-400 hover:underline">
-                Admin Panel
-              </Link>
-              .
-            </p>
+        <div className="max-w-7xl mx-auto">
+          <div className="flex items-center gap-2 mb-2">
+            <Link
+              to="/admin"
+              className="text-sky-400 hover:text-sky-300 inline-flex items-center gap-1.5 text-xs font-semibold"
+            >
+              <ArrowLeft className="w-4 h-4" /> Back to Admin Panel
+            </Link>
           </div>
-
-          <div className="flex items-center gap-3">
-            {savedNotice && (
-              <span className="text-xs font-semibold text-emerald-400 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-950/50 border border-emerald-500/30">
-                <Check className="w-3.5 h-3.5" /> Published Successfully!
-              </span>
-            )}
-            {activeSlug === "home" && pageData && (
-              <Button
-                onClick={handleSavePage}
-                className="bg-sky-500 hover:bg-sky-600 text-sky-950 font-bold px-5 shadow-md"
-              >
-                <Save className="w-4 h-4 mr-2" /> Publish Home Page
-              </Button>
-            )}
-          </div>
+          <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight">
+            Storefront Component Manager
+          </h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            Manage shared storefront components and FAQs. Home page hero content is not managed
+            here.
+          </p>
         </div>
       </section>
 
-      {/* Page & Component Selector Tabs */}
       <section className="max-w-7xl w-full mx-auto px-4 md:px-8 py-6 flex-1">
         <div className="flex items-center gap-2 p-1.5 bg-secondary/40 rounded-xl border border-border/60 mb-6 overflow-x-auto shadow-sm">
-          {[
-            {
-              id: "featured_account_cards",
-              label: "Account for Sale Cards (Home)",
-              icon: Sparkles,
-            },
-            {
-              id: "accounts_for_sale_worlds",
-              label: "Explore Battlefields & Games (Accounts)",
-              icon: Sparkles,
-            },
-            {
-              id: "choose_your_game",
-              label: "Choose your Game (Home)",
-              icon: Gamepad2,
-            },
-            { id: "home", label: "Home Page", icon: Layers },
-            { id: "faq", label: "FAQ Management", icon: HelpCircle },
-          ].map((tab) => {
-            const IconComponent = tab.icon;
+          {tabs.map((tab) => {
+            const Icon = tab.icon;
             return (
               <button
                 key={tab.id}
-                onClick={() => {
-                  setPageData(null);
-                  setPageLoadError(null);
-                  setIsPageLoading(tab.id === "home");
-                  setActiveSlug(tab.id);
-                }}
+                type="button"
+                onClick={() => setActiveTab(tab.id)}
                 className={`px-4 py-2.5 text-xs font-semibold rounded-lg transition-all whitespace-nowrap inline-flex items-center gap-2 ${
-                  activeSlug === tab.id
+                  activeTab === tab.id
                     ? "bg-sky-600 text-white shadow"
                     : "text-muted-foreground hover:text-foreground hover:bg-secondary/60"
                 }`}
               >
-                <IconComponent className="w-4 h-4" /> {tab.label}
+                <Icon className="w-4 h-4" /> {tab.label}
               </button>
             );
           })}
         </div>
 
-        {/* Component / Page Views */}
-        {activeSlug === "featured_account_cards" ? (
+        {activeTab === "featured_account_cards" ? (
           <AdminFeaturedAccountsManager />
-        ) : activeSlug === "accounts_for_sale_worlds" ? (
+        ) : activeTab === "accounts_for_sale_worlds" ? (
           <AdminGameWorldsManager />
-        ) : activeSlug === "choose_your_game" ? (
+        ) : activeTab === "choose_your_game" ? (
           <AdminHomeGamesManager />
-        ) : activeSlug !== "faq" && isPageLoading ? (
-          <div className="rounded-xl border border-border/60 bg-card/60 p-6">
-            <p role="status" className="text-sm text-muted-foreground">
-              Loading home page content…
-            </p>
-          </div>
-        ) : activeSlug !== "faq" && !pageData ? (
-          <div className="rounded-xl border border-border/60 bg-card/60 p-6">
-            {pageLoadError ? (
-              <p role="alert" className="text-sm text-red-300">
-                {pageLoadError}
-              </p>
-            ) : (
-              <>
-                <p className="text-sm text-muted-foreground mb-4">
-                  No home page content exists in PostgreSQL.
-                </p>
-                <Button
-                  onClick={() =>
-                    setPageData({
-                      slug: "home",
-                      title: "Home",
-                      heroTitle: "",
-                      heroSubtitle: "",
-                      heroImage: "",
-                      updatedAt: new Date().toISOString(),
-                    })
-                  }
-                >
-                  Create home page content
-                </Button>
-              </>
-            )}
-          </div>
-        ) : activeSlug !== "faq" ? (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-            {/* Editor Panel (5 cols) */}
-            <div className="lg:col-span-6 bg-card border border-border/80 rounded-2xl p-6 shadow-xl">
-              <div className="flex items-center justify-between mb-6 pb-4 border-b border-border/40">
-                <div>
-                  <h2 className="text-lg font-bold capitalize">
-                    {activeSlug.replace("_", " ")} Page Components
-                  </h2>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    Modify component contents below. Changes appear instantly in preview.
-                  </p>
-                </div>
-                <span className="text-xs px-2.5 py-1 rounded bg-sky-950/60 text-sky-400 font-mono border border-sky-500/30">
-                  slug: {activeSlug}
-                </span>
-              </div>
-
-              <form onSubmit={handleSavePage} className="space-y-5">
-                {/* Meta Title */}
-                <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1.5">
-                    Browser Page Title
-                  </label>
-                  <input
-                    type="text"
-                    value={pageData.title || ""}
-                    onChange={(e) => setPageData({ ...pageData, title: e.target.value })}
-                    className="w-full bg-background border border-input rounded-lg px-3.5 py-2.5 text-sm text-foreground focus:ring-2 focus:ring-sky-500 outline-none"
-                  />
-                </div>
-
-                {/* Hero Title */}
-                <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1.5">
-                    Hero Headline Title Component
-                  </label>
-                  <input
-                    type="text"
-                    value={pageData.heroTitle || ""}
-                    onChange={(e) => setPageData({ ...pageData, heroTitle: e.target.value })}
-                    className="w-full bg-background border border-input rounded-lg px-3.5 py-2.5 text-sm text-foreground focus:ring-2 focus:ring-sky-500 outline-none font-semibold"
-                  />
-                </div>
-
-                {/* Hero Subtitle */}
-                <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1.5">
-                    Hero Subtitle / Description
-                  </label>
-                  <textarea
-                    rows={3}
-                    value={pageData.heroSubtitle || ""}
-                    onChange={(e) => setPageData({ ...pageData, heroSubtitle: e.target.value })}
-                    className="w-full bg-background border border-input rounded-lg px-3.5 py-2.5 text-sm text-foreground focus:ring-2 focus:ring-sky-500 outline-none resize-vertical"
-                  />
-                </div>
-
-                {/* Lead Text */}
-                <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1.5">
-                    Optional Hero Supporting Text
-                  </label>
-                  <textarea
-                    rows={2}
-                    value={pageData.leadText || ""}
-                    onChange={(e) => setPageData({ ...pageData, leadText: e.target.value })}
-                    className="w-full bg-background border border-input rounded-lg px-3.5 py-2.5 text-sm text-foreground focus:ring-2 focus:ring-sky-500 outline-none resize-vertical"
-                  />
-                </div>
-
-                {/* Section Headings */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1.5">
-                      Services Section Heading
-                    </label>
-                    <input
-                      type="text"
-                      value={pageData.sectionTitle || ""}
-                      onChange={(e) => setPageData({ ...pageData, sectionTitle: e.target.value })}
-                      className="w-full bg-background border border-input rounded-lg px-3.5 py-2.5 text-sm text-foreground focus:ring-2 focus:ring-sky-500 outline-none"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1.5">
-                      Services Section Subtitle
-                    </label>
-                    <input
-                      type="text"
-                      value={pageData.sectionSubtitle || ""}
-                      onChange={(e) =>
-                        setPageData({ ...pageData, sectionSubtitle: e.target.value })
-                      }
-                      className="w-full bg-background border border-input rounded-lg px-3.5 py-2.5 text-sm text-foreground focus:ring-2 focus:ring-sky-500 outline-none"
-                    />
-                  </div>
-                </div>
-
-                {/* Hero Image Upload */}
-                <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1.5">
-                    Hero / Banner Image
-                  </label>
-                  <div className="flex items-center gap-3">
-                    <input
-                      type="text"
-                      value={pageData.heroImage || ""}
-                      onChange={(e) => setPageData({ ...pageData, heroImage: e.target.value })}
-                      className="flex-1 bg-background border border-input rounded-lg px-3.5 py-2 text-xs text-foreground font-mono"
-                    />
-                    <input
-                      type="file"
-                      ref={fileInputRef}
-                      onChange={handleDeviceImageUpload}
-                      accept="image/*"
-                      className="hidden"
-                    />
-                    <Button
-                      type="button"
-                      onClick={() => fileInputRef.current?.click()}
-                      variant="outline"
-                      disabled={isUploading}
-                      className="shrink-0"
-                    >
-                      <Upload className="w-4 h-4 mr-1.5" />
-                      {isUploading ? "Uploading..." : "Upload"}
-                    </Button>
-                  </div>
-                  {pageData.heroImage && (
-                    <div className="mt-3 h-28 rounded-lg overflow-hidden border border-border/50 relative">
-                      <img
-                        src={pageData.heroImage}
-                        alt="Preview"
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                  )}
-                </div>
-
-                {/* Hero Image Mobile */}
-                {activeSlug === "home" && (
-                  <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1.5">
-                      Hero Image (Mobile Screens &lt;= 768px)
-                    </label>
-                    <div className="flex items-center gap-3">
-                      <input
-                        type="text"
-                        value={pageData.heroImageMobile || ""}
-                        onChange={(e) =>
-                          setPageData({ ...pageData, heroImageMobile: e.target.value })
-                        }
-                        placeholder="/bg-hero-mobile.png"
-                        className="flex-1 bg-background border border-input rounded-lg px-3.5 py-2 text-xs text-foreground font-mono"
-                      />
-                    </div>
-                    {pageData.heroImageMobile && (
-                      <div className="mt-3 h-28 rounded-lg overflow-hidden border border-border/50 relative">
-                        <img
-                          src={pageData.heroImageMobile}
-                          alt="Mobile Hero Preview"
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* CTA Buttons */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1.5">
-                      Primary Button Text
-                    </label>
-                    <input
-                      type="text"
-                      value={pageData.buttonText || ""}
-                      onChange={(e) => setPageData({ ...pageData, buttonText: e.target.value })}
-                      className="w-full bg-background border border-input rounded-lg px-3.5 py-2 text-sm text-foreground"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1.5">
-                      Secondary Button Text
-                    </label>
-                    <input
-                      type="text"
-                      value={pageData.secondaryButtonText || ""}
-                      onChange={(e) =>
-                        setPageData({ ...pageData, secondaryButtonText: e.target.value })
-                      }
-                      className="w-full bg-background border border-input rounded-lg px-3.5 py-2 text-sm text-foreground"
-                    />
-                  </div>
-                </div>
-
-                <div className="pt-4 border-t border-border/40">
-                  <Button
-                    type="submit"
-                    className="w-full bg-sky-600 hover:bg-sky-700 text-white font-bold py-3 shadow-lg"
-                  >
-                    <Save className="w-4 h-4 mr-2" /> Save & Publish Component Updates
-                  </Button>
-                </div>
-              </form>
-            </div>
-
-            {/* Live Preview Panel (6 cols) */}
-            <div className="lg:col-span-6 sticky top-24 bg-card border border-border/80 rounded-2xl p-6 shadow-xl">
-              <div className="flex items-center justify-between mb-4 pb-3 border-b border-border/45">
-                <div className="flex items-center gap-2">
-                  <Eye className="w-5 h-5 text-sky-400" />
-                  <h3 className="font-bold text-base">Real-Time Live Preview</h3>
-                </div>
-
-                <div className="flex items-center gap-2 bg-background p-1 rounded-lg border border-border/60">
-                  <button
-                    onClick={() => setPreviewDevice("desktop")}
-                    className={`p-1.5 rounded ${previewDevice === "desktop" ? "bg-sky-600 text-white" : "text-muted-foreground hover:text-foreground"}`}
-                    title="Desktop view"
-                  >
-                    <Monitor className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => setPreviewDevice("tablet")}
-                    className={`p-1.5 rounded ${previewDevice === "tablet" ? "bg-sky-600 text-white" : "text-muted-foreground hover:text-foreground"}`}
-                    title="Tablet view"
-                  >
-                    <Tablet className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => setPreviewDevice("mobile")}
-                    className={`p-1.5 rounded ${previewDevice === "mobile" ? "bg-sky-600 text-white" : "text-muted-foreground hover:text-foreground"}`}
-                    title="Mobile view"
-                  >
-                    <Smartphone className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between text-xs text-muted-foreground mb-3 px-1">
-                <span>
-                  Target Route: <strong className="text-foreground">{getPageUrl()}</strong>
-                </span>
-                <a
-                  href={getPageUrl()}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-sky-400 hover:underline inline-flex items-center gap-1"
-                >
-                  Open in New Tab <ArrowLeft className="w-3 h-3 rotate-180" />
-                </a>
-              </div>
-
-              {/* Preview Frame Container */}
-              <div className="flex justify-center bg-background/85 rounded-xl border border-border/60 p-4 overflow-hidden shadow-inner">
-                <div
-                  style={{ width: previewWidth, transition: "width 0.3s ease" }}
-                  className="bg-card rounded-lg border border-border/80 shadow-2xl overflow-hidden flex flex-col h-[620px]"
-                >
-                  <div className="bg-secondary/85 px-4 py-2 border-b border-border/60 flex items-center justify-between text-xs text-muted-foreground">
-                    <div className="flex items-center gap-1.5">
-                      <span className="w-2.5 h-2.5 rounded-full bg-rose-500/80 inline-block"></span>
-                      <span className="w-2.5 h-2.5 rounded-full bg-amber-500/80 inline-block"></span>
-                      <span className="w-2.5 h-2.5 rounded-full bg-emerald-500/80 inline-block"></span>
-                    </div>
-                    <span className="font-mono text-[11px]">{getPageUrl()}</span>
-                    <span className="text-[10px] text-sky-400 font-medium">LIVE HERO PREVIEW</span>
-                  </div>
-
-                  <div className="flex-1 overflow-y-auto bg-background">
-                    <SiteHeader />
-                    <section className="bm-hero min-h-0 h-[470px] px-6 py-8">
-                      <img
-                        className="bm-hero-image"
-                        src={
-                          previewDevice !== "desktop"
-                            ? pageData.heroImageMobile || "/bg-hero-mobile.png"
-                            : pageData.heroImage &&
-                                !pageData.heroImage.includes("bg_fe70fe49.jpg") &&
-                                pageData.heroImage !== "/bg-mobile.jpeg"
-                              ? pageData.heroImage
-                              : "/bg-hero-deskrop.png"
-                        }
-                        alt=""
-                      />
-                      <div className="bm-hero-content max-w-[620px]">
-                        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-red-950/80 border border-red-500/40 text-red-300 text-xs font-semibold mb-4 tracking-wide">
-                          TRUSTED GAMING ACCOUNT MARKETPLACE
-                        </div>
-                        <h1 className="bm-hero-title text-3xl">
-                          {pageData.heroTitle || "RedMoon"}
-                        </h1>
-                        <div className="flex items-center gap-3 mb-4 p-2 px-3 bg-card/90 border border-border/80 rounded-xl shadow-lg backdrop-blur-md w-fit text-xs">
-                          <span className="text-amber-400">★★★★★</span>
-                          <span className="font-bold">4.9</span>
-                          <span className="text-muted-foreground border-l border-border pl-3">
-                            340++ reviews
-                          </span>
-                        </div>
-                        <p className="bm-lead">
-                          {pageData.heroSubtitle ||
-                            "Verified strategy game accounts, secure middleman escrow, and direct top-ups for competitive players."}
-                        </p>
-                        {pageData.leadText && (
-                          <p className="text-xs text-sky-300 font-medium mt-3">
-                            {pageData.leadText}
-                          </p>
-                        )}
-                        <div className="bm-hero-actions mt-5">
-                          <span className="bm-btn bm-btn-primary">
-                            {pageData.buttonText || "Explore Accounts"}
-                          </span>
-                          <span className="bm-btn bm-btn-outline">
-                            {pageData.secondaryButtonText || "Middleman & Services"}
-                          </span>
-                        </div>
-                        <div className="bm-trust-ribbon">
-                          <span>Middleman Service</span>
-                          <span aria-hidden="true">·</span>
-                          <span>Instant Discord Delivery</span>
-                          <span aria-hidden="true">·</span>
-                          <span>100% Verified Credentials</span>
-                        </div>
-                      </div>
-                    </section>
-                    <section className="bm-section--full bm-section-services">
-                      <div className="bm-section-head">
-                        <div>
-                          <span className="text-xs font-semibold tracking-wider text-red-500 uppercase">
-                            Core Services
-                          </span>
-                          <h2 className="text-2xl md:text-3xl font-bold mt-1">
-                            {pageData.sectionTitle || "Middleman & Trading Services"}
-                          </h2>
-                          {pageData.sectionSubtitle && (
-                            <p className="text-sm text-muted-foreground mt-2">
-                              {pageData.sectionSubtitle}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                      <ServiceCards />
-                    </section>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+        ) : activeTab === "trust_safety" ? (
+          <AdminTrustSafetyManager />
         ) : (
-          /* FAQ Management Tab */
           <div className="bg-card border border-border/80 rounded-2xl p-6 shadow-xl max-w-4xl mx-auto">
-            <div className="flex items-center justify-between mb-6 pb-4 border-b border-border/40">
-              <div>
-                <h2 className="text-xl font-bold">FAQ Component Management</h2>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  Add, edit, or remove frequently asked questions displayed across public pages.
-                </p>
-              </div>
+            <div className="mb-6 pb-4 border-b border-border/40">
+              <h2 className="text-xl font-bold">FAQ Component Management</h2>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Add, edit, or remove frequently asked questions displayed across public pages.
+              </p>
             </div>
 
             <div className="space-y-4 mb-8">
-              {faqs.map((f) => (
+              {faqs.map((faq) => (
                 <div
-                  key={f.id}
+                  key={faq.id}
                   className="flex items-start justify-between gap-4 p-4 bg-secondary/30 rounded-xl border border-border/60"
                 >
                   <div className="space-y-1">
-                    <h4 className="font-semibold text-sm text-foreground">{f.question}</h4>
-                    <p className="text-xs text-muted-foreground leading-relaxed">{f.answer}</p>
+                    <h4 className="font-semibold text-sm text-foreground">{faq.question}</h4>
+                    <p className="text-xs text-muted-foreground leading-relaxed">{faq.answer}</p>
                   </div>
                   <Button
                     onClick={() => {
-                      void deleteFaqFromDB(f.id).then(loadFaqs, (error: unknown) => {
+                      void deleteFaqFromDB(faq.id).then(loadFaqs, (error: unknown) => {
                         console.error("Failed to delete FAQ from PostgreSQL:", error);
                       });
                     }}
@@ -663,16 +158,17 @@ function AdminCMSPage() {
             <div className="bg-secondary/20 border border-border/80 rounded-xl p-6">
               <h3 className="font-bold text-sm mb-4">Add New FAQ Question</h3>
               <form
-                onSubmit={async (e) => {
-                  e.preventDefault();
-                  const formData = new FormData(e.currentTarget);
+                onSubmit={async (event) => {
+                  event.preventDefault();
+                  const form = event.currentTarget;
+                  const formData = new FormData(form);
                   try {
                     await saveFaqToDB({
                       id: Date.now().toString(),
                       question: String(formData.get("q") || ""),
                       answer: String(formData.get("a") || ""),
                     });
-                    e.currentTarget.reset();
+                    form.reset();
                     await loadFaqs();
                   } catch (error) {
                     console.error("Failed to save FAQ to PostgreSQL:", error);

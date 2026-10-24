@@ -148,6 +148,8 @@ export function AdminDashboardPage() {
   const [topUpDiscountPercent, setTopUpDiscountPercent] = useState(10);
   const [selectedTopUpCodes, setSelectedTopUpCodes] = useState<Set<string>>(new Set());
   const [isSavingTopUpDiscount, setIsSavingTopUpDiscount] = useState(false);
+  const [topUpDiamondDrafts, setTopUpDiamondDrafts] = useState<Record<string, string>>({});
+  const [savingTopUpDiamondsCode, setSavingTopUpDiamondsCode] = useState<string | null>(null);
 
   // Account Modals State
   const [isAddingProduct, setIsAddingProduct] = useState(false);
@@ -813,6 +815,45 @@ export function AdminDashboardPage() {
     setTopups(topups.map((t) => (t.code === sanitized.code ? sanitized : t)));
     setEditingTopUp(null);
     showNotification(`Top-up pack ${sanitized.code} updated in database.`);
+  };
+
+  const handleSaveTopUpDiamonds = async (code: string) => {
+    const draft = topUpDiamondDrafts[code];
+    if (draft === undefined) return;
+
+    const diamonds = draft.trim() === "" ? undefined : Number(draft);
+    if (diamonds !== undefined && (!Number.isInteger(diamonds) || diamonds < 0)) {
+      showNotification("Enter a whole number of diamonds greater than or equal to zero.");
+      return;
+    }
+
+    const topUp = topups.find((item) => item.code === code);
+    if (!topUp) {
+      showNotification(`Top-up package ${code} could not be found.`);
+      return;
+    }
+
+    setSavingTopUpDiamondsCode(code);
+    try {
+      const updated = { ...topUp, diamonds };
+      await saveTopUpToDB(updated);
+      setTopups((current) =>
+        current.map((item) => (item.code === code ? updated : item)),
+      );
+      setTopUpDiamondDrafts((current) => {
+        const next = { ...current };
+        delete next[code];
+        return next;
+      });
+      showNotification(`Diamond amount for ${code} saved.`);
+    } catch (error) {
+      console.error(`Failed to save diamond amount for top-up ${code}:`, error);
+      showNotification(
+        `Unable to save diamond amount for ${code}. Check the database connection.`,
+      );
+    } finally {
+      setSavingTopUpDiamondsCode(null);
+    }
   };
 
   const executeDeleteTopUp = async (code: string) => {
@@ -3466,10 +3507,44 @@ export function AdminDashboardPage() {
                                 {t.category || "Pack ID Top Up"}
                               </span>
                             </td>
-                            <td className="p-3.5 text-xs font-semibold tabular-nums text-foreground whitespace-nowrap">
-                              {typeof t.diamonds === "number" && t.diamonds > 0
-                                ? t.diamonds.toLocaleString()
-                                : "—"}
+                            <td className="p-3.5 whitespace-nowrap">
+                              <div className="flex items-center gap-2">
+                                <input
+                                  type="number"
+                                  min={0}
+                                  step={1}
+                                  aria-label={`Diamonds received for ${t.code}`}
+                                  value={
+                                    topUpDiamondDrafts[t.code] ??
+                                    (typeof t.diamonds === "number" ? String(t.diamonds) : "")
+                                  }
+                                  onChange={(e) =>
+                                    setTopUpDiamondDrafts((current) => ({
+                                      ...current,
+                                      [t.code]: e.target.value,
+                                    }))
+                                  }
+                                  placeholder="—"
+                                  className="w-24 bg-secondary/30 border border-border rounded-lg px-2 py-1.5 text-xs tabular-nums"
+                                />
+                                <Button
+                                  type="button"
+                                  onClick={() => handleSaveTopUpDiamonds(t.code)}
+                                  disabled={
+                                    topUpDiamondDrafts[t.code] === undefined ||
+                                    (topUpDiamondDrafts[t.code] === "" &&
+                                      t.diamonds === undefined) ||
+                                    (topUpDiamondDrafts[t.code] !== "" &&
+                                      Number(topUpDiamondDrafts[t.code]) === t.diamonds) ||
+                                    savingTopUpDiamondsCode === t.code
+                                  }
+                                  variant="outline"
+                                  size="sm"
+                                  className="h-8 px-2 text-xs"
+                                >
+                                  {savingTopUpDiamondsCode === t.code ? "Saving…" : "Save"}
+                                </Button>
+                              </div>
                             </td>
                             <td className="p-3.5 text-xs font-semibold tabular-nums text-foreground whitespace-nowrap">
                               {t.hasDiscount && t.discountPercent ? (

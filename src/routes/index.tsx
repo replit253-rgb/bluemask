@@ -3,25 +3,24 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowUpRight, Check, Lock, ShieldCheck, Zap, Clock, Tag, Award } from "lucide-react";
 import { games, type Testimonial } from "@/lib/catalog";
 import type { FAQ } from "@/lib/db";
-import { getFaqsFromDB, getPageFromDB, getTestimonialsFromDB } from "@/lib/db";
+import { getFaqsFromDB, getTestimonialsFromDB } from "@/lib/db";
 import { SiteFooter, SiteHeader } from "@/components/SiteChrome";
 import { HomeTestimonials } from "@/components/Testimonials";
 import { ServiceCards } from "@/components/ServiceCards";
 import { HomeGamesShowcase } from "@/components/HomeGamesShowcase";
 import { FeaturedAccountsShowcase } from "@/components/FeaturedAccountsShowcase";
+import { TrustSafetySection } from "@/components/TrustSafetySection";
 import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/")({
   loader: async () => {
-    const [testimonialsResult, faqsResult, pageContentResult] = await Promise.allSettled([
+    const [testimonialsResult, faqsResult] = await Promise.allSettled([
       getTestimonialsFromDB(),
       getFaqsFromDB(),
-      getPageFromDB("home"),
     ]);
     const testimonials: Testimonial[] =
       testimonialsResult.status === "fulfilled" ? testimonialsResult.value : [];
     const faqs: FAQ[] = faqsResult.status === "fulfilled" ? faqsResult.value : [];
-    const pageContent = pageContentResult.status === "fulfilled" ? pageContentResult.value : null;
 
     if (testimonialsResult.status === "rejected") {
       console.error(
@@ -32,22 +31,15 @@ export const Route = createFileRoute("/")({
     if (faqsResult.status === "rejected") {
       console.error("Failed to load homepage FAQs from PostgreSQL:", faqsResult.reason);
     }
-    if (pageContentResult.status === "rejected") {
-      console.error("Failed to load homepage content from PostgreSQL:", pageContentResult.reason);
-    }
-
     return {
       testimonials,
       testimonialLoadError: testimonialsResult.status === "rejected",
       faqs,
       faqLoadError: faqsResult.status === "rejected",
-      pageContent,
-      pageLoadError: pageContentResult.status === "rejected",
     };
   },
-  head: ({ loaderData }) => {
-    const title =
-      loaderData?.pageContent?.title || "RedMoon — Game Accounts, Middleman & Top Up Terpercaya";
+  head: () => {
+    const title = "RedMoon — Game Accounts, Middleman & Top Up Terpercaya";
     return {
       meta: [
         { title },
@@ -84,35 +76,19 @@ export const Route = createFileRoute("/")({
 });
 
 function Index() {
-  const { testimonials, testimonialLoadError, faqs, faqLoadError, pageContent, pageLoadError } =
-    Route.useLoaderData();
+  const { testimonials, testimonialLoadError, faqs, faqLoadError } = Route.useLoaderData();
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   return (
     <main className="bm">
       <SiteHeader />
-      {pageLoadError && (
-        <p role="alert" className="mx-auto max-w-7xl px-4 py-2 text-xs text-rose-300">
-          Home page content could not be loaded. Showing default storefront content.
-        </p>
-      )}
-
       {/* Hero Section */}
       <section className="bm-hero">
         <picture>
-          <source
-            media="(max-width: 768px)"
-            srcSet={pageContent?.heroImageMobile || "/bg-hero-mobile.png"}
-          />
+          <source media="(max-width: 768px)" srcSet="/bg-hero-mobile.png" />
           <img
             className="bm-hero-image"
-            src={
-              pageContent?.heroImage &&
-              !pageContent.heroImage.includes("bg_fe70fe49.jpg") &&
-              pageContent.heroImage !== "/bg-mobile.jpeg"
-                ? pageContent.heroImage
-                : "/bg-hero-deskrop.png"
-            }
+            src="/bg-hero-deskrop.png"
             alt="RedMoon"
             fetchPriority="high"
           />
@@ -122,13 +98,10 @@ function Index() {
             TRUSTED GAMING ACCOUNT MARKETPLACE
           </div>
           <h1 className="bm-hero-title">
-            {pageContent?.heroTitle && !pageContent.heroTitle.includes("BlueMask") ? (
-              pageContent.heroTitle
-            ) : (
-              <>
-                Red<span className="text-red-500">Moon</span> Gaming Shop
-              </>
-            )}
+            <span className="whitespace-nowrap">
+              Red<span className="text-red-500">Moon</span>
+            </span>{" "}
+            Gaming Shop
           </h1>
 
           {/* Social Proof / Rating Card in Hero */}
@@ -155,25 +128,19 @@ function Index() {
           </div>
 
           <p className="bm-lead">
-            {pageContent?.heroSubtitle
-              ? pageContent.heroSubtitle
-              : "Verified strategy game accounts, secure middleman escrow, and direct top-ups for competitive players."}
+            Verified strategy game accounts, secure middleman escrow, and direct top-ups for
+            competitive players.
           </p>
-          {pageContent?.leadText && (
-            <p className="text-sm text-sky-200 mb-6">{pageContent.leadText}</p>
-          )}
 
           <div className="bm-hero-actions">
             <Button asChild className="bm-btn bm-btn-primary">
               <Link to="/accounts" search={{}}>
-                {pageContent?.buttonText || "Explore Accounts"}{" "}
-                <ArrowUpRight className="w-4 h-4 ml-1" />
+                Explore Accounts <ArrowUpRight className="w-4 h-4 ml-1" />
               </Link>
             </Button>
             <Button asChild variant="outline" className="bm-btn bm-btn-outline">
               <Link to="/services">
-                {pageContent?.secondaryButtonText || "Middleman & Services"}{" "}
-                <ArrowUpRight className="w-4 h-4 ml-1" />
+                Middleman & Services <ArrowUpRight className="w-4 h-4 ml-1" />
               </Link>
             </Button>
           </div>
@@ -244,12 +211,7 @@ function Index() {
             <span className="text-xs font-semibold tracking-wider text-red-500 uppercase">
               Core Services
             </span>
-            <h2 className="text-2xl md:text-3xl font-bold mt-1">
-              {pageContent?.sectionTitle || "Middleman & Trading Services"}
-            </h2>
-            {pageContent?.sectionSubtitle && (
-              <p className="text-sm text-muted-foreground mt-2">{pageContent.sectionSubtitle}</p>
-            )}
+            <h2 className="text-2xl md:text-3xl font-bold mt-1">Middleman & Trading Services</h2>
           </div>
           <Link to="/services" className="bm-text-link">
             All services <ArrowUpRight />
@@ -264,51 +226,7 @@ function Index() {
       {/* Game Catalog Section (Dynamic & Live Synced with Admin) */}
       <HomeGamesShowcase />
 
-      {/* Security Pillars Section */}
-      <section className="bm-section--full bg-secondary/20">
-        <div className="bm-section-head mb-8">
-          <div>
-            <span className="text-xs font-semibold tracking-wider text-red-500 uppercase">
-              Trust & Safety
-            </span>
-            <h2 className="text-2xl md:text-3xl font-bold mt-1">Why Players Trade with RedMoon</h2>
-          </div>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="p-6 rounded-xl border border-border/60 bg-card/60 backdrop-blur-sm">
-            <div className="w-10 h-10 rounded-lg bg-red-950/60 border border-red-800/40 flex items-center justify-center text-red-500 mb-4">
-              <ShieldCheck className="w-5 h-5" />
-            </div>
-            <h3 className="font-semibold text-lg text-foreground mb-2">Middleman Service</h3>
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              We hold the account credentials and payment until both buyer and seller verify full
-              delivery. No unauthorized releases.
-            </p>
-          </div>
-
-          <div className="p-6 rounded-xl border border-border/60 bg-card/60 backdrop-blur-sm">
-            <div className="w-10 h-10 rounded-lg bg-emerald-950/60 border border-emerald-800/40 flex items-center justify-center text-emerald-400 mb-4">
-              <Lock className="w-5 h-5" />
-            </div>
-            <h3 className="font-semibold text-lg text-foreground mb-2">Verified Ownership</h3>
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              Every listed account undergoes credential inspection, binding email checks, and VIP
-              status verification before listing.
-            </p>
-          </div>
-
-          <div className="p-6 rounded-xl border border-border/60 bg-card/60 backdrop-blur-sm">
-            <div className="w-10 h-10 rounded-lg bg-amber-950/60 border border-amber-800/40 flex items-center justify-center text-amber-400 mb-4">
-              <Zap className="w-5 h-5" />
-            </div>
-            <h3 className="font-semibold text-lg text-foreground mb-2">Direct Discord Concierge</h3>
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              Live human coordination on Discord. Fast turnarounds on Whiteout Survival, Kingshot,
-              and strategy game transfers.
-            </p>
-          </div>
-        </div>
-      </section>
+      <TrustSafetySection />
 
       {/* Testimonials Section */}
       <section className="bm-section--full">
