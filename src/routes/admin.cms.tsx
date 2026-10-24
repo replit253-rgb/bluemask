@@ -1,7 +1,6 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useState, useEffect, useRef } from "react";
 import {
-  Shield,
   Upload,
   Eye,
   Save,
@@ -10,17 +9,14 @@ import {
   Smartphone,
   ArrowLeft,
   Check,
-  RefreshCw,
-  Image as ImageIcon,
   Layers,
-  FileText,
   HelpCircle,
-  Globe,
   Sparkles,
   Gamepad2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SiteFooter, SiteHeader } from "@/components/SiteChrome";
+import { ServiceCards } from "@/components/ServiceCards";
 import { AdminGameWorldsManager } from "@/components/AdminGameWorldsManager";
 import { AdminHomeGamesManager } from "@/components/AdminHomeGamesManager";
 import { AdminFeaturedAccountsManager } from "@/components/AdminFeaturedAccountsManager";
@@ -39,7 +35,10 @@ export const Route = createFileRoute("/admin/cms")({
   head: () => ({
     meta: [
       { title: "CMS & Component Manager — RedMoon" },
-      { name: "description", content: "Granular per-component CMS and real-time live preview." },
+      {
+        name: "description",
+        content: "Manage the home page, shared game and account components, and FAQs.",
+      },
     ],
   }),
   component: AdminCMSPage,
@@ -52,6 +51,7 @@ function AdminCMSPage() {
   const [activeSlug, setActiveSlug] = useState<string>("home");
   const [pageData, setPageData] = useState<PageContent | null>(null);
   const [pageLoadError, setPageLoadError] = useState<string | null>(null);
+  const [isPageLoading, setIsPageLoading] = useState(true);
 
   const [previewDevice, setPreviewDevice] = useState<"desktop" | "tablet" | "mobile">("desktop");
   const [isUploading, setIsUploading] = useState(false);
@@ -69,15 +69,36 @@ function AdminCMSPage() {
       return;
     }
 
+    if (activeSlug !== "home") {
+      setPageData(null);
+      setIsPageLoading(false);
+      if (activeSlug === "faq") void loadFaqs();
+      return;
+    }
+
+    let isCurrent = true;
+    setPageData(null);
     setPageLoadError(null);
+    setIsPageLoading(true);
     void getPageFromDB(activeSlug).then(
-      (data) => setPageData(data),
+      (data) => {
+        if (!isCurrent) return;
+        setPageData(data);
+        setIsPageLoading(false);
+      },
       (error: unknown) => {
         console.error("Failed to load CMS page from PostgreSQL:", error);
+        if (!isCurrent) return;
+        setPageData(null);
         setPageLoadError("Unable to load page content from PostgreSQL.");
+        setIsPageLoading(false);
       },
     );
     void loadFaqs();
+
+    return () => {
+      isCurrent = false;
+    };
   }, [activeSlug, navigate]);
 
   const handleDeviceImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -116,9 +137,7 @@ function AdminCMSPage() {
     previewDevice === "desktop" ? "100%" : previewDevice === "tablet" ? "768px" : "375px";
 
   const getPageUrl = () => {
-    if (activeSlug === "home") return "/";
-    if (activeSlug === "global_chrome") return "/";
-    return `/${activeSlug}`;
+    return "/";
   };
 
   return (
@@ -141,8 +160,12 @@ function AdminCMSPage() {
               CMS Component & Page Manager
             </h1>
             <p className="text-sm text-muted-foreground mt-1">
-              Edit every component, headline, image, and text block per page with instant live
-              preview.
+              Edit the home page content and shared storefront components. Inventory, top-ups, and
+              services are managed in the{" "}
+              <Link to="/admin" className="text-sky-400 hover:underline">
+                Admin Panel
+              </Link>
+              .
             </p>
           </div>
 
@@ -152,12 +175,14 @@ function AdminCMSPage() {
                 <Check className="w-3.5 h-3.5" /> Published Successfully!
               </span>
             )}
-            <Button
-              onClick={handleSavePage}
-              className="bg-sky-500 hover:bg-sky-600 text-sky-950 font-bold px-5 shadow-md"
-            >
-              <Save className="w-4 h-4 mr-2" /> Publish All Changes
-            </Button>
+            {activeSlug === "home" && pageData && (
+              <Button
+                onClick={handleSavePage}
+                className="bg-sky-500 hover:bg-sky-600 text-sky-950 font-bold px-5 shadow-md"
+              >
+                <Save className="w-4 h-4 mr-2" /> Publish Home Page
+              </Button>
+            )}
           </div>
         </div>
       </section>
@@ -181,19 +206,19 @@ function AdminCMSPage() {
               label: "Choose your Game (Home)",
               icon: Gamepad2,
             },
-            { id: "home", label: "Home Page (/)Components", icon: Layers },
-            { id: "accounts", label: "Accounts Catalog", icon: FileText },
-            { id: "games", label: "Top Up & Games", icon: Layers },
-            { id: "services", label: "Services & Escrow", icon: Layers },
-            { id: "contact", label: "Support & Contact", icon: FileText },
-            { id: "global_chrome", label: "Global Header & Footer", icon: Globe },
+            { id: "home", label: "Home Page", icon: Layers },
             { id: "faq", label: "FAQ Management", icon: HelpCircle },
           ].map((tab) => {
             const IconComponent = tab.icon;
             return (
               <button
                 key={tab.id}
-                onClick={() => setActiveSlug(tab.id)}
+                onClick={() => {
+                  setPageData(null);
+                  setPageLoadError(null);
+                  setIsPageLoading(tab.id === "home");
+                  setActiveSlug(tab.id);
+                }}
                 className={`px-4 py-2.5 text-xs font-semibold rounded-lg transition-all whitespace-nowrap inline-flex items-center gap-2 ${
                   activeSlug === tab.id
                     ? "bg-sky-600 text-white shadow"
@@ -213,6 +238,12 @@ function AdminCMSPage() {
           <AdminGameWorldsManager />
         ) : activeSlug === "choose_your_game" ? (
           <AdminHomeGamesManager />
+        ) : activeSlug !== "faq" && isPageLoading ? (
+          <div className="rounded-xl border border-border/60 bg-card/60 p-6">
+            <p role="status" className="text-sm text-muted-foreground">
+              Loading home page content…
+            </p>
+          </div>
         ) : activeSlug !== "faq" && !pageData ? (
           <div className="rounded-xl border border-border/60 bg-card/60 p-6">
             {pageLoadError ? (
@@ -222,13 +253,13 @@ function AdminCMSPage() {
             ) : (
               <>
                 <p className="text-sm text-muted-foreground mb-4">
-                  No page content exists in PostgreSQL for “{activeSlug}”.
+                  No home page content exists in PostgreSQL.
                 </p>
                 <Button
                   onClick={() =>
                     setPageData({
-                      slug: activeSlug,
-                      title: "",
+                      slug: "home",
+                      title: "Home",
                       heroTitle: "",
                       heroSubtitle: "",
                       heroImage: "",
@@ -236,7 +267,7 @@ function AdminCMSPage() {
                     })
                   }
                 >
-                  Create empty page
+                  Create home page content
                 </Button>
               </>
             )}
@@ -302,7 +333,7 @@ function AdminCMSPage() {
                 {/* Lead Text */}
                 <div>
                   <label className="block text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1.5">
-                    Lead Paragraph / Notice Component
+                    Optional Hero Supporting Text
                   </label>
                   <textarea
                     rows={2}
@@ -312,25 +343,11 @@ function AdminCMSPage() {
                   />
                 </div>
 
-                {/* Announcement Banner Text */}
-                <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1.5">
-                    Announcement Banner Text (Global or Page)
-                  </label>
-                  <input
-                    type="text"
-                    value={pageData.announcement || ""}
-                    onChange={(e) => setPageData({ ...pageData, announcement: e.target.value })}
-                    placeholder="e.g. Flash Sale: 20% discount on all accounts!"
-                    className="w-full bg-background border border-input rounded-lg px-3.5 py-2.5 text-sm text-foreground focus:ring-2 focus:ring-sky-500 outline-none"
-                  />
-                </div>
-
                 {/* Section Headings */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1.5">
-                      Section Heading
+                      Services Section Heading
                     </label>
                     <input
                       type="text"
@@ -341,7 +358,7 @@ function AdminCMSPage() {
                   </div>
                   <div>
                     <label className="block text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1.5">
-                      Section Subtitle
+                      Services Section Subtitle
                     </label>
                     <input
                       type="text"
@@ -523,71 +540,83 @@ function AdminCMSPage() {
                       <span className="w-2.5 h-2.5 rounded-full bg-emerald-500/80 inline-block"></span>
                     </div>
                     <span className="font-mono text-[11px]">{getPageUrl()}</span>
-                    <span className="text-[10px] text-sky-400 font-medium">LIVE PREVIEW</span>
+                    <span className="text-[10px] text-sky-400 font-medium">LIVE HERO PREVIEW</span>
                   </div>
 
-                  <div className="flex-1 overflow-y-auto bg-background p-6 space-y-6">
-                    {pageData.announcement && (
-                      <div className="bg-sky-950/80 border border-sky-400/40 text-sky-200 text-xs py-2 px-3 rounded-lg text-center font-medium">
-                        {pageData.announcement}
-                      </div>
-                    )}
-
-                    {/* Simulated Hero Section */}
-                    <div className="relative rounded-xl overflow-hidden border border-border/60 p-8 text-center min-h-[240px] flex flex-col items-center justify-center">
-                      <div className="absolute inset-0 z-0">
-                        <img
-                          src={pageData.heroImage}
-                          alt="Hero"
-                          className="w-full h-full object-cover opacity-40"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-transparent"></div>
-                      </div>
-
-                      <div className="relative z-10 max-w-lg space-y-3">
-                        <h1 className="text-2xl font-extrabold tracking-tight text-foreground">
-                          {pageData.heroTitle}
+                  <div className="flex-1 overflow-y-auto bg-background">
+                    <SiteHeader />
+                    <section className="bm-hero min-h-0 h-[470px] px-6 py-8">
+                      <img
+                        className="bm-hero-image"
+                        src={
+                          previewDevice !== "desktop"
+                            ? pageData.heroImageMobile || "/bg-hero-mobile.png"
+                            : pageData.heroImage &&
+                                !pageData.heroImage.includes("bg_fe70fe49.jpg") &&
+                                pageData.heroImage !== "/bg-mobile.jpeg"
+                              ? pageData.heroImage
+                              : "/bg-hero-deskrop.png"
+                        }
+                        alt=""
+                      />
+                      <div className="bm-hero-content max-w-[620px]">
+                        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-red-950/80 border border-red-500/40 text-red-300 text-xs font-semibold mb-4 tracking-wide">
+                          TRUSTED GAMING ACCOUNT MARKETPLACE
+                        </div>
+                        <h1 className="bm-hero-title text-3xl">
+                          {pageData.heroTitle || "RedMoon"}
                         </h1>
-                        <p className="text-xs text-muted-foreground leading-relaxed">
-                          {pageData.heroSubtitle}
+                        <div className="flex items-center gap-3 mb-4 p-2 px-3 bg-card/90 border border-border/80 rounded-xl shadow-lg backdrop-blur-md w-fit text-xs">
+                          <span className="text-amber-400">★★★★★</span>
+                          <span className="font-bold">4.9</span>
+                          <span className="text-muted-foreground border-l border-border pl-3">
+                            340++ reviews
+                          </span>
+                        </div>
+                        <p className="bm-lead">
+                          {pageData.heroSubtitle ||
+                            "Verified strategy game accounts, secure middleman escrow, and direct top-ups for competitive players."}
                         </p>
                         {pageData.leadText && (
-                          <p className="text-[11px] text-sky-300 font-medium">
+                          <p className="text-xs text-sky-300 font-medium mt-3">
                             {pageData.leadText}
                           </p>
                         )}
-                        <div className="flex items-center justify-center gap-3 pt-2">
-                          {pageData.buttonText && (
-                            <span className="px-4 py-2 rounded-lg bg-sky-600 text-white text-xs font-bold shadow">
-                              {pageData.buttonText}
-                            </span>
-                          )}
-                          {pageData.secondaryButtonText && (
-                            <span className="px-4 py-2 rounded-lg bg-secondary text-foreground text-xs font-semibold border border-border">
-                              {pageData.secondaryButtonText}
-                            </span>
+                        <div className="bm-hero-actions mt-5">
+                          <span className="bm-btn bm-btn-primary">
+                            {pageData.buttonText || "Explore Accounts"}
+                          </span>
+                          <span className="bm-btn bm-btn-outline">
+                            {pageData.secondaryButtonText || "Middleman & Services"}
+                          </span>
+                        </div>
+                        <div className="bm-trust-ribbon">
+                          <span>Middleman Service</span>
+                          <span aria-hidden="true">·</span>
+                          <span>Instant Discord Delivery</span>
+                          <span aria-hidden="true">·</span>
+                          <span>100% Verified Credentials</span>
+                        </div>
+                      </div>
+                    </section>
+                    <section className="bm-section--full bm-section-services">
+                      <div className="bm-section-head">
+                        <div>
+                          <span className="text-xs font-semibold tracking-wider text-red-500 uppercase">
+                            Core Services
+                          </span>
+                          <h2 className="text-2xl md:text-3xl font-bold mt-1">
+                            {pageData.sectionTitle || "Middleman & Trading Services"}
+                          </h2>
+                          {pageData.sectionSubtitle && (
+                            <p className="text-sm text-muted-foreground mt-2">
+                              {pageData.sectionSubtitle}
+                            </p>
                           )}
                         </div>
                       </div>
-                    </div>
-
-                    {/* Section preview */}
-                    {pageData.sectionTitle && (
-                      <div className="space-y-2 pt-2">
-                        <h3 className="font-bold text-sm">{pageData.sectionTitle}</h3>
-                        <p className="text-xs text-muted-foreground">{pageData.sectionSubtitle}</p>
-                        <div className="grid grid-cols-2 gap-3 pt-2">
-                          <div className="p-3 bg-secondary/40 rounded-lg border border-border/50">
-                            <div className="h-2 w-16 bg-primary/40 rounded mb-2"></div>
-                            <div className="h-1.5 w-full bg-muted rounded"></div>
-                          </div>
-                          <div className="p-3 bg-secondary/40 rounded-lg border border-border/50">
-                            <div className="h-2 w-16 bg-primary/40 rounded mb-2"></div>
-                            <div className="h-1.5 w-full bg-muted rounded"></div>
-                          </div>
-                        </div>
-                      </div>
-                    )}
+                      <ServiceCards />
+                    </section>
                   </div>
                 </div>
               </div>

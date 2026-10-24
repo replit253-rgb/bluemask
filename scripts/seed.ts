@@ -122,7 +122,6 @@ const initialPages = [
     hero_subtitle: "The trusted hub for high-tier accounts.",
     hero_image: "/src/assets/hero-bg.jpg",
     lead_text: "Safe middleman service and account marketplace.",
-    announcement: "New stock available now!",
   },
 ];
 
@@ -195,16 +194,8 @@ async function seedDatabase() {
     if (await checkTable("pages")) {
       for (const p of initialPages) {
         await client.query(
-          `INSERT INTO pages (slug, title, hero_title, hero_subtitle, hero_image, lead_text, announcement) VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-          [
-            p.slug,
-            p.title,
-            p.hero_title,
-            p.hero_subtitle,
-            p.hero_image,
-            p.lead_text,
-            p.announcement,
-          ],
+          `INSERT INTO pages (slug, title, hero_title, hero_subtitle, hero_image, lead_text) VALUES ($1, $2, $3, $4, $5, $6)`,
+          [p.slug, p.title, p.hero_title, p.hero_subtitle, p.hero_image, p.lead_text],
         );
       }
     }

@@ -1,9 +1,9 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowUpRight, Check, Lock, ShieldCheck, Zap, Clock, Tag, Award } from "lucide-react";
 import { games, type Testimonial } from "@/lib/catalog";
 import type { FAQ } from "@/lib/db";
-import { getFaqsFromDB, getPageFromDB, getTestimonialsFromDB, type PageContent } from "@/lib/db";
+import { getFaqsFromDB, getPageFromDB, getTestimonialsFromDB } from "@/lib/db";
 import { SiteFooter, SiteHeader } from "@/components/SiteChrome";
 import { HomeTestimonials } from "@/components/Testimonials";
 import { ServiceCards } from "@/components/ServiceCards";
@@ -13,13 +13,15 @@ import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/")({
   loader: async () => {
-    const [testimonialsResult, faqsResult] = await Promise.allSettled([
+    const [testimonialsResult, faqsResult, pageContentResult] = await Promise.allSettled([
       getTestimonialsFromDB(),
       getFaqsFromDB(),
+      getPageFromDB("home"),
     ]);
     const testimonials: Testimonial[] =
       testimonialsResult.status === "fulfilled" ? testimonialsResult.value : [];
     const faqs: FAQ[] = faqsResult.status === "fulfilled" ? faqsResult.value : [];
+    const pageContent = pageContentResult.status === "fulfilled" ? pageContentResult.value : null;
 
     if (testimonialsResult.status === "rejected") {
       console.error(
@@ -30,60 +32,70 @@ export const Route = createFileRoute("/")({
     if (faqsResult.status === "rejected") {
       console.error("Failed to load homepage FAQs from PostgreSQL:", faqsResult.reason);
     }
+    if (pageContentResult.status === "rejected") {
+      console.error("Failed to load homepage content from PostgreSQL:", pageContentResult.reason);
+    }
 
     return {
       testimonials,
       testimonialLoadError: testimonialsResult.status === "rejected",
       faqs,
       faqLoadError: faqsResult.status === "rejected",
+      pageContent,
+      pageLoadError: pageContentResult.status === "rejected",
     };
   },
-  head: () => ({
-    meta: [
-      { title: "RedMoon — Game Accounts, Middleman & Top Up Terpercaya" },
-      {
-        name: "description",
-        content:
-          "Toko game terpercaya RedMoon — Jual beli akun game aman, top up termurah, dan jasa middleman/rekber untuk Whiteout Survival, Kingshot, Rise of Kingdoms, dan Call of Dragons.",
-      },
-      {
-        property: "og:title",
-        content: "RedMoon — Game Accounts, Middleman & Top Up Terpercaya",
-      },
-      {
-        property: "og:description",
-        content:
-          "Beli dan jual akun game, top up termurah, dan jasa middleman terpercaya bergaransi di RedMoon.",
-      },
-      { property: "og:type", content: "website" },
-      { property: "og:url", content: "https://redmoon-shop.com/" },
-      { property: "og:image", content: "https://redmoon-shop.com/logo.png" },
-      { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: "RedMoon — Game Accounts, Middleman & Top Up Terpercaya" },
-      {
-        name: "twitter:description",
-        content:
-          "Beli dan jual akun game, top up termurah, dan jasa middleman terpercaya bergaransi di RedMoon.",
-      },
-      { name: "twitter:image", content: "https://redmoon-shop.com/logo.png" },
-    ],
-    links: [{ rel: "canonical", href: "https://redmoon-shop.com/" }],
-  }),
+  head: ({ loaderData }) => {
+    const title =
+      loaderData?.pageContent?.title || "RedMoon — Game Accounts, Middleman & Top Up Terpercaya";
+    return {
+      meta: [
+        { title },
+        {
+          name: "description",
+          content:
+            "Toko game terpercaya RedMoon — Jual beli akun game aman, top up termurah, dan jasa middleman/rekber untuk Whiteout Survival, Kingshot, Rise of Kingdoms, dan Call of Dragons.",
+        },
+        {
+          property: "og:title",
+          content: title,
+        },
+        {
+          property: "og:description",
+          content:
+            "Beli dan jual akun game, top up termurah, dan jasa middleman terpercaya bergaransi di RedMoon.",
+        },
+        { property: "og:type", content: "website" },
+        { property: "og:url", content: "https://redmoon-shop.com/" },
+        { property: "og:image", content: "https://redmoon-shop.com/logo.png" },
+        { name: "twitter:card", content: "summary_large_image" },
+        { name: "twitter:title", content: title },
+        {
+          name: "twitter:description",
+          content:
+            "Beli dan jual akun game, top up termurah, dan jasa middleman terpercaya bergaransi di RedMoon.",
+        },
+        { name: "twitter:image", content: "https://redmoon-shop.com/logo.png" },
+      ],
+      links: [{ rel: "canonical", href: "https://redmoon-shop.com/" }],
+    };
+  },
   component: Index,
 });
 
 function Index() {
-  const { testimonials, testimonialLoadError, faqs, faqLoadError } = Route.useLoaderData();
-  const [pageContent, setPageContent] = useState<PageContent | null>(null);
+  const { testimonials, testimonialLoadError, faqs, faqLoadError, pageContent, pageLoadError } =
+    Route.useLoaderData();
   const [openIndex, setOpenIndex] = useState<number | null>(null);
-
-  useEffect(() => {
-    getPageFromDB("home").then((p) => setPageContent(p));
-  }, []);
 
   return (
     <main className="bm">
       <SiteHeader />
+      {pageLoadError && (
+        <p role="alert" className="mx-auto max-w-7xl px-4 py-2 text-xs text-rose-300">
+          Home page content could not be loaded. Showing default storefront content.
+        </p>
+      )}
 
       {/* Hero Section */}
       <section className="bm-hero">
@@ -147,16 +159,21 @@ function Index() {
               ? pageContent.heroSubtitle
               : "Verified strategy game accounts, secure middleman escrow, and direct top-ups for competitive players."}
           </p>
+          {pageContent?.leadText && (
+            <p className="text-sm text-sky-200 mb-6">{pageContent.leadText}</p>
+          )}
 
           <div className="bm-hero-actions">
             <Button asChild className="bm-btn bm-btn-primary">
               <Link to="/accounts" search={{}}>
-                Explore Accounts <ArrowUpRight className="w-4 h-4 ml-1" />
+                {pageContent?.buttonText || "Explore Accounts"}{" "}
+                <ArrowUpRight className="w-4 h-4 ml-1" />
               </Link>
             </Button>
             <Button asChild variant="outline" className="bm-btn bm-btn-outline">
               <Link to="/services">
-                Middleman & Services <ArrowUpRight className="w-4 h-4 ml-1" />
+                {pageContent?.secondaryButtonText || "Middleman & Services"}{" "}
+                <ArrowUpRight className="w-4 h-4 ml-1" />
               </Link>
             </Button>
           </div>
@@ -227,7 +244,12 @@ function Index() {
             <span className="text-xs font-semibold tracking-wider text-red-500 uppercase">
               Core Services
             </span>
-            <h2 className="text-2xl md:text-3xl font-bold mt-1">Middleman & Trading Services</h2>
+            <h2 className="text-2xl md:text-3xl font-bold mt-1">
+              {pageContent?.sectionTitle || "Middleman & Trading Services"}
+            </h2>
+            {pageContent?.sectionSubtitle && (
+              <p className="text-sm text-muted-foreground mt-2">{pageContent.sectionSubtitle}</p>
+            )}
           </div>
           <Link to="/services" className="bm-text-link">
             All services <ArrowUpRight />

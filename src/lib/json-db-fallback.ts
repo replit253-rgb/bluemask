@@ -135,7 +135,6 @@ const defaultStore: StoreData = {
       hero_subtitle: "The trusted hub for high-tier accounts.",
       hero_image: "/src/assets/hero-bg.jpg",
       lead_text: "Safe middleman service and account marketplace.",
-      announcement: "New stock available now!",
       updated_at: new Date().toISOString(),
     },
   ],
