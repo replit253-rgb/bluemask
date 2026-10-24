@@ -354,6 +354,7 @@ export function TopUpProductDetailModal({
 
 export function TopUpGrid({ gameSlug }: { gameSlug: string }) {
   const [activeItems, setActiveItems] = useState<TopUpPackage[]>([]);
+  const [selectedPack, setSelectedPack] = useState<TopUpPackage | null>(null);
 
   const detectedGame = gameSlug;
 
@@ -487,7 +488,7 @@ export function TopUpGrid({ gameSlug }: { gameSlug: string }) {
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
           {paginatedItems.map((p) => (
-            <TopUpCard key={p.code} p={p} />
+            <TopUpCard key={p.code} p={p} onOpenDetail={setSelectedPack} />
           ))}
         </div>
       )}
@@ -500,6 +501,9 @@ export function TopUpGrid({ gameSlug }: { gameSlug: string }) {
         Click on any card to view full product details, specs, and requirements. Order via Discord
         ticket with verified middleman transfer.
       </p>
+      {selectedPack && (
+        <TopUpProductDetailModal pack={selectedPack} onClose={() => setSelectedPack(null)} />
+      )}
     </div>
   );
 }
