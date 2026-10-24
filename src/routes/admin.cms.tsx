@@ -173,7 +173,7 @@ function AdminCMSPage() {
             },
             {
               id: "accounts_for_sale_worlds",
-              label: "Four Worlds Showcase",
+              label: "Explore Battlefields & Games (Accounts)",
               icon: Sparkles,
             },
             {

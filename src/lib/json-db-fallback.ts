@@ -144,11 +144,6 @@ const defaultStore: StoreData = {
     discordLink: "https://discord.gg/WHRzebh8pz",
     whatsapp: "+62 821-2780-6072",
     discordUsers: [{ name: "bluemask22", link: "https://discord.com/users/980636376691249152" }],
-    game_worlds_header: {
-      eyebrow: "GAMES",
-      title: "Supported Game Worlds",
-      subtitle: "Browse accounts and top-ups by game title.",
-    },
     home_games_header: {
       eyebrow: "EXPLORE",
       title: "Popular Game Categories",
@@ -163,32 +158,7 @@ const defaultStore: StoreData = {
     },
   },
   game_worlds: {
-    cards: [
-      {
-        id: "wos",
-        slug: "whiteout-survival",
-        name: "Whiteout Survival",
-        genre: "Strategy",
-        image: "",
-        imageAlt: "WOS",
-        number_code: "#1",
-        services: {},
-        account_points: {},
-        sort_order: 0,
-      },
-      {
-        id: "ks",
-        slug: "kingshot",
-        name: "KingShot",
-        genre: "Strategy",
-        image: "",
-        imageAlt: "KingShot",
-        number_code: "#2",
-        services: {},
-        account_points: {},
-        sort_order: 1,
-      },
-    ],
+    cards: [],
   },
   home_games: {
     cards: [

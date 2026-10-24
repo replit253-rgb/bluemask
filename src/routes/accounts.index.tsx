@@ -6,6 +6,7 @@ import { getEffectivePrice, type Product } from "@/lib/products";
 import { getProductsFromDB } from "@/lib/db";
 import { SiteFooter, SiteHeader } from "@/components/SiteChrome";
 import { ProductGrid } from "@/components/Products";
+import { getGameWorldsConfig, type GameWorldCard } from "@/lib/game-worlds";
 
 type SearchParams = {
   game?: string | undefined;
@@ -47,6 +48,20 @@ function AccountsPage() {
   const [hasLoaded, setHasLoaded] = useState(false);
   const [loadError, setLoadError] = useState(false);
   const [searchTerm, setSearchTerm] = useState(q);
+  const [gameCards, setGameCards] = useState<GameWorldCard[]>(() =>
+    games.map((g) => ({
+      id: g.slug,
+      slug: g.slug,
+      name: g.name,
+      genre: g.genre,
+      image: g.image,
+      imageAlt: g.imageAlt,
+      number: g.number,
+      services: [],
+      accountPoints: [...g.accountPoints],
+    })),
+  );
+  const [gameCardsError, setGameCardsError] = useState(false);
 
   useEffect(() => {
     const loadProducts = () => {
@@ -72,6 +87,29 @@ function AccountsPage() {
     };
     window.addEventListener("products-changed", handleProductsChange);
     return () => window.removeEventListener("products-changed", handleProductsChange);
+  }, []);
+
+  useEffect(() => {
+    let isMounted = true;
+    const loadGameCards = () => {
+      setGameCardsError(false);
+      void getGameWorldsConfig().then(
+        (config) => {
+          if (isMounted) setGameCards(config.cards);
+        },
+        (error: unknown) => {
+          console.error("Failed to load account game cards from PostgreSQL:", error);
+          if (isMounted) setGameCardsError(true);
+        },
+      );
+    };
+
+    loadGameCards();
+    window.addEventListener("game-worlds-changed", loadGameCards);
+    return () => {
+      isMounted = false;
+      window.removeEventListener("game-worlds-changed", loadGameCards);
+    };
   }, []);
 
   // Filter by game, status, search query
@@ -122,23 +160,24 @@ function AccountsPage() {
             </h2>
           </div>
 
+          {gameCardsError && (
+            <p className="mb-4 text-sm text-red-400" role="alert">
+              Unable to load the game selector from PostgreSQL. Showing the default game cards.
+            </p>
+          )}
+
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {games.map((g) => {
-              const isSelected = game === g.slug;
+            {gameCards.map((g) => {
               return (
                 <a
                   key={g.slug}
                   href={`/accounts?game=${g.slug}#inventory`}
-                  className={`group relative flex flex-col justify-between rounded-2xl overflow-hidden border transition-all duration-300 ${
-                    isSelected
-                      ? "bg-[#220a11] border-red-500 shadow-xl shadow-red-950/60 ring-2 ring-red-500"
-                      : "bg-[#14060a] border-red-950/80 hover:border-red-500/50 hover:bg-[#1d0910]"
-                  }`}
+                  className="group relative flex flex-col justify-between rounded-2xl overflow-hidden border transition-all duration-300 bg-[#14060a] border-red-950/80 hover:border-red-500/50 hover:bg-[#1d0910]"
                 >
                   <div className="relative aspect-[16/10] overflow-hidden bg-secondary">
                     <img
                       src={g.image}
-                      alt={g.imageAlt}
+                      alt={g.imageAlt || g.name}
                       width={800}
                       height={600}
                       loading="lazy"
@@ -178,7 +217,7 @@ function AccountsPage() {
           <div>
             <h2 className="text-xl font-bold text-white">
               {game
-                ? `${games.find((g) => g.slug === game)?.name || game} Accounts`
+                ? `${gameCards.find((g) => g.slug === game)?.name || game} Accounts`
                 : "All Account Listings"}
             </h2>
             <p className="text-xs text-slate-400 mt-0.5">

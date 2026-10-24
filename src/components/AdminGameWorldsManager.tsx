@@ -275,11 +275,11 @@ export function AdminGameWorldsManager() {
             COMPONENT CRUD & REAL-TIME PREVIEW
           </div>
           <h2 className="text-2xl font-black text-foreground tracking-tight">
-            Accounts for Sale Component
+            Account Game Selector & Game Worlds
           </h2>
           <p className="text-xs text-muted-foreground mt-1">
-            Manage the game world showcase section ("Four worlds. Your next adventure.") and see
-            live updates in real-time.
+            Manage game cards shown in the account selector and the game worlds showcase, with
+            live updates in real time.
           </p>
         </div>
 
@@ -375,7 +375,7 @@ export function AdminGameWorldsManager() {
                   Game World Cards ({config.cards.length})
                 </h3>
                 <p className="text-[11px] text-muted-foreground">
-                  Order, customize, or delete cards displayed in the collection.
+                  Order, customize, or delete cards displayed on the accounts and games pages.
                 </p>
               </div>
               <Button

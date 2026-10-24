@@ -599,6 +599,7 @@ export const getGameWorldsFn = createServerFn({ method: "GET" }).handler(async (
   const header = settingsRes.rows[0]?.value || {};
   return {
     ...header,
+    configured: Boolean(settingsRes.rows[0]),
     cards: res.rows.map((row: any) => ({
       id: row.id,
       slug: row.slug,
@@ -633,7 +634,7 @@ export const saveGameWorldsFn = createServerFn({ method: "POST" })
       await client.query("DELETE FROM game_worlds");
 
       if (Array.isArray(cards)) {
-        for (const card of cards) {
+        for (const [index, card] of cards.entries()) {
           await client.query(
             `INSERT INTO game_worlds (id, slug, name, genre, image, image_alt, number_code, services, account_points, sort_order) 
              VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
@@ -647,7 +648,7 @@ export const saveGameWorldsFn = createServerFn({ method: "POST" })
               card.number,
               JSON.stringify(card.services || {}),
               JSON.stringify(card.accountPoints || {}),
-              card.sort_order || 0,
+              index,
             ],
           );
         }

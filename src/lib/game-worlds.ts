@@ -1,4 +1,5 @@
 import { getGameWorldsFn, saveGameWorldsFn } from "./pg-server-fn";
+import { games } from "./catalog";
 
 export interface GameWorldCard {
   id: string;
@@ -23,17 +24,31 @@ export const DEFAULT_GAME_WORLDS_CONFIG: GameWorldSectionConfig = {
   eyebrow: "THE COLLECTION",
   title: "Accounts for Sale",
   subtitle: "",
-  cards: [],
+  cards: games.map((game) => ({
+    id: game.slug,
+    slug: game.slug,
+    name: game.name,
+    genre: game.genre,
+    image: game.image,
+    imageAlt: game.imageAlt,
+    number: game.number,
+    services: ["Middleman", "Buy & Sell Accounts"],
+    accountPoints: [...game.accountPoints],
+  })),
 };
 
 let cachedWorldsConfig: GameWorldSectionConfig = DEFAULT_GAME_WORLDS_CONFIG;
 
 export async function getGameWorldsConfig(): Promise<GameWorldSectionConfig> {
   const stored = await getGameWorldsFn();
+  const { configured, ...storedConfig } = stored;
   cachedWorldsConfig = {
     ...DEFAULT_GAME_WORLDS_CONFIG,
-    ...stored,
-    cards: stored.cards,
+    ...storedConfig,
+    cards:
+      storedConfig.cards.length === 0 && !configured
+        ? DEFAULT_GAME_WORLDS_CONFIG.cards
+        : storedConfig.cards,
   };
   return cachedWorldsConfig;
 }
