@@ -14,7 +14,9 @@
     "test:watch": "vitest",
     "db:push": "tsx scripts/db-push.ts",
     "db:seed": "tsx scripts/seed.ts",
-    "db:seed:service-games": "tsx scripts/seed-service-games.ts"
+    "db:seed:service-games": "tsx scripts/seed-service-games.ts",
+    "db:seed:faqs": "tsx scripts/seed-faqs.ts",
+    "db:seed:reviews": "tsx scripts/seed-reviews.ts"
   },
   "overrides": {
     "rolldown": "1.2.1"

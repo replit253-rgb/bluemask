@@ -110,17 +110,6 @@ const initialServices = [
   },
 ];
 
-const initialTestimonials = Array.from({ length: 12 }, (_, i) => ({
-  id: `test-${i + 1}`,
-  service: i % 2 === 0 ? "middleman" : "boost",
-  game: "whiteout-survival",
-  name: `User ${i + 1}`,
-  role: i % 3 === 0 ? "Seller" : "Buyer",
-  quote: `Great experience with RedMoon service! Recommended for everyone. #${i + 1}`,
-  date: "Oct 2026",
-  image: null,
-}));
-
 const initialFAQs = [
   { id: "faq-1", question: "How long does top up take?", answer: "Typically 5-15 minutes." },
 ];
@@ -189,19 +178,6 @@ async function seedDatabase() {
         );
       }
       console.log(`Seeded ${initialServices.length} services.`);
-    }
-
-    // Testimonials (initialTestimonials.length = 12)
-    if (await checkTable("testimonials")) {
-      for (let i = 0; i < initialTestimonials.length; i++) {
-        const t = initialTestimonials[i];
-        // Ensure unique timestamps for sorting proof
-        await client.query(
-          `INSERT INTO testimonials (id, service, game, name, role, quote, date, image, created_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW() + interval '${i} minutes')`,
-          [t.id, t.service, t.game, t.name, t.role, t.quote, t.date, t.image],
-        );
-      }
-      console.log(`Seeded ${initialTestimonials.length} testimonials.`);
     }
 
     // FAQs

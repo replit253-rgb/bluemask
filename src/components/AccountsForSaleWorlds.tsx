@@ -2,12 +2,13 @@ import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { ArrowUpRight } from "lucide-react";
 import { defaultGameArtwork } from "@/lib/catalog";
+import { getGameWorldsFn } from "@/lib/pg-server-fn";
 import {
-  getGameWorldsConfig,
   DEFAULT_GAME_WORLDS_CONFIG,
   type GameWorldSectionConfig,
   type GameWorldCard,
 } from "@/lib/game-worlds";
+import { getHomeGamesConfig } from "@/lib/home-games";
 
 function getServiceLink(serviceName: string, gameSlug: string) {
   const norm = serviceName.toLowerCase().trim();
@@ -32,6 +33,24 @@ function getServiceLink(serviceName: string, gameSlug: string) {
   return { to: "/accounts", search: { game: gameSlug } };
 }
 
+function homeGamesAsWorlds(homeGames: Awaited<ReturnType<typeof getHomeGamesConfig>>) {
+  return homeGames.cards.map((game, index) => {
+    const defaultWorld = DEFAULT_GAME_WORLDS_CONFIG.cards.find((world) => world.slug === game.slug);
+
+    return {
+      id: game.id,
+      slug: game.slug,
+      name: game.name,
+      genre: game.genre,
+      image: game.image,
+      imageAlt: game.imageAlt,
+      number: String(index + 1).padStart(2, "0"),
+      services: defaultWorld?.services ?? [],
+      accountPoints: defaultWorld?.accountPoints,
+    };
+  });
+}
+
 interface AccountsForSaleWorldsProps {
   /** Optional override config for live preview */
   config?: GameWorldSectionConfig;
@@ -43,9 +62,8 @@ export function AccountsForSaleWorlds({
   config: propConfig,
   previewMode = false,
 }: AccountsForSaleWorldsProps) {
-  const [config, setConfig] = useState<GameWorldSectionConfig>(
-    () => propConfig || DEFAULT_GAME_WORLDS_CONFIG,
-  );
+  const [config, setConfig] = useState<GameWorldSectionConfig | null>(() => propConfig ?? null);
+  const [loadError, setLoadError] = useState(false);
 
   useEffect(() => {
     if (propConfig) {
@@ -54,25 +72,60 @@ export function AccountsForSaleWorlds({
     }
 
     let isMounted = true;
-    const handleUpdate = () => {
-      void getGameWorldsConfig().then(
-        (data) => {
-          if (isMounted) setConfig(data);
-        },
-        (error: unknown) => {
-          console.error("Failed to load game worlds from PostgreSQL:", error);
-        },
-      );
+    const handleUpdate = async () => {
+      setLoadError(false);
+      try {
+        const [worlds, homeGames] = await Promise.all([getGameWorldsFn(), getHomeGamesConfig()]);
+        if (!isMounted) return;
+
+        const cards =
+          worlds.cards.length > 0
+            ? worlds.cards
+            : homeGames.cards.length > 0
+              ? homeGamesAsWorlds(homeGames)
+              : worlds.configured
+                ? []
+                : DEFAULT_GAME_WORLDS_CONFIG.cards;
+
+        setConfig({
+          ...DEFAULT_GAME_WORLDS_CONFIG,
+          eyebrow: worlds.eyebrow || DEFAULT_GAME_WORLDS_CONFIG.eyebrow,
+          title: worlds.title || DEFAULT_GAME_WORLDS_CONFIG.title,
+          subtitle: worlds.subtitle || DEFAULT_GAME_WORLDS_CONFIG.subtitle,
+          cards,
+        });
+      } catch (error) {
+        console.error("Failed to load game worlds from PostgreSQL:", error);
+        if (isMounted) setLoadError(true);
+      }
     };
 
-    handleUpdate();
+    void handleUpdate();
     window.addEventListener("game-worlds-changed", handleUpdate);
+    window.addEventListener("home-games-changed", handleUpdate);
 
     return () => {
       isMounted = false;
       window.removeEventListener("game-worlds-changed", handleUpdate);
+      window.removeEventListener("home-games-changed", handleUpdate);
     };
   }, [propConfig]);
+
+  if (loadError) {
+    return (
+      <section className="bm-section" role="alert">
+        <p className="bm-lead">Unable to load games. Please refresh and try again.</p>
+      </section>
+    );
+  }
+
+  if (!config) {
+    return (
+      <section className="bm-section" aria-busy="true">
+        <p className="bm-lead">Loading games...</p>
+      </section>
+    );
+  }
 
   return (
     <section className="bm-section">
