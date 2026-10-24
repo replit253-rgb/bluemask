@@ -545,7 +545,15 @@ export function AdminDashboardPage() {
           : ["Clean account credentials", "Safe middleman transaction"],
     };
 
-    await saveProductToDB(item);
+    try {
+      await saveProductToDB(item);
+    } catch (error) {
+      console.error("Failed to save account listing:", error);
+      showNotification(
+        "Unable to save account listing. Check the database connection and account data.",
+      );
+      return;
+    }
     setProducts([item, ...products.filter((p) => p.code !== item.code)]);
     setIsAddingProduct(false);
     setNewProduct({
@@ -567,7 +575,15 @@ export function AdminDashboardPage() {
   const handleUpdateProduct = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingProduct) return;
-    await saveProductToDB(editingProduct);
+    try {
+      await saveProductToDB(editingProduct);
+    } catch (error) {
+      console.error("Failed to update account listing:", error);
+      showNotification(
+        "Unable to update account listing. Check the database connection and account data.",
+      );
+      return;
+    }
     setProducts(products.map((p) => (p.code === editingProduct.code ? editingProduct : p)));
     setEditingProduct(null);
     showNotification(`Account ${editingProduct.code} updated in database.`);

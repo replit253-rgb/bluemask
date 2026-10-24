@@ -126,7 +126,7 @@ function Index() {
               pageContent.heroTitle
             ) : (
               <>
-                Red<span className="text-red-500">Moon</span>
+                Red<span className="text-red-500">Moon</span> Gaming Shop
               </>
             )}
           </h1>

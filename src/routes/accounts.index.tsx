@@ -117,10 +117,8 @@ function AccountsPage() {
       {!game && (
         <section className="bm-section">
           <div className="bm-section-head mb-8">
-            <span className="bm-mono text-red-500">CHOOSE YOUR BATTLEFIELD</span>
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-white mt-1">
-              Explore Battlefields & Games
-            </h2>
+            <span className="bm-mono text-red-500">CHOOSE YOUR GAME</span>
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-white mt-1">Account List</h2>
           </div>
 
           {gameWorldsLoadError && (
@@ -163,7 +161,7 @@ function AccountsPage() {
                     </div>
 
                     <div className="pt-3 border-t border-red-950/80 flex items-center justify-between text-xs font-bold text-red-400 group-hover:text-red-300">
-                      <span>Explore accounts</span>
+                      <span>Account List</span>
                       <ArrowUpRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                     </div>
                   </div>

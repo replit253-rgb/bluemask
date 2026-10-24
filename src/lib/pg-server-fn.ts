@@ -251,11 +251,11 @@ export const saveProductFn = createServerFn({ method: "POST" })
         data.discountPercent,
         data.hasDiscount ?? false,
         image,
-        JSON.stringify(screenshots || []),
+        screenshots || [],
         description,
         server,
         JSON.stringify(stats || {}),
-        JSON.stringify(highlights || []),
+        highlights || [],
       ],
     );
     return res.rows[0];
