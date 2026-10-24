@@ -67,7 +67,6 @@ const defaultStore: StoreData = {
     price: (i + 1) * 0.99,
     category: "Pack ID Top Up",
     popular: i === 9,
-    image: "/src/assets/images/chest_wooden_loot_1792579173425.jpg",
     sort_order: i,
   })),
   services: [

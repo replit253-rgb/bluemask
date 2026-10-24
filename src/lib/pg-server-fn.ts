@@ -276,7 +276,10 @@ export const getTopupsFn = createServerFn({ method: "GET" }).handler(async () =>
     name: row.name as string,
     detail: row.detail,
     price: Number(row.price),
-    image: row.image,
+    image:
+      typeof row.image === "string" && row.image.startsWith("/src/assets/images/")
+        ? undefined
+        : row.image,
     category: row.category,
     popular: row.popular,
     sort_order: row.sort_order,

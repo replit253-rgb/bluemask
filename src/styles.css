@@ -553,19 +553,6 @@ html {
   color: var(--bm-ink-soft);
   margin-bottom: 24px;
 }
-.bm-service-artwork {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 6px;
-  margin: 0 0 12px;
-}
-.bm-service-artwork img {
-  width: 100%;
-  aspect-ratio: 1.3;
-  object-fit: cover;
-  border: 1px solid var(--bm-rule);
-  border-radius: 5px;
-}
 .bm-service-games {
   margin-top: auto;
   border-top: 1px solid var(--bm-rule);
@@ -579,6 +566,19 @@ html {
   align-items: center;
   font-size: 12px;
   padding: 9px 0;
+}
+.bm-service-game-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+}
+.bm-service-game-image {
+  width: 28px;
+  height: 28px;
+  flex: 0 0 auto;
+  object-fit: cover;
+  border: 1px solid var(--bm-rule);
+  border-radius: 5px;
 }
 .bm-service-games a:hover {
   color: var(--bm-glow);

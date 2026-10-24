@@ -15,8 +15,6 @@ const games = [
     slug: "whiteout-survival",
     name: "Whiteout Survival",
     genre: "STRATEGY · SURVIVAL",
-    image: "/assets/games/whiteout-survival.jpg",
-    imageAlt: "A survivor facing a fortress in a snowy valley",
     actionText: "Explore accounts",
     linkUrl: "/accounts?game=whiteout-survival",
   },
@@ -25,8 +23,6 @@ const games = [
     slug: "kingshot",
     name: "Kingshot",
     genre: "STRATEGY · FANTASY",
-    image: "/assets/games/kingshot.jpg",
-    imageAlt: "An archer overlooking a castle in a green kingdom",
     actionText: "Explore accounts",
     linkUrl: "/accounts?game=kingshot",
   },
@@ -35,8 +31,6 @@ const games = [
     slug: "rise-of-kingdoms",
     name: "Rise of Kingdoms",
     genre: "STRATEGY · CIVILIZATION",
-    image: "/assets/games/rise-of-kingdoms.jpg",
-    imageAlt: "Cavalry riding toward an ancient city at the foot of the mountains",
     actionText: "Explore accounts",
     linkUrl: "/accounts?game=rise-of-kingdoms",
   },
@@ -45,8 +39,6 @@ const games = [
     slug: "call-of-dragons",
     name: "Call of Dragons",
     genre: "STRATEGY · FANTASY",
-    image: "/assets/games/call-of-dragons.jpg",
-    imageAlt: "A dragon flying over a fantasy royal city",
     actionText: "Explore accounts",
     linkUrl: "/accounts?game=call-of-dragons",
   },
@@ -148,24 +140,13 @@ async function seedServiceGames() {
     for (const [index, game] of games.entries()) {
       await client.query(
         `INSERT INTO home_games
-          (id, slug, name, genre, image, image_alt, action_text, link_url, sort_order)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+          (id, slug, name, genre, action_text, link_url, sort_order)
+         VALUES ($1, $2, $3, $4, $5, $6, $7)
          ON CONFLICT (id) DO UPDATE SET
           slug = EXCLUDED.slug, name = EXCLUDED.name, genre = EXCLUDED.genre,
-          image = EXCLUDED.image, image_alt = EXCLUDED.image_alt,
           action_text = EXCLUDED.action_text, link_url = EXCLUDED.link_url,
           sort_order = EXCLUDED.sort_order`,
-        [
-          game.id,
-          game.slug,
-          game.name,
-          game.genre,
-          game.image,
-          game.imageAlt,
-          game.actionText,
-          game.linkUrl,
-          index,
-        ],
+        [game.id, game.slug, game.name, game.genre, game.actionText, game.linkUrl, index],
       );
     }
 

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { ArrowUpRight, ShieldCheck, ShoppingBag, Zap, type LucideIcon } from "lucide-react";
-import type { Service } from "@/lib/catalog";
+import { findGame, type Service } from "@/lib/catalog";
 import { getServicesFromDB } from "@/lib/db";
 import { getHomeGamesConfig, type HomeGameCard } from "@/lib/home-games";
 
@@ -39,32 +39,15 @@ export function ServiceCards() {
         const serviceGames = s.gameSlugs
           ? gameList.filter((game) => s.gameSlugs?.some((slug) => slug === game.slug))
           : gameList;
-        const showsGameGallery =
-          s.slug === "buy-sell-accounts" || s.slug === "jual-beli-akun" || s.slug === "top-up";
         return (
           <article key={s.slug} className="bm-service">
             <div className="bm-service-top">
-              <div className="bm-service-icon-box overflow-hidden">
-                {s.image ? (
-                  <img
-                    src={s.image}
-                    alt={s.name}
-                    className="w-full h-full object-cover rounded-md"
-                  />
-                ) : (
-                  <Icon className="w-5 h-5" />
-                )}
+              <div className="bm-service-icon-box">
+                <Icon className="w-5 h-5" />
               </div>
             </div>
             <h3 className="font-semibold text-lg text-foreground mt-4 mb-2">{s.name}</h3>
             <p className="text-sm text-muted-foreground leading-relaxed mb-5">{s.intro}</p>
-            {showsGameGallery && (
-              <div className="bm-service-artwork" aria-hidden="true">
-                {gameList.map((game) => (
-                  <img key={game.slug} src={game.image} alt="" loading="lazy" />
-                ))}
-              </div>
-            )}
             <div className="bm-service-games">
               {serviceGames.map((g) => (
                 <Link
@@ -72,7 +55,17 @@ export function ServiceCards() {
                   to="/services/$service/$game"
                   params={{ service: s.slug, game: g.slug }}
                 >
-                  <span>{g.name}</span>
+                  <span className="bm-service-game-label">
+                    {findGame(g.slug) && (
+                      <img
+                        src={findGame(g.slug)?.image}
+                        alt=""
+                        aria-hidden="true"
+                        className="bm-service-game-image"
+                      />
+                    )}
+                    {g.name}
+                  </span>
                   <ArrowUpRight className="w-3.5 h-3.5" />
                 </Link>
               ))}

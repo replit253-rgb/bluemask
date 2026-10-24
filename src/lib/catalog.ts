@@ -1,12 +1,3 @@
-import whiteoutArtworkUrl from "@/assets/game-whiteout.jpg";
-const whiteoutArtwork = { url: whiteoutArtworkUrl };
-import kingshotArtworkUrl from "@/assets/game-kingshot.jpg";
-const kingshotArtwork = { url: kingshotArtworkUrl };
-import rokArtworkUrl from "@/assets/game-rok.jpg";
-const rokArtwork = { url: rokArtworkUrl };
-import dragonsArtworkUrl from "@/assets/game-dragons.jpg";
-const dragonsArtwork = { url: dragonsArtworkUrl };
-
 export const discordLink = "https://discord.gg/WHRzebh8pz";
 export const discordUserLink = "https://discordapp.com/users/980636376691249152";
 export const whatsappNumber = "+62 821-2780-6072";
@@ -17,7 +8,7 @@ export const games = [
     slug: "whiteout-survival",
     name: "Whiteout Survival",
     genre: "STRATEGY · SURVIVAL",
-    image: whiteoutArtwork.url,
+    image: "/WhiteoutSurvival.png",
     imageAlt: "A survivor facing a fortress in a snowy valley",
     number: "01",
     accountPoints: [
@@ -31,7 +22,7 @@ export const games = [
     slug: "kingshot",
     name: "Kingshot",
     genre: "STRATEGY · FANTASY",
-    image: kingshotArtwork.url,
+    image: "/kingshot.png",
     imageAlt: "An archer overlooking a castle in a green kingdom",
     number: "02",
     accountPoints: [
@@ -45,7 +36,7 @@ export const games = [
     slug: "rise-of-kingdoms",
     name: "Rise of Kingdoms",
     genre: "STRATEGY · CIVILIZATION",
-    image: rokArtwork.url,
+    image: "/RiseOfKingdoms.png",
     imageAlt: "Cavalry riding toward an ancient city at the foot of the mountains",
     number: "03",
     accountPoints: [
@@ -59,7 +50,7 @@ export const games = [
     slug: "call-of-dragons",
     name: "Call of Dragons",
     genre: "STRATEGY · FANTASY",
-    image: dragonsArtwork.url,
+    image: "/callOfDragon.png",
     imageAlt: "A dragon flying over a fantasy royal city",
     number: "04",
     accountPoints: [

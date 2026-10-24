@@ -33,11 +33,6 @@ export function TopUpCard({
 }) {
   const [copied, setCopied] = useState(false);
   const { discordLink } = useStoreSettings();
-  const bgImg =
-    p.image ||
-    (p.popular
-      ? "/src/assets/images/chest_treasure_gold_1792579173076.jpg"
-      : "/src/assets/images/chest_magic_crystal_1792579173404.jpg");
 
   return (
     <div
@@ -68,11 +63,15 @@ export function TopUpCard({
         title={`View ${p.name} details`}
       >
         <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center p-1 transition-transform duration-300 group-hover/img:scale-105">
-          <img
-            src={bgImg}
-            alt={p.name}
-            className="w-full h-full object-contain rounded-lg drop-shadow-[0_4px_12px_rgba(220,38,38,0.35)]"
-          />
+          {p.image ? (
+            <img
+              src={p.image}
+              alt={p.name}
+              className="w-full h-full object-contain rounded-lg drop-shadow-[0_4px_12px_rgba(220,38,38,0.35)]"
+            />
+          ) : (
+            <Package className="w-10 h-10 text-red-400/70" aria-label="No package image" />
+          )}
         </div>
       </Link>
 
@@ -167,11 +166,6 @@ export function TopUpProductDetailModal({
   const [copied, setCopied] = useState(false);
   const { discordLink } = useStoreSettings();
   const game = findGame(pack.game);
-  const bgImg =
-    pack.image ||
-    (pack.popular
-      ? "/src/assets/images/chest_treasure_gold_1792579173076.jpg"
-      : "/src/assets/images/chest_magic_crystal_1792579173404.jpg");
 
   const handleOrder = () => {
     navigator.clipboard
@@ -224,11 +218,15 @@ export function TopUpProductDetailModal({
             {/* Left Column: Image & Quick Specs */}
             <div className="md:col-span-5 flex flex-col items-center space-y-4">
               <div className="w-full aspect-square max-w-[220px] rounded-xl bg-[#18050b] border border-red-950/60 p-4 flex items-center justify-center shadow-inner">
-                <img
-                  src={bgImg}
-                  alt={pack.name}
-                  className="w-full h-full object-contain drop-shadow-[0_8px_20px_rgba(220,38,38,0.35)]"
-                />
+                {pack.image ? (
+                  <img
+                    src={pack.image}
+                    alt={pack.name}
+                    className="w-full h-full object-contain drop-shadow-[0_8px_20px_rgba(220,38,38,0.35)]"
+                  />
+                ) : (
+                  <Package className="w-16 h-16 text-red-400/70" aria-label="No package image" />
+                )}
               </div>
 
               {/* Quick Spec Tags */}
