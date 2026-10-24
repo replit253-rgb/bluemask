@@ -316,6 +316,8 @@ function Index() {
             <p className="text-sm text-red-400" role="alert">
               FAQs are temporarily unavailable. Please try again later.
             </p>
+          ) : faqs.length === 0 ? (
+            <p className="text-sm text-muted-foreground">No FAQs have been added yet.</p>
           ) : (
             faqs.map((f, i) => (
               <div key={f.id} className="border-b border-border/40 py-5">
