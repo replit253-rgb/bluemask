@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { ArrowUpRight, ShieldCheck, ShoppingBag, Zap, type LucideIcon } from "lucide-react";
-import { games, gamesForService, services, type Service } from "@/lib/catalog";
+import type { Service } from "@/lib/catalog";
 import { getServicesFromDB } from "@/lib/db";
+import { getHomeGamesConfig, type HomeGameCard } from "@/lib/home-games";
 
 const icons: Record<string, LucideIcon> = {
   middleman: ShieldCheck,
@@ -12,25 +13,18 @@ const icons: Record<string, LucideIcon> = {
 };
 
 export function ServiceCards() {
-  const [serviceList, setServiceList] = useState<Service[]>(services);
+  const [serviceList, setServiceList] = useState<Service[]>([]);
+  const [gameList, setGameList] = useState<HomeGameCard[]>([]);
 
   useEffect(() => {
     let isMounted = true;
-    void getServicesFromDB().then(
-      (storedServices) => {
+    void Promise.all([getServicesFromDB(), getHomeGamesConfig()]).then(
+      ([storedServices, homeGames]) => {
         if (!isMounted) return;
-        setServiceList(
-          storedServices.map((service) => {
-            const catalogService = services.find((item) => item.slug === service.slug);
-            return {
-              ...catalogService,
-              ...service,
-              gameSlugs: service.gameSlugs ?? catalogService?.gameSlugs,
-            };
-          }),
-        );
+        setServiceList(storedServices);
+        setGameList(homeGames.cards);
       },
-      (error: unknown) => console.error("Failed to load services from PostgreSQL:", error),
+      (error: unknown) => console.error("Failed to load service cards from PostgreSQL:", error),
     );
 
     return () => {
@@ -42,6 +36,11 @@ export function ServiceCards() {
     <div className="bm-services">
       {serviceList.map((s) => {
         const Icon = icons[s.slug] || ShieldCheck;
+        const serviceGames = s.gameSlugs
+          ? gameList.filter((game) => s.gameSlugs?.some((slug) => slug === game.slug))
+          : gameList;
+        const showsGameGallery =
+          s.slug === "buy-sell-accounts" || s.slug === "jual-beli-akun" || s.slug === "top-up";
         return (
           <article key={s.slug} className="bm-service">
             <div className="bm-service-top">
@@ -59,24 +58,15 @@ export function ServiceCards() {
             </div>
             <h3 className="font-semibold text-lg text-foreground mt-4 mb-2">{s.name}</h3>
             <p className="text-sm text-muted-foreground leading-relaxed mb-5">{s.intro}</p>
-            {(s.slug === "buy-sell-accounts" ||
-              s.slug === "jual-beli-akun" ||
-              s.slug === "top-up") && (
-              <>
-                <div className="bm-service-artwork" aria-hidden="true">
-                  {games.map((game) => (
-                    <img key={game.slug} src={game.image} alt="" loading="lazy" />
-                  ))}
-                </div>
-                {s.slug === "top-up" && (
-                  <p className="bm-service-artwork-note">
-                    Top-up availability is shown in the game links below.
-                  </p>
-                )}
-              </>
+            {showsGameGallery && (
+              <div className="bm-service-artwork" aria-hidden="true">
+                {gameList.map((game) => (
+                  <img key={game.slug} src={game.image} alt="" loading="lazy" />
+                ))}
+              </div>
             )}
             <div className="bm-service-games">
-              {gamesForService(s).map((g) => (
+              {serviceGames.map((g) => (
                 <Link
                   key={g.slug}
                   to="/services/$service/$game"

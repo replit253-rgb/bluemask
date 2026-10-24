@@ -566,10 +566,6 @@ html {
   border: 1px solid var(--bm-rule);
   border-radius: 5px;
 }
-.bm-service .bm-service-artwork-note {
-  margin: 0 0 12px;
-  font-size: 10px;
-}
 .bm-service-games {
   margin-top: auto;
   border-top: 1px solid var(--bm-rule);
