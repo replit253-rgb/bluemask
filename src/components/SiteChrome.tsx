@@ -158,7 +158,7 @@ export function SiteFooter() {
         </a>
       </div>
       <div className="bm-footer-row">
-        <span>© reedmoon Gaming Store</span>
+        <span>© RedMoon Gaming Store</span>
         <div className="bm-footer-links">
           <Link to="/games">Games</Link>
           <Link to="/accounts" search={{}}>

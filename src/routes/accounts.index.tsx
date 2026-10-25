@@ -109,7 +109,7 @@ function AccountsPage() {
           <span>{items.length} listings</span>
         </div>
         <h1 className="bm-detail-title">
-          Accounts<span>Ready to Play</span>
+          Account<span>for Sale</span>
         </h1>
       </section>
 
