@@ -70,25 +70,30 @@ const TopupSchema = z.object({
   diamonds: z.number().int().min(0).optional().nullable(),
 });
 
-let topUpDiamondsColumnReady: Promise<void> | undefined;
+let topUpSchemaReady: Promise<void> | undefined;
 
-async function ensureTopUpDiamondsColumn(): Promise<void> {
-  if (!topUpDiamondsColumnReady) {
-    topUpDiamondsColumnReady = (async () => {
+async function ensureTopUpSchema(): Promise<void> {
+  if (!topUpSchemaReady) {
+    topUpSchemaReady = (async () => {
       const useJsonFallback =
         (process.env["NODE_ENV"] === "development" || process.env["NODE_ENV"] === "test") &&
         process.env["JSON_DB_FALLBACK"] === "true";
       if (useJsonFallback) return;
 
       const { queryPostgres } = await import("./pg-server");
-      await queryPostgres("ALTER TABLE topups ADD COLUMN IF NOT EXISTS diamonds INTEGER");
+      await queryPostgres(`
+        ALTER TABLE topups
+          ADD COLUMN IF NOT EXISTS has_discount BOOLEAN NOT NULL DEFAULT FALSE,
+          ADD COLUMN IF NOT EXISTS discount_percent INTEGER,
+          ADD COLUMN IF NOT EXISTS diamonds INTEGER
+      `);
     })();
   }
 
   try {
-    await topUpDiamondsColumnReady;
+    await topUpSchemaReady;
   } catch (error) {
-    topUpDiamondsColumnReady = undefined;
+    topUpSchemaReady = undefined;
     throw error;
   }
 }
@@ -319,6 +324,7 @@ export const deleteProductFn = createServerFn({ method: "POST" })
 
 // --- Top-Ups ---
 export const getTopupsFn = createServerFn({ method: "GET" }).handler(async () => {
+  await ensureTopUpSchema();
   const { queryPostgres } = await import("./pg-server");
   const res = await queryPostgres("SELECT * FROM topups ORDER BY sort_order ASC, code DESC");
   return res.rows.map((row: any) => ({
@@ -347,7 +353,7 @@ export const getTopupsFn = createServerFn({ method: "GET" }).handler(async () =>
 export const saveTopupFn = createServerFn({ method: "POST" })
   .validator((data: unknown) => TopupSchema.parse(data))
   .handler(async ({ data }) => {
-    await ensureTopUpDiamondsColumn();
+    await ensureTopUpSchema();
     const { queryPostgres } = await import("./pg-server");
     const {
       code,
