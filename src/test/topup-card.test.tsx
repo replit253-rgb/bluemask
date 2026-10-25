@@ -57,13 +57,13 @@ describe("top-up package images", () => {
     expect(screen.getByLabelText("No package image")).toBeInTheDocument();
   });
 
-  it("shows the admin-provided diamond quantity with the game's public icon", () => {
+  it("shows Kingshot's Kingdom Star quantity with its game icon", () => {
     const { container } = render(
       <TopUpCard
         p={{
           code: "TEST-DIAMONDS",
           game: "kingshot",
-          name: "Diamond pack",
+          name: "Star pack",
           detail: "Test detail",
           price: 5,
           diamonds: 12500,
@@ -71,7 +71,7 @@ describe("top-up package images", () => {
       />,
     );
 
-    expect(screen.getByText("12,500 Diamonds")).toBeInTheDocument();
+    expect(screen.getByText("12,500 Kingdom Star")).toBeInTheDocument();
     expect(container.querySelector('img[src="/diamond-2.png"]')).toHaveClass("h-6", "w-6");
   });
 
@@ -81,7 +81,7 @@ describe("top-up package images", () => {
         p={{
           code: "TEST-WOS-DIAMONDS",
           game: "whiteout-survival",
-          name: "Whiteout diamond pack",
+          name: "Whiteout star pack",
           detail: "Test detail",
           price: 5,
           diamonds: 8000,
@@ -89,7 +89,7 @@ describe("top-up package images", () => {
       />,
     );
 
-    expect(screen.getByText("8,000 Diamonds")).toBeInTheDocument();
+    expect(screen.getByText("8,000 Frost Star")).toBeInTheDocument();
     expect(container.querySelector('img[src="/diamond-1.png"]')).toHaveClass("h-6", "w-6");
   });
 
@@ -133,11 +133,11 @@ describe("top-up package images", () => {
     render(<TopUpGrid gameSlug="whiteout-survival" />);
 
     await screen.findByText("Refresh test pack");
-    expect(screen.queryByText("2,500 Diamonds")).not.toBeInTheDocument();
+    expect(screen.queryByText("2,500 Frost Star")).not.toBeInTheDocument();
 
     fireEvent(window, new Event("topups-changed"));
 
-    expect(await screen.findByText("2,500 Diamonds")).toBeInTheDocument();
+    expect(await screen.findByText("2,500 Frost Star")).toBeInTheDocument();
     expect(getTopUpsFromDB).toHaveBeenCalledTimes(callsBeforeRender + 2);
   });
 });

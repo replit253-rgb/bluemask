@@ -20,6 +20,32 @@ export type TopUpPackage = {
   diamonds?: number | undefined;
 };
 
+export const getTopUpCurrencyName = (
+  game: string,
+  category?: string,
+  code?: string,
+): string | undefined => {
+  const normalizedGame = game.trim().toLowerCase().replace(/[_\s]+/g, "-");
+  if (
+    normalizedGame === "whiteout-survival" ||
+    normalizedGame === "whiteout" ||
+    normalizedGame === "wos" ||
+    category === "Frost Star Pack" ||
+    code?.toUpperCase().startsWith("WOS-")
+  ) {
+    return "Frost Star";
+  }
+  if (
+    normalizedGame === "kingshot" ||
+    normalizedGame === "king-shot" ||
+    category === "Kingdom Star Pack" ||
+    code?.toUpperCase().startsWith("KS-")
+  ) {
+    return "Kingdom Star";
+  }
+  return undefined;
+};
+
 export const getTopUpEffectivePrice = (pack: TopUpPackage) => {
   if (pack.hasDiscount && typeof pack.discountPercent === "number" && pack.discountPercent > 0) {
     return pack.price > 0

@@ -69,6 +69,7 @@ import {
   normalizeCategory,
   GAME_TOPUP_CATEGORIES,
   getTopUpEffectivePrice,
+  getTopUpCurrencyName,
 } from "@/lib/topup";
 import { TopUpProductDetailModal } from "@/components/TopUp";
 
@@ -841,12 +842,17 @@ export function AdminDashboardPage() {
     if (draft === undefined) return;
 
     const diamonds = draft.trim() === "" ? undefined : Number(draft);
+    const topUp = topups.find((item) => item.code === code);
     if (diamonds !== undefined && (!Number.isInteger(diamonds) || diamonds < 0)) {
-      showNotification("Enter a whole number of diamonds greater than or equal to zero.");
+      const currencyName = topUp
+        ? getTopUpCurrencyName(topUp.game, topUp.category, topUp.code)
+        : "currency";
+      showNotification(
+        `Enter a whole number of ${currencyName} greater than or equal to zero.`,
+      );
       return;
     }
 
-    const topUp = topups.find((item) => item.code === code);
     if (!topUp) {
       showNotification(`Top-up package ${code} could not be found.`);
       return;
@@ -870,13 +876,15 @@ export function AdminDashboardPage() {
       });
       showNotification(
         diamonds === undefined
-          ? `Diamond amount cleared for ${code}.`
-          : `${diamonds.toLocaleString("en-US")} diamonds saved for ${code}.`,
+          ? `${getTopUpCurrencyName(topUp.game, topUp.category, topUp.code)} amount cleared for ${code}.`
+          : `${diamonds.toLocaleString("en-US")} ${getTopUpCurrencyName(topUp.game, topUp.category, topUp.code)} saved for ${code}.`,
       );
     } catch (error) {
       console.error(`Failed to save diamond amount for top-up ${code}:`, error);
       const reason = error instanceof Error ? error.message : "Unknown error";
-      showNotification(`Could not save diamonds for ${code}: ${reason.slice(0, 180)}`);
+      showNotification(
+        `Could not save ${getTopUpCurrencyName(topUp.game, topUp.category, topUp.code)} amount for ${code}: ${reason.slice(0, 180)}`,
+      );
     } finally {
       setSavingTopUpDiamondsCode(null);
     }
@@ -2794,7 +2802,7 @@ export function AdminDashboardPage() {
                 <div>
                   <h2 className="text-xl font-bold text-foreground">Manage Game Top-Up Packages</h2>
                   <p className="text-xs text-muted-foreground mt-0.5">
-                    Configure diamond and coin package tiers, prices, and upload package artwork
+                    Configure game currency package amounts, prices, and upload package artwork
                     from your device.
                   </p>
                 </div>
@@ -2919,7 +2927,8 @@ export function AdminDashboardPage() {
                       </div>
                       <div>
                         <label className="text-[11px] font-semibold text-muted-foreground uppercase block mb-1.5">
-                          Diamonds received (optional)
+                          {getTopUpCurrencyName(newTopUp.game || "", newTopUp.category, newTopUp.code)}{" "}
+                          received (optional)
                         </label>
                         <input
                           type="number"
@@ -3242,7 +3251,8 @@ export function AdminDashboardPage() {
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                       <div>
                         <label className="text-[11px] font-semibold text-muted-foreground uppercase block mb-1.5">
-                          Diamonds received (optional)
+                          {getTopUpCurrencyName(editingTopUp.game, editingTopUp.category, editingTopUp.code)}{" "}
+                          received (optional)
                         </label>
                         <input
                           type="number"
@@ -3487,7 +3497,7 @@ export function AdminDashboardPage() {
                         <th className="p-3.5">Code & Pack</th>
                         <th className="p-3.5">Game</th>
                         <th className="p-3.5">Menu / Category</th>
-                        <th className="p-3.5">Diamonds</th>
+                        <th className="p-3.5">Currency Amount</th>
                         <th className="p-3.5">Price</th>
                         <th className="p-3.5">Popular</th>
                         <th className="p-3.5 text-right">Actions</th>
@@ -3559,7 +3569,7 @@ export function AdminDashboardPage() {
                                   type="number"
                                   min={0}
                                   step={1}
-                                  aria-label={`Diamonds received for ${t.code}`}
+                                  aria-label={`${getTopUpCurrencyName(t.game, t.category, t.code) ?? "Currency amount"} received for ${t.code}`}
                                   value={
                                     topUpDiamondDrafts[t.code] ??
                                     (typeof t.diamonds === "number" ? String(t.diamonds) : "")

@@ -1,8 +1,23 @@
 import { describe, expect, it } from "vitest";
 import { findService, gamesForService, isServiceAvailable } from "@/lib/catalog";
-import { topUpForGame, topUpMessage, topUpPackages } from "@/lib/topup";
+import {
+  getTopUpCurrencyName,
+  topUpForGame,
+  topUpMessage,
+  topUpPackages,
+} from "@/lib/topup";
 
 describe("top up service", () => {
+  it("uses the correct currency name for current and legacy top-up records", () => {
+    expect(getTopUpCurrencyName("whiteout-survival")).toBe("Frost Star");
+    expect(getTopUpCurrencyName("Whiteout Survival")).toBe("Frost Star");
+    expect(getTopUpCurrencyName("wos")).toBe("Frost Star");
+    expect(getTopUpCurrencyName("kingshot")).toBe("Kingdom Star");
+    expect(getTopUpCurrencyName("Kingshot", "Kingdom Star Pack")).toBe("Kingdom Star");
+    expect(getTopUpCurrencyName("unknown", undefined, "WOS-PID-1")).toBe("Frost Star");
+    expect(getTopUpCurrencyName("unknown")).toBeUndefined();
+  });
+
   it("is only available for Whiteout Survival and Kingshot", () => {
     const service = findService("top-up");
     expect(service).toBeDefined();
