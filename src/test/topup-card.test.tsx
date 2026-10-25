@@ -115,4 +115,29 @@ describe("top-up package images", () => {
     expect(screen.getByRole("heading", { name: "Detail test pack" })).toBeInTheDocument();
     expect(window.location.href).toBe(currentUrl);
   });
+
+  it("refreshes the storefront package after diamond changes are saved", async () => {
+    const pack = {
+      code: "TEST-REFRESH",
+      game: "whiteout-survival",
+      name: "Refresh test pack",
+      detail: "Test detail",
+      price: 5,
+      category: "Pack ID Top Up",
+    } as const;
+    getTopUpsFromDB
+      .mockResolvedValueOnce([pack])
+      .mockResolvedValueOnce([{ ...pack, diamonds: 2500 }]);
+    const callsBeforeRender = getTopUpsFromDB.mock.calls.length;
+
+    render(<TopUpGrid gameSlug="whiteout-survival" />);
+
+    await screen.findByText("Refresh test pack");
+    expect(screen.queryByText("2,500 Diamonds")).not.toBeInTheDocument();
+
+    fireEvent(window, new Event("topups-changed"));
+
+    expect(await screen.findByText("2,500 Diamonds")).toBeInTheDocument();
+    expect(getTopUpsFromDB).toHaveBeenCalledTimes(callsBeforeRender + 2);
+  });
 });

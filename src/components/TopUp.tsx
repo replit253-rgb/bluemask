@@ -430,18 +430,35 @@ export function TopUpGrid({ gameSlug }: { gameSlug: string }) {
   const perPage = 12;
 
   useEffect(() => {
-    void getTopUpsFromDB().then(
-      (dbItems) => {
-        const storedItems = dbItems.map(enrichTopUpDetails);
-        setActiveItems(
-          detectedGame ? storedItems.filter((item) => item.game === detectedGame) : storedItems,
-        );
-      },
-      (error: unknown) => {
-        console.error("Failed to load top-up packages from PostgreSQL:", error);
-        setActiveItems([]);
-      },
-    );
+    let isMounted = true;
+    const loadTopUps = () => {
+      void getTopUpsFromDB().then(
+        (dbItems) => {
+          if (!isMounted) return;
+          const storedItems = dbItems.map(enrichTopUpDetails);
+          setActiveItems(
+            detectedGame ? storedItems.filter((item) => item.game === detectedGame) : storedItems,
+          );
+        },
+        (error: unknown) => {
+          console.error("Failed to load top-up packages from PostgreSQL:", error);
+        },
+      );
+    };
+    const handleStorage = (event: StorageEvent) => {
+      if (event.key === "bm_topups_updated") loadTopUps();
+    };
+
+    loadTopUps();
+    window.addEventListener("topups-changed", loadTopUps);
+    window.addEventListener("storage", handleStorage);
+    window.addEventListener("focus", loadTopUps);
+    return () => {
+      isMounted = false;
+      window.removeEventListener("topups-changed", loadTopUps);
+      window.removeEventListener("storage", handleStorage);
+      window.removeEventListener("focus", loadTopUps);
+    };
   }, [detectedGame]);
 
   // Ensure current category is valid
