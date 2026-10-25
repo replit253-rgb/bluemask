@@ -70,6 +70,29 @@ const TopupSchema = z.object({
   diamonds: z.number().int().min(0).optional().nullable(),
 });
 
+let topUpDiamondsColumnReady: Promise<void> | undefined;
+
+async function ensureTopUpDiamondsColumn(): Promise<void> {
+  if (!topUpDiamondsColumnReady) {
+    topUpDiamondsColumnReady = (async () => {
+      const useJsonFallback =
+        (process.env["NODE_ENV"] === "development" || process.env["NODE_ENV"] === "test") &&
+        process.env["JSON_DB_FALLBACK"] === "true";
+      if (useJsonFallback) return;
+
+      const { queryPostgres } = await import("./pg-server");
+      await queryPostgres("ALTER TABLE topups ADD COLUMN IF NOT EXISTS diamonds INTEGER");
+    })();
+  }
+
+  try {
+    await topUpDiamondsColumnReady;
+  } catch (error) {
+    topUpDiamondsColumnReady = undefined;
+    throw error;
+  }
+}
+
 const ServiceSchema = z.object({
   slug: z.string().max(255),
   name: z.string().max(255),
@@ -324,6 +347,7 @@ export const getTopupsFn = createServerFn({ method: "GET" }).handler(async () =>
 export const saveTopupFn = createServerFn({ method: "POST" })
   .validator((data: unknown) => TopupSchema.parse(data))
   .handler(async ({ data }) => {
+    await ensureTopUpDiamondsColumn();
     const { queryPostgres } = await import("./pg-server");
     const {
       code,

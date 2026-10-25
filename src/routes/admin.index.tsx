@@ -810,7 +810,8 @@ export function AdminDashboardPage() {
       showNotification(`Top-up pack ${item.code} created and saved.`);
     } catch (error) {
       console.error(`Failed to create top-up pack ${item.code}:`, error);
-      showNotification(`Could not create ${item.code}. Check the database connection and try again.`);
+      const reason = error instanceof Error ? error.message : "Unknown error";
+      showNotification(`Could not create ${item.code}: ${reason.slice(0, 180)}`);
     }
   };
 
@@ -830,7 +831,8 @@ export function AdminDashboardPage() {
       showNotification(`Top-up pack ${sanitized.code} updated in database.`);
     } catch (error) {
       console.error(`Failed to update top-up pack ${sanitized.code}:`, error);
-      showNotification(`Could not update ${sanitized.code}. Check the database connection and try again.`);
+      const reason = error instanceof Error ? error.message : "Unknown error";
+      showNotification(`Could not update ${sanitized.code}: ${reason.slice(0, 180)}`);
     }
   };
 
@@ -873,9 +875,8 @@ export function AdminDashboardPage() {
       );
     } catch (error) {
       console.error(`Failed to save diamond amount for top-up ${code}:`, error);
-      showNotification(
-        `Unable to save diamond amount for ${code}. Check the database connection.`,
-      );
+      const reason = error instanceof Error ? error.message : "Unknown error";
+      showNotification(`Could not save diamonds for ${code}: ${reason.slice(0, 180)}`);
     } finally {
       setSavingTopUpDiamondsCode(null);
     }
@@ -894,7 +895,8 @@ export function AdminDashboardPage() {
       showNotification(`Top-up pack ${code} removed from database.`);
     } catch (error) {
       console.error(`Failed to delete top-up pack ${code}:`, error);
-      showNotification(`Could not delete ${code}. Check the database connection and try again.`);
+      const reason = error instanceof Error ? error.message : "Unknown error";
+      showNotification(`Could not delete ${code}: ${reason.slice(0, 180)}`);
     }
   };
 
