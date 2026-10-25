@@ -8,6 +8,7 @@ import { TopUpGrid } from "@/components/TopUp";
 import type { Product } from "@/lib/products";
 import { getProductsFromDB, getServicesFromDB } from "@/lib/db";
 import { useStoreSettings } from "@/hooks/use-store-settings";
+import { getProcessConfig } from "@/lib/process";
 
 export const Route = createFileRoute("/services/$service/$game")({
   loader: async ({ params }) => {
@@ -18,7 +19,11 @@ export const Route = createFileRoute("/services/$service/$game")({
     if (!service || !game || (service.gameSlugs && !service.gameSlugs.includes(game.slug))) {
       throw notFound();
     }
-    return { service, game, serviceList };
+    const processConfig =
+      service.slug === "buy-sell-accounts" || service.slug === "jual-beli-akun"
+        ? await getProcessConfig()
+        : null;
+    return { service, game, serviceList, processConfig };
   },
   head: ({ loaderData, params }) => {
     const s = loaderData?.service;
@@ -58,7 +63,7 @@ export const Route = createFileRoute("/services/$service/$game")({
 });
 
 function ServicePage() {
-  const { service, game, serviceList } = Route.useLoaderData();
+  const { service, game, serviceList, processConfig } = Route.useLoaderData();
   const [products, setProducts] = useState<Product[]>([]);
   const { discordLink } = useStoreSettings();
 
@@ -135,11 +140,13 @@ function ServicePage() {
 
       <section className="bm-section">
         <div className="bm-section-head">
-          <span className="bm-mono">({isTopUp ? "02" : "01"}) Process</span>
-          <h2>How it works.</h2>
+          <span className="bm-mono">
+            {processConfig?.eyebrow ?? `(${isTopUp ? "02" : "01"}) Process`}
+          </span>
+          <h2>{processConfig?.title ?? "How it works."}</h2>
         </div>
         <ol className="bm-steps">
-          {service.steps.map((step, i) => (
+          {(processConfig?.steps ?? service.steps).map((step, i) => (
             <li key={step.title}>
               <span className="bm-step-no">{i + 1}</span>
               <h3>{step.title}</h3>

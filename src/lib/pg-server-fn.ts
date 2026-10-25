@@ -175,6 +175,18 @@ const TrustSafetyDataSchema = z.object({
   cards: z.array(TrustSafetyCardSchema).max(20),
 });
 
+const ProcessStepSchema = z.object({
+  id: z.string().max(255),
+  title: z.string().min(1).max(255),
+  text: z.string().min(1).max(1000),
+});
+
+const ProcessDataSchema = z.object({
+  eyebrow: z.string().min(1).max(255),
+  title: z.string().min(1).max(255),
+  steps: z.array(ProcessStepSchema).max(12),
+});
+
 const FeaturedAccountsConfigSchema = z.object({
   title: z.string().max(255).optional().nullable(),
   subtitle: z.string().max(500).optional().nullable(),
@@ -843,6 +855,26 @@ export const saveTrustSafetyFn = createServerFn({ method: "POST" })
       `INSERT INTO store_settings (key, value) VALUES ($1, $2)
        ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value`,
       ["trust_safety_config", JSON.stringify(data)],
+    );
+    return { success: true };
+  });
+
+export const getProcessConfigFn = createServerFn({ method: "GET" }).handler(async () => {
+  const { queryPostgres } = await import("./pg-server");
+  const result = await queryPostgres("SELECT value FROM store_settings WHERE key = $1", [
+    "buy_sell_process_config",
+  ]);
+  return result.rows[0]?.value ?? null;
+});
+
+export const saveProcessConfigFn = createServerFn({ method: "POST" })
+  .validator((data: unknown) => ProcessDataSchema.parse(data))
+  .handler(async ({ data }) => {
+    const { queryPostgres } = await import("./pg-server");
+    await queryPostgres(
+      `INSERT INTO store_settings (key, value) VALUES ($1, $2)
+       ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value`,
+      ["buy_sell_process_config", JSON.stringify(data)],
     );
     return { success: true };
   });

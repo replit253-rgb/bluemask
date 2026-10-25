@@ -1,12 +1,13 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { ArrowLeft, Gamepad2, HelpCircle, ShieldCheck, Sparkles } from "lucide-react";
+import { ArrowLeft, Gamepad2, HelpCircle, ListOrdered, ShieldCheck, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SiteFooter, SiteHeader } from "@/components/SiteChrome";
 import { AdminGameWorldsManager } from "@/components/AdminGameWorldsManager";
 import { AdminHomeGamesManager } from "@/components/AdminHomeGamesManager";
 import { AdminFeaturedAccountsManager } from "@/components/AdminFeaturedAccountsManager";
 import { AdminTrustSafetyManager } from "@/components/AdminTrustSafetyManager";
+import { AdminProcessManager } from "@/components/AdminProcessManager";
 import { getFaqsFromDB, saveFaqToDB, deleteFaqFromDB, type FAQ } from "@/lib/db";
 
 type CmsTab =
@@ -14,6 +15,7 @@ type CmsTab =
   | "accounts_for_sale_worlds"
   | "choose_your_game"
   | "trust_safety"
+  | "process"
   | "faq";
 
 export const Route = createFileRoute("/admin/cms")({
@@ -64,6 +66,7 @@ function AdminCMSPage() {
       icon: Gamepad2,
     },
     { id: "trust_safety", label: "Trust & Safety", icon: ShieldCheck },
+    { id: "process", label: "Process", icon: ListOrdered },
     { id: "faq", label: "FAQ Management", icon: HelpCircle },
   ];
 
@@ -120,6 +123,8 @@ function AdminCMSPage() {
           <AdminHomeGamesManager />
         ) : activeTab === "trust_safety" ? (
           <AdminTrustSafetyManager />
+        ) : activeTab === "process" ? (
+          <AdminProcessManager />
         ) : (
           <div className="bg-card border border-border/80 rounded-2xl p-6 shadow-xl max-w-4xl mx-auto">
             <div className="mb-6 pb-4 border-b border-border/40">
