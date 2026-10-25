@@ -72,7 +72,7 @@ describe("top-up package images", () => {
     );
 
     expect(screen.getByText("12,500 Diamonds")).toBeInTheDocument();
-    expect(container.querySelector('img[src="/diamond-1.png"]')).toBeInTheDocument();
+    expect(container.querySelector('img[src="/diamond-2.png"]')).toHaveClass("h-6", "w-6");
   });
 
   it("uses the Whiteout Survival diamond icon", () => {
@@ -90,7 +90,7 @@ describe("top-up package images", () => {
     );
 
     expect(screen.getByText("8,000 Diamonds")).toBeInTheDocument();
-    expect(container.querySelector('img[src="/diamond-2.png"]')).toBeInTheDocument();
+    expect(container.querySelector('img[src="/diamond-1.png"]')).toHaveClass("h-6", "w-6");
   });
 
   it("opens package details in place without navigating away from the top-up list", async () => {

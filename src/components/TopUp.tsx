@@ -36,9 +36,9 @@ export function TopUpCard({
   const { discordLink } = useStoreSettings();
   const diamondImage =
     p.game === "kingshot"
-      ? "/diamond-1.png"
+      ? "/diamond-2.png"
       : p.game === "whiteout-survival"
-        ? "/diamond-2.png"
+        ? "/diamond-1.png"
         : undefined;
 
   return (
@@ -102,7 +102,7 @@ export function TopUpCard({
         </p>
         {typeof p.diamonds === "number" && p.diamonds > 0 && diamondImage && (
           <div className="inline-flex items-center justify-center gap-1.5 text-[11px] font-bold text-cyan-100">
-            <img src={diamondImage} alt="" className="h-4 w-4 object-contain" />
+            <img src={diamondImage} alt="" className="h-6 w-6 object-contain" />
             <span>{p.diamonds.toLocaleString("en-US")} Diamonds</span>
           </div>
         )}
@@ -197,9 +197,9 @@ export function TopUpProductDetailModal({
   const game = findGame(pack.game);
   const diamondImage =
     pack.game === "kingshot"
-      ? "/diamond-1.png"
+      ? "/diamond-2.png"
       : pack.game === "whiteout-survival"
-        ? "/diamond-2.png"
+        ? "/diamond-1.png"
         : undefined;
 
   const handleOrder = () => {
@@ -268,7 +268,7 @@ export function TopUpProductDetailModal({
               <div className="w-full space-y-2">
                 {typeof pack.diamonds === "number" && pack.diamonds > 0 && diamondImage && (
                   <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#14060a] border border-red-950/80 text-xs text-slate-300">
-                    <img src={diamondImage} alt="" className="w-4 h-4 object-contain" />
+                    <img src={diamondImage} alt="" className="w-6 h-6 object-contain" />
                     <span>Diamonds received</span>
                     <strong className="text-white ml-auto">
                       {" "}
