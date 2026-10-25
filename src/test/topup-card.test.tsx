@@ -116,6 +116,23 @@ describe("top-up package images", () => {
     expect(window.location.href).toBe(currentUrl);
   });
 
+  it("displays cents for an existing package loaded from the database", async () => {
+    getTopUpsFromDB.mockResolvedValue([
+      {
+        code: "WOS-PID-LEGACY",
+        game: "whiteout-survival",
+        name: "Existing decimal-price pack",
+        detail: "Existing package",
+        price: 9.99,
+        category: "Pack ID Top Up",
+      },
+    ]);
+
+    render(<TopUpGrid gameSlug="whiteout-survival" />);
+
+    expect(await screen.findByText("$9.99")).toBeInTheDocument();
+  });
+
   it("refreshes the storefront package after diamond changes are saved", async () => {
     const pack = {
       code: "TEST-REFRESH",

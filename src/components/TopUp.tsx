@@ -13,7 +13,6 @@ import {
   Copy,
 } from "lucide-react";
 import { findGame } from "@/lib/catalog";
-import { formatCurrency } from "@/lib/products";
 import { useStoreSettings } from "@/hooks/use-store-settings";
 import {
   topUpMessage,
@@ -22,6 +21,7 @@ import {
   enrichTopUpDetails,
   getTopUpEffectivePrice,
   getTopUpCurrencyName,
+  formatTopUpCurrency,
 } from "@/lib/topup";
 import { getTopUpsFromDB } from "@/lib/db";
 import { Pagination } from "./Pagination";
@@ -136,15 +136,15 @@ export function TopUpCard({
           {p.hasDiscount && p.discountPercent ? (
             <div className="flex flex-col">
               <strong className="text-sm sm:text-base font-black text-white tabular-nums tracking-tight">
-                {formatCurrency(getTopUpEffectivePrice(p))}
+                {formatTopUpCurrency(getTopUpEffectivePrice(p))}
               </strong>
               <span className="text-[10px] text-slate-400 line-through tabular-nums">
-                {formatCurrency(p.price)}
+                {formatTopUpCurrency(p.price)}
               </span>
             </div>
           ) : (
             <strong className="text-sm sm:text-base font-black text-white tabular-nums tracking-tight">
-              {formatCurrency(p.price)}
+              {formatTopUpCurrency(p.price)}
             </strong>
           )}
         </div>
@@ -317,7 +317,7 @@ export function TopUpProductDetailModal({
                   </span>
                   <div className="flex items-baseline gap-2">
                     <span className="text-2xl font-black text-white tabular-nums">
-                      {formatCurrency(getTopUpEffectivePrice(pack))}
+                      {formatTopUpCurrency(getTopUpEffectivePrice(pack))}
                     </span>
                     {pack.hasDiscount && pack.discountPercent && (
                       <>
@@ -325,7 +325,7 @@ export function TopUpProductDetailModal({
                           {pack.discountPercent}% OFF
                         </span>
                         <span className="text-sm text-slate-400 line-through tabular-nums">
-                          {formatCurrency(pack.price)}
+                          {formatTopUpCurrency(pack.price)}
                         </span>
                       </>
                     )}

@@ -70,6 +70,7 @@ import {
   GAME_TOPUP_CATEGORIES,
   getTopUpEffectivePrice,
   getTopUpCurrencyName,
+  formatTopUpCurrency,
 } from "@/lib/topup";
 import { TopUpProductDetailModal } from "@/components/TopUp";
 
@@ -2917,6 +2918,8 @@ export function AdminDashboardPage() {
                         </label>
                         <input
                           type="number"
+                          min={0}
+                          step="0.01"
                           value={newTopUp.price}
                           onChange={(e) =>
                             setNewTopUp({ ...newTopUp, price: Number(e.target.value) })
@@ -3218,6 +3221,8 @@ export function AdminDashboardPage() {
                         </label>
                         <input
                           type="number"
+                          min={0}
+                          step="0.01"
                           value={editingTopUp.price}
                           onChange={(e) =>
                             setEditingTopUp({
@@ -3605,16 +3610,16 @@ export function AdminDashboardPage() {
                             <td className="p-3.5 text-xs font-semibold tabular-nums text-foreground whitespace-nowrap">
                               {t.hasDiscount && t.discountPercent ? (
                                 <div>
-                                  <span>{formatCurrency(getTopUpEffectivePrice(t))}</span>
+                                  <span>{formatTopUpCurrency(getTopUpEffectivePrice(t))}</span>
                                   <span className="ml-1.5 text-[10px] text-rose-400">
                                     -{t.discountPercent}%
                                   </span>
                                   <span className="ml-1.5 text-[10px] text-muted-foreground line-through">
-                                    {formatCurrency(t.price)}
+                                    {formatTopUpCurrency(t.price)}
                                   </span>
                                 </div>
                               ) : (
-                                formatCurrency(t.price)
+                                formatTopUpCurrency(t.price)
                               )}
                             </td>
                             <td className="p-3.5 whitespace-nowrap">

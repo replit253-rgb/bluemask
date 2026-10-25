@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { getTopUpEffectivePrice, topUpMessage, type TopUpPackage } from "@/lib/topup";
+import {
+  formatTopUpCurrency,
+  getTopUpEffectivePrice,
+  topUpMessage,
+  type TopUpPackage,
+} from "@/lib/topup";
 
 const packageInfo: TopUpPackage = {
   code: "TEST-DISCOUNT",
@@ -21,9 +26,21 @@ describe("top-up package discounts", () => {
     expect(getTopUpEffectivePrice(packageInfo)).toBe(20);
   });
 
+  it("preserves cents in top-up prices and discounts", () => {
+    expect(formatTopUpCurrency(9.99)).toBe("$9.99");
+    expect(formatTopUpCurrency(9)).toBe("$9.00");
+    expect(
+      getTopUpEffectivePrice({ ...packageInfo, price: 9.99, hasDiscount: true, discountPercent: 10 }),
+    ).toBe(8.99);
+  });
+
   it("uses the discounted price in the Discord order message", () => {
     const discounted = { ...packageInfo, hasDiscount: true, discountPercent: 25 };
 
     expect(topUpMessage(discounted)).toContain("$15");
+  });
+
+  it("includes cents in the Discord order message", () => {
+    expect(topUpMessage({ ...packageInfo, price: 9.99 })).toContain("$9.99");
   });
 });

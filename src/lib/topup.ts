@@ -1,6 +1,4 @@
 import { findGame, type GameSlug } from "@/lib/catalog";
-import { formatCurrency } from "@/lib/products";
-
 export type TopUpPackage = {
   code: string;
   game: GameSlug;
@@ -46,10 +44,18 @@ export const getTopUpCurrencyName = (
   return undefined;
 };
 
+export const formatTopUpCurrency = (amount: number): string =>
+  new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(amount);
+
 export const getTopUpEffectivePrice = (pack: TopUpPackage) => {
   if (pack.hasDiscount && typeof pack.discountPercent === "number" && pack.discountPercent > 0) {
     return pack.price > 0
-      ? Math.max(1, Math.round(pack.price * (1 - pack.discountPercent / 100)))
+      ? Math.round(pack.price * (1 - pack.discountPercent / 100) * 100) / 100
       : pack.price;
   }
   return pack.price;
@@ -519,7 +525,7 @@ export const topUpForGame = (game: string) => {
 /** Message copied to the clipboard before opening Discord. */
 export const topUpMessage = (p: TopUpPackage) => {
   const gameName = findGame(p.game)?.name ?? p.game;
-  return `Hi reedmoon, I'd like to top up ${gameName} [${p.category || "Top-Up"}] ${p.name} (${formatCurrency(getTopUpEffectivePrice(p))}). Player ID: `;
+  return `Hi reedmoon, I'd like to top up ${gameName} [${p.category || "Top-Up"}] ${p.name} (${formatTopUpCurrency(getTopUpEffectivePrice(p))}). Player ID: `;
 };
 
 /** Find a package in the bundled reference catalog. Runtime pages must query PostgreSQL. */
