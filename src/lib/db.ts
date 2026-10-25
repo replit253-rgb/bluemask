@@ -89,18 +89,22 @@ export async function getTopUpsFromDB(): Promise<TopUpPackage[]> {
 
 export async function saveTopUpToDB(topup: TopUpPackage): Promise<void> {
   await saveTopupFn({ data: topup as unknown as Record<string, unknown> });
-  if (typeof window !== "undefined") {
-    window.dispatchEvent(new Event("topups-changed"));
-    try {
-      window.localStorage.setItem("bm_topups_updated", String(Date.now()));
-    } catch (error) {
-      console.error("Top-up saved, but cross-tab refresh notification failed:", error);
-    }
-  }
+  notifyTopUpsChanged();
 }
 
 export async function deleteTopUpFromDB(code: string): Promise<void> {
   await deleteTopupFn({ data: { code } });
+  notifyTopUpsChanged();
+}
+
+function notifyTopUpsChanged(): void {
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(new Event("topups-changed"));
+  try {
+    window.localStorage.setItem("bm_topups_updated", String(Date.now()));
+  } catch (error) {
+    console.error("Top-up saved, but cross-tab refresh notification failed:", error);
+  }
 }
 
 export async function verifyAdminLogin(username: string, password: string): Promise<boolean> {

@@ -448,16 +448,20 @@ export function TopUpGrid({ gameSlug }: { gameSlug: string }) {
     const handleStorage = (event: StorageEvent) => {
       if (event.key === "bm_topups_updated") loadTopUps();
     };
+    const refreshTimer = window.setInterval(loadTopUps, 15_000);
 
     loadTopUps();
     window.addEventListener("topups-changed", loadTopUps);
     window.addEventListener("storage", handleStorage);
     window.addEventListener("focus", loadTopUps);
+    window.addEventListener("pageshow", loadTopUps);
     return () => {
       isMounted = false;
+      window.clearInterval(refreshTimer);
       window.removeEventListener("topups-changed", loadTopUps);
       window.removeEventListener("storage", handleStorage);
       window.removeEventListener("focus", loadTopUps);
+      window.removeEventListener("pageshow", loadTopUps);
     };
   }, [detectedGame]);
 

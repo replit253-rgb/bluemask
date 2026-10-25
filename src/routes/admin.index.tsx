@@ -102,6 +102,7 @@ export function AdminDashboardPage() {
   // Navigation & Notification
   const [tab, setTab] = useState<AdminTab>("overview");
   const [notice, setNotice] = useState<string | null>(null);
+  const notificationTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Collapsible Sidebar State
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
@@ -270,7 +271,11 @@ export function AdminDashboardPage() {
 
   const showNotification = (msg: string) => {
     setNotice(msg);
-    setTimeout(() => setNotice(null), 3500);
+    if (notificationTimer.current) clearTimeout(notificationTimer.current);
+    notificationTimer.current = setTimeout(() => {
+      setNotice(null);
+      notificationTimer.current = null;
+    }, 6000);
   };
 
   const handleLogout = () => {
@@ -779,29 +784,34 @@ export function AdminDashboardPage() {
       diamonds: newTopUp.diamonds,
     };
 
-    await saveTopUpToDB(item);
-    setTopups([item, ...topups.filter((t) => t.code !== item.code)]);
-    setIsAddingTopUp(false);
-    setNewTopUp({
-      code: "",
-      game: "whiteout-survival",
-      name: "",
-      detail: "",
-      price: 10,
-      popular: false,
-      image: "",
-      category: "Pack ID Top Up",
-      description: "",
-      features: [
-        "Direct account top up via Player ID",
-        "No account password required",
-        "Instant Discord ticket delivery (5-15 mins)",
-      ],
-      instructions: "Provide your Player ID and State / Kingdom number in your Discord ticket.",
-      deliveryTime: "5 - 15 Minutes",
-      diamonds: undefined,
-    });
-    showNotification(`Top-up pack ${item.code} created and saved.`);
+    try {
+      await saveTopUpToDB(item);
+      setTopups((current) => [item, ...current.filter((t) => t.code !== item.code)]);
+      setIsAddingTopUp(false);
+      setNewTopUp({
+        code: "",
+        game: "whiteout-survival",
+        name: "",
+        detail: "",
+        price: 10,
+        popular: false,
+        image: "",
+        category: "Pack ID Top Up",
+        description: "",
+        features: [
+          "Direct account top up via Player ID",
+          "No account password required",
+          "Instant Discord ticket delivery (5-15 mins)",
+        ],
+        instructions: "Provide your Player ID and State / Kingdom number in your Discord ticket.",
+        deliveryTime: "5 - 15 Minutes",
+        diamonds: undefined,
+      });
+      showNotification(`Top-up pack ${item.code} created and saved.`);
+    } catch (error) {
+      console.error(`Failed to create top-up pack ${item.code}:`, error);
+      showNotification(`Could not create ${item.code}. Check the database connection and try again.`);
+    }
   };
 
   const handleUpdateTopUp = async (e: React.FormEvent) => {
@@ -811,10 +821,17 @@ export function AdminDashboardPage() {
       ...editingTopUp,
       features: (editingTopUp.features || []).filter((f) => f.trim().length > 0),
     };
-    await saveTopUpToDB(sanitized);
-    setTopups(topups.map((t) => (t.code === sanitized.code ? sanitized : t)));
-    setEditingTopUp(null);
-    showNotification(`Top-up pack ${sanitized.code} updated in database.`);
+    try {
+      await saveTopUpToDB(sanitized);
+      setTopups((current) =>
+        current.map((t) => (t.code === sanitized.code ? sanitized : t)),
+      );
+      setEditingTopUp(null);
+      showNotification(`Top-up pack ${sanitized.code} updated in database.`);
+    } catch (error) {
+      console.error(`Failed to update top-up pack ${sanitized.code}:`, error);
+      showNotification(`Could not update ${sanitized.code}. Check the database connection and try again.`);
+    }
   };
 
   const handleSaveTopUpDiamonds = async (code: string) => {
@@ -837,15 +854,23 @@ export function AdminDashboardPage() {
     try {
       const updated = { ...topUp, diamonds };
       await saveTopUpToDB(updated);
+      const savedTopUp = (await getTopUpsFromDB()).find((item) => item.code === code);
+      if (!savedTopUp || savedTopUp.diamonds !== diamonds) {
+        throw new Error(`Database did not return the saved diamond value for ${code}.`);
+      }
       setTopups((current) =>
-        current.map((item) => (item.code === code ? updated : item)),
+        current.map((item) => (item.code === code ? savedTopUp : item)),
       );
       setTopUpDiamondDrafts((current) => {
         const next = { ...current };
         delete next[code];
         return next;
       });
-      showNotification(`Diamond amount for ${code} saved.`);
+      showNotification(
+        diamonds === undefined
+          ? `Diamond amount cleared for ${code}.`
+          : `${diamonds.toLocaleString("en-US")} diamonds saved for ${code}.`,
+      );
     } catch (error) {
       console.error(`Failed to save diamond amount for top-up ${code}:`, error);
       showNotification(
@@ -857,15 +882,20 @@ export function AdminDashboardPage() {
   };
 
   const executeDeleteTopUp = async (code: string) => {
-    await deleteTopUpFromDB(code);
-    setTopups(topups.filter((t) => t.code !== code));
-    setSelectedTopUpCodes((selected) => {
-      const next = new Set(selected);
-      next.delete(code);
-      return next;
-    });
-    setConfirmDeleteTopUp(null);
-    showNotification(`Top-up pack ${code} removed from database.`);
+    try {
+      await deleteTopUpFromDB(code);
+      setTopups((current) => current.filter((t) => t.code !== code));
+      setSelectedTopUpCodes((selected) => {
+        const next = new Set(selected);
+        next.delete(code);
+        return next;
+      });
+      setConfirmDeleteTopUp(null);
+      showNotification(`Top-up pack ${code} removed from database.`);
+    } catch (error) {
+      console.error(`Failed to delete top-up pack ${code}:`, error);
+      showNotification(`Could not delete ${code}. Check the database connection and try again.`);
+    }
   };
 
   const handleApplyTopUpDiscount = async (enabled: boolean) => {
@@ -1076,9 +1106,21 @@ export function AdminDashboardPage() {
     <main className="min-h-screen w-full flex flex-col md:flex-row bg-background text-foreground">
       {/* Floating Notice Banner */}
       {notice && (
-        <div className="fixed bottom-6 right-6 z-50 bg-secondary/95 border border-primary text-foreground px-5 py-3.5 rounded-lg shadow-xl flex items-center gap-3 backdrop-blur-md animate-in fade-in slide-in-from-bottom-3 duration-200">
+        <div
+          role="status"
+          aria-live="polite"
+          className="fixed bottom-6 right-6 z-[100] max-w-[min(90vw,32rem)] bg-secondary border border-primary text-foreground px-5 py-3.5 rounded-lg shadow-2xl flex items-center gap-3"
+        >
           <Check className="w-5 h-5 text-sky-400 shrink-0" />
           <span className="text-sm font-medium">{notice}</span>
+          <button
+            type="button"
+            aria-label="Dismiss notification"
+            onClick={() => setNotice(null)}
+            className="ml-2 text-muted-foreground hover:text-foreground"
+          >
+            <X className="w-4 h-4" />
+          </button>
         </div>
       )}
 
