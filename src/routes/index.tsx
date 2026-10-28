@@ -39,14 +39,14 @@ export const Route = createFileRoute("/")({
     };
   },
   head: () => {
-    const title = "RedMoon — Game Accounts, Middleman & Top Up Terpercaya";
+    const title = "RedMoon | Game Accounts, Top-Ups & Gaming Services";
     return {
       meta: [
         { title },
         {
           name: "description",
           content:
-            "Toko game terpercaya RedMoon — Jual beli akun game aman, top up termurah, dan jasa middleman/rekber untuk Whiteout Survival, Kingshot, Rise of Kingdoms, dan Call of Dragons.",
+            "Explore game accounts, game top-ups, and gaming services for Whiteout Survival, Kingshot, Rise of Kingdoms, and Call of Dragons at RedMoon.",
         },
         {
           property: "og:title",
@@ -55,8 +55,9 @@ export const Route = createFileRoute("/")({
         {
           property: "og:description",
           content:
-            "Beli dan jual akun game, top up termurah, dan jasa middleman terpercaya bergaransi di RedMoon.",
+            "Explore game accounts, game top-ups, and gaming services for popular strategy games at RedMoon.",
         },
+        { property: "og:locale", content: "en_US" },
         { property: "og:type", content: "website" },
         { property: "og:url", content: "https://redmoon-shop.com/" },
         { property: "og:image", content: "https://redmoon-shop.com/logo.png" },
@@ -65,7 +66,7 @@ export const Route = createFileRoute("/")({
         {
           name: "twitter:description",
           content:
-            "Beli dan jual akun game, top up termurah, dan jasa middleman terpercaya bergaransi di RedMoon.",
+            "Explore game accounts, game top-ups, and gaming services for popular strategy games at RedMoon.",
         },
         { name: "twitter:image", content: "https://redmoon-shop.com/logo.png" },
       ],

@@ -40,11 +40,23 @@ export const Route = createFileRoute("/services/$service/$game")({
           { name: "robots", content: "noindex" },
         ],
       };
-    const title = `${s.name} ${g.name} — RedMoon Gaming Store`;
+    const serviceName =
+      s.slug === "top-up"
+        ? "Game Top-Ups"
+        : s.slug === "middleman"
+          ? "Middleman Services"
+          : s.slug === "buy-sell-accounts" || s.slug === "jual-beli-akun"
+            ? "Buy & Sell Game Accounts"
+            : s.name;
+    const title = `${serviceName} for ${g.name} — RedMoon`;
     const desc =
       s.slug === "top-up"
-        ? `Affordable, safe ${g.name} top ups with RedMoon. Pick a pack, send your player ID, and it lands in your account.`
-        : `${s.intro} For ${g.name} accounts.`;
+        ? `Browse available ${g.name} top-up packs. Contact the RedMoon team on Discord to place an order.`
+        : s.slug === "middleman"
+          ? `Explore RedMoon middleman services for ${g.name} account transactions.`
+          : s.slug === "buy-sell-accounts" || s.slug === "jual-beli-akun"
+            ? `Browse ${g.name} accounts for sale or contact the RedMoon team about listing an account.`
+            : `Explore ${serviceName} services for ${g.name} at RedMoon.`;
     const url = `/services/${params.service}/${params.game}`;
     return {
       meta: [
