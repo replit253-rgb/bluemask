@@ -1267,13 +1267,13 @@ export function AdminDashboardPage() {
               )}
             </button>
 
-            {/* Accounts Jual Beli */}
+            {/* Account Listings */}
             <button
               onClick={() => {
                 setTab("accounts");
                 setIsMobileSidebarOpen(false);
               }}
-              title="Accounts (Jual Beli)"
+              title="Accounts"
               className={`w-full text-sm font-medium rounded-lg flex items-center transition-all ${
                 isSidebarCollapsed ? "justify-center p-3 relative" : "px-4 py-3 justify-between"
               } ${
@@ -1284,7 +1284,7 @@ export function AdminDashboardPage() {
             >
               <span className={`flex items-center ${isSidebarCollapsed ? "" : "gap-3"}`}>
                 <Package className="w-4 h-4 shrink-0" />
-                {!isSidebarCollapsed && <span>Accounts (Jual Beli)</span>}
+                {!isSidebarCollapsed && <span>Accounts</span>}
               </span>
               {!isSidebarCollapsed ? (
                 <span className="text-xs px-2 py-0.5 rounded-full bg-background/50 border border-border/40 font-mono">
@@ -1532,7 +1532,7 @@ export function AdminDashboardPage() {
                     }}
                     className="bm-btn bm-btn-primary"
                   >
-                    <Plus className="w-4 h-4 mr-1.5" /> Add Account (Jual Beli)
+                    <Plus className="w-4 h-4 mr-1.5" /> Add Account
                   </Button>
                   <Button
                     onClick={() => {
@@ -1575,7 +1575,7 @@ export function AdminDashboardPage() {
               <div>
                 <div className="flex justify-between items-center mb-3">
                   <h3 className="text-base font-bold text-foreground">
-                    Recent Accounts (Jual Beli)
+                    Recent Accounts
                   </h3>
                   <Button
                     onClick={() => setTab("accounts")}
@@ -1676,7 +1676,7 @@ export function AdminDashboardPage() {
           )}
 
           {/* --------------------------------------------------------- */}
-          {/* TAB 2: ACCOUNTS (JUAL BELI AKUN & DETAIL PRODUK) */}
+          {/* TAB 2: ACCOUNT LISTINGS & PRODUCT DETAILS */}
           {/* --------------------------------------------------------- */}
           {tab === "accounts" && (
             <div className="space-y-6">
@@ -1684,7 +1684,7 @@ export function AdminDashboardPage() {
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
                   <h2 className="text-xl font-bold text-foreground">
-                    Manage Accounts (Jual Beli Akun)
+                    Manage Account Listings
                   </h2>
                   <p className="text-xs text-muted-foreground mt-0.5">
                     Upload cover images and multiple screenshots from your device. Edit
@@ -2379,8 +2379,8 @@ export function AdminDashboardPage() {
                           }
                           className="w-full bg-secondary/30 border border-border rounded-lg px-3 py-2 text-xs"
                         >
-                          <option value="tersedia">Available (Tersedia)</option>
-                          <option value="terjual">Sold Out (Terjual)</option>
+                          <option value="tersedia">Available</option>
+                          <option value="terjual">Sold Out</option>
                         </select>
                       </div>
                     </div>
@@ -3727,7 +3727,7 @@ export function AdminDashboardPage() {
                     variant="outline"
                     size="sm"
                     className="text-xs text-muted-foreground hover:text-foreground"
-                    title="Reset back to default Middleman, Jual-Beli, Top-Up cards"
+                    title="Reset to the default Middleman, Buy & Sell, and Top-Up cards"
                   >
                     <RotateCcw className="w-3.5 h-3.5 mr-1" /> Reset Defaults
                   </Button>
